@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sun-ejb-jar PUBLIC "-//Sun Microsystems, Inc.//DTD Application Server 9.0 EJB 3.0//EN" "http://www.sun.com/software/appserver/dtds/sun-ejb-jar_3_0-0.dtd">
+<sun-ejb-jar>
+  <enterprise-beans>
+    <ejb>
+      <ejb-name>TechDecisionDao</ejb-name>
+      <jndi-name>ejbTechDecision</jndi-name>
+    </ejb>
+    <ejb>
+      <ejb-name>IdentiteDao</ejb-name>
+      <jndi-name>ejbIdentite</jndi-name>
+    </ejb>
+    <ejb>
+      <ejb-name>CompteDao</ejb-name>
+      <jndi-name>ejbCompte</jndi-name>
+    </ejb>
+    <ejb>
+      <ejb-name>CpteAttrsDao</ejb-name>
+      <jndi-name>ejbCpteAttrs</jndi-name>
+    </ejb>
+    <ejb>
+      <ejb-name>HabilitantDao</ejb-name>
+      <jndi-name>ejbHabilitant</jndi-name>
+    </ejb>
+    <ejb>
+      <ejb-name>IdntattrDao</ejb-name>
+      <jndi-name>ejbIdntAttrs</jndi-name>
+    </ejb>
+    <ejb>
+      <ejb-name>ObjsecuDao</ejb-name>
+      <jndi-name>ejbObjsecu</jndi-name>
+    </ejb>
+    <ejb>
+      <ejb-name>CpteHbltDao</ejb-name>
+      <jndi-name>ejbCpteHblt</jndi-name>
+    </ejb>
+    <ejb>
+      <ejb-name>ObjsAttrsDao</ejb-name>
+      <jndi-name>ejbObjsAttrs</jndi-name>
+    </ejb>
+    <ejb>
+      <ejb-name>IdntCpteDao</ejb-name>
+      <jndi-name>ejbIdntCpte</jndi-name>
+    </ejb>
+    <ejb>
+      <ejb-name>ObjsCpteDao</ejb-name>
+      <jndi-name>ejbObjsCpte</jndi-name>
+    </ejb>
+    <ejb>
+      <ejb-name>ObjsHbltDao</ejb-name>
+      <jndi-name>ejbObjsHblt</jndi-name>
+    </ejb>
+  </enterprise-beans>
+</sun-ejb-jar>
