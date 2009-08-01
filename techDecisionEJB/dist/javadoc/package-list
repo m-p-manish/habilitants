@@ -1,0 +1,14 @@
+techDecision.dao
+techDecision.dao.compte
+techDecision.dao.cpteattr
+techDecision.dao.cptehblt
+techDecision.dao.exceptions
+techDecision.dao.habilitant
+techDecision.dao.identite
+techDecision.dao.idntattr
+techDecision.dao.idntcpte
+techDecision.dao.objsattr
+techDecision.dao.objscpte
+techDecision.dao.objsecu
+techDecision.dao.objshblt
+techDecision.entites
