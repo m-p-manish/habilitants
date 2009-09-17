@@ -1,0 +1,15 @@
+connect 'jdbc:derby:techdecision3';
+ALTER TABLE RolesLink DROP CONSTRAINT Child;
+ALTER TABLE RolesLink DROP CONSTRAINT Parent;
+ALTER TABLE Members DROP CONSTRAINT HaveRole;
+ALTER TABLE Permissions DROP CONSTRAINT HavePermission;
+ALTER TABLE RolesLink DROP CONSTRAINT RoleLinkUnique;
+ALTER TABLE MemberOf DROP CONSTRAINT HaveGroupe;
+ALTER TABLE MemberOf DROP CONSTRAINT HaveNestedGroupe;
+DROP TABLE Members;
+DROP TABLE MemberOf;
+DROP TABLE Permissions;
+DROP TABLE Role;
+DROP TABLE RolesLink;
+DROP TABLE Groupe;
+
