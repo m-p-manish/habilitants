@@ -1,0 +1,195 @@
+<?xml version='1.0' encoding='UTF-8'?>
+
+<!-- =========== FULL CONFIGURATION FILE ================================== -->
+
+<faces-config version="1.2" 
+    xmlns="http://java.sun.com/xml/ns/javaee" 
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+    xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-facesconfig_1_2.xsd">
+
+    <application>
+        <el-resolver>theCube.jsf.util.JsfCrudELResolver</el-resolver>
+    </application>
+    <managed-bean>
+        <managed-bean-name>database3</managed-bean-name>
+        <managed-bean-class>theCube.dao.DataLoaderH2</managed-bean-class>
+        <managed-bean-scope>session</managed-bean-scope>
+    </managed-bean>
+    <managed-bean>
+        <managed-bean-name>identite</managed-bean-name>
+        <managed-bean-class>theCube.jsf.IdentiteController</managed-bean-class>
+        <managed-bean-scope>request</managed-bean-scope>
+    </managed-bean>
+    <managed-bean>
+        <managed-bean-name>identite3Jpa</managed-bean-name>
+        <managed-bean-class>theCube.jpa.Identite3</managed-bean-class>
+        <managed-bean-scope>request</managed-bean-scope>
+    </managed-bean>
+    <managed-bean>
+        <managed-bean-name>role3Jpa</managed-bean-name>
+        <managed-bean-class>theCube.jpa.Role3</managed-bean-class>
+        <managed-bean-scope>request</managed-bean-scope>
+    </managed-bean>
+    <managed-bean>
+        <managed-bean-name>role</managed-bean-name>
+        <managed-bean-class>theCube.jsf.RoleController</managed-bean-class>
+        <managed-bean-scope>request</managed-bean-scope>
+    </managed-bean>
+    <converter>
+        <converter-for-class>theCube.entities.Role</converter-for-class>
+        <converter-class>theCube.jsf.RoleConverter</converter-class>
+    </converter>
+    <converter>
+        <converter-for-class>theCube.entities.Identite</converter-for-class>
+        <converter-class>theCube.jsf.IdentiteConverter</converter-class>
+    </converter>
+    <managed-bean>
+        <managed-bean-name>objsecu</managed-bean-name>
+        <managed-bean-class>theCube.jsf.ObjsecuController</managed-bean-class>
+        <managed-bean-scope>request</managed-bean-scope>
+    </managed-bean>
+    <converter>
+        <converter-for-class>theCube.entities.Objsecu</converter-for-class>
+        <converter-class>theCube.jsf.ObjsecuConverter</converter-class>
+    </converter>
+    <managed-bean>
+        <managed-bean-name>idntAttrs3Jpa</managed-bean-name>
+        <managed-bean-class>theCube.jpa.IdntAttrs3</managed-bean-class>
+        <managed-bean-scope>request</managed-bean-scope>
+    </managed-bean>
+    <navigation-rule>
+        <navigation-case>
+            <from-outcome>welcome</from-outcome>
+            <to-view-id>/welcomeJSF.jsp</to-view-id>
+        </navigation-case>
+    </navigation-rule>
+    <navigation-rule>
+        <from-view-id>/welcomeJSF.jsp</from-view-id>
+        <navigation-case>
+            <from-outcome>identite_list</from-outcome>
+            <to-view-id>/identite/List.jsp</to-view-id>
+        </navigation-case>
+        <navigation-case>
+            <from-outcome>role_list</from-outcome>
+            <to-view-id>/role/role/List.jsp</to-view-id>
+        </navigation-case>
+        <navigation-case>
+            <from-outcome>objsecu_list</from-outcome>
+            <to-view-id>/objsecu/List.jsp</to-view-id>
+        </navigation-case>
+        <navigation-case>
+            <from-outcome>cpteattrs_list</from-outcome>
+            <to-view-id>/cpteAttrs/List.jsp</to-view-id>
+        </navigation-case>
+    </navigation-rule>
+    <managed-bean>
+        <description>Recherche des rôles applicatifs dans le scope du datamart H2</description>
+        <managed-bean-name>roleMinerBean</managed-bean-name>
+        <managed-bean-class>theCube.jsf.roleMinerBean</managed-bean-class>
+        <managed-bean-scope>request</managed-bean-scope>
+    </managed-bean>
+    <managed-bean>
+        <description>Support des comptes pour roleMining</description>
+        <managed-bean-name>comptesBean</managed-bean-name>
+        <managed-bean-class>theCube.roleMining.Comptes</managed-bean-class>
+        <managed-bean-scope>request</managed-bean-scope>
+    </managed-bean>
+    <managed-bean>
+        <description>Support des Objets de sécurité pour roleMining</description>
+        <managed-bean-name>objSecusBean</managed-bean-name>
+        <managed-bean-class>theCube.roleMining.ObjSecus</managed-bean-class>
+        <managed-bean-scope>request</managed-bean-scope>
+    </managed-bean>
+    <managed-bean>
+        <description>Support des habilitants pour roleMining</description>
+        <managed-bean-name>hbltsBean</managed-bean-name>
+        <managed-bean-class>theCube.roleMining.Habilitants</managed-bean-class>
+        <managed-bean-scope>request</managed-bean-scope>
+    </managed-bean>
+    <managed-bean>
+        <description>Support des identites pour roleMining</description>
+        <managed-bean-name>identitesBean</managed-bean-name>
+        <managed-bean-class>theCube.roleMining.Identites</managed-bean-class>
+        <managed-bean-scope>request</managed-bean-scope>
+    </managed-bean>
+    <managed-bean>
+        <description>Support des habilitants pour roleMining</description>
+        <managed-bean-name>habilitantsBean</managed-bean-name>
+        <managed-bean-class>theCube.roleMining.Habilitants</managed-bean-class>
+        <managed-bean-scope>request</managed-bean-scope>
+    </managed-bean>
+    <managed-bean>
+        <description>Support des attributs des objets de sécurité pour roleMining</description>
+        <managed-bean-name>objsAttrsBean</managed-bean-name>
+        <managed-bean-class>theCube.jpa.ObjsAttrsJ3</managed-bean-class>
+        <managed-bean-scope>request</managed-bean-scope>
+    </managed-bean>
+    <managed-bean>
+        <description>Support liaison objets de sécurité/comptes pour roleMining</description>
+        <managed-bean-name>objsCpteBean</managed-bean-name>
+        <managed-bean-class>theCube.jpa.ObjsCpteJpaController</managed-bean-class>
+        <managed-bean-scope>request</managed-bean-scope>
+    </managed-bean>
+    <managed-bean>
+        <description>the Electre comparator</description>
+        <managed-bean-name>ElectreBean</managed-bean-name>
+        <managed-bean-class>theCube.electre.ElectreBean</managed-bean-class>
+        <managed-bean-scope>request</managed-bean-scope>
+    </managed-bean>
+    <managed-bean>
+        <description>un bean pour m'aider à persister (je suis proche du suicide ;-)</description>
+        <managed-bean-name>helpBean</managed-bean-name>
+        <managed-bean-class>theCube.electre.SauverWillie</managed-bean-class>
+        <managed-bean-scope>request</managed-bean-scope>
+    </managed-bean>
+    <managed-bean>
+        <description>Support des vrais rôles pour le nouveau roleMining</description>
+        <managed-bean-name>objRole</managed-bean-name>
+        <managed-bean-class>theCube.jpa.Role3</managed-bean-class>
+        <managed-bean-scope>request</managed-bean-scope>
+    </managed-bean>
+    <managed-bean>
+        <description>Support pour le nouveau roleMining</description>
+        <managed-bean-name>roleBuilder</managed-bean-name>
+        <managed-bean-class>theCube.newRoleMiner.RoleBuilder</managed-bean-class>
+        <managed-bean-scope>request</managed-bean-scope>
+    </managed-bean>
+    <managed-bean>
+        <managed-bean-name>cpteAttrs</managed-bean-name>
+        <managed-bean-class>theCube.jsf.CpteAttrsController</managed-bean-class>
+        <managed-bean-scope>session</managed-bean-scope>
+    </managed-bean>
+    <managed-bean>
+        <managed-bean-name>cpteAttrsJpa</managed-bean-name>
+        <managed-bean-class>theCube.jpa.CpteAttrsJpaController</managed-bean-class>
+        <managed-bean-scope>session</managed-bean-scope>
+    </managed-bean>
+    <converter>
+        <converter-for-class>theCube.entities.CpteAttrs</converter-for-class>
+        <converter-class>theCube.jsf.CpteAttrsConverter</converter-class>
+    </converter>
+    <navigation-rule>
+        <navigation-case>
+            <from-outcome>cpteAttrs_create</from-outcome>
+            <to-view-id>/cpteAttrs/New.jsp</to-view-id>
+        </navigation-case>
+    </navigation-rule>
+    <navigation-rule>
+        <navigation-case>
+            <from-outcome>cpteAttrs_list</from-outcome>
+            <to-view-id>/cpteAttrs/List.jsp</to-view-id>
+        </navigation-case>
+    </navigation-rule>
+    <navigation-rule>
+        <navigation-case>
+            <from-outcome>cpteAttrs_edit</from-outcome>
+            <to-view-id>/cpteAttrs/Edit.jsp</to-view-id>
+        </navigation-case>
+    </navigation-rule>
+    <navigation-rule>
+        <navigation-case>
+            <from-outcome>cpteAttrs_detail</from-outcome>
+            <to-view-id>/cpteAttrs/Detail.jsp</to-view-id>
+        </navigation-case>
+    </navigation-rule>
+</faces-config>

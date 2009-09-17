@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence version="1.0" xmlns="http://java.sun.com/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_1_0.xsd">
+  <persistence-unit name="techDecisionCubePU" transaction-type="JTA">
+    <jta-data-source>onDemandTechDB3</jta-data-source>
+    <class>theCube.entities.Compte</class>
+    <class>theCube.entities.CpteAttrs</class>
+    <class>theCube.entities.Habilitant</class>
+    <class>theCube.entities.Identite</class>
+    <class>theCube.entities.IdntAttrs</class>
+    <class>theCube.entities.ObjsAttrs</class>
+    <class>theCube.entities.ObjsHblt</class>
+    <class>theCube.entities.Objsecu</class>
+    <class>theCube.entities.Permissions</class>
+    <class>theCube.entities.Role</class>
+    <class>theCube.entities.Roleslink</class>
+    <class>theCube.entities.Memberof</class>
+    <class>theCube.entities.Groupe</class>
+    <class>theCube.entities.Members</class>
+    <exclude-unlisted-classes>true</exclude-unlisted-classes>
+    <properties>
+      <property name="toplink.target-database" value="oracle.toplink.essentials.platform.database.H2Platform"/>
+      <property name="toplink.logging.level" value="OFF"/>
+      <property name="toplink.logging.logger" value="DefaultLogger"/>
+    </properties>
+  </persistence-unit>
+</persistence>
