@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+    Document   : techDecision1.xml
+    Created on : 25 juillet 2009, 14:40
+    Author     : spopoff
+    Description: mon premier schéma mondrian
+        Purpose of the document follows.
+-->
+
+<Schema name="firstSchema">
+    <Cube name="CompteIdentiteDept" cache="false">
+        <Table name="DPT_IDNT_CPTE" schema="SPOPOFF"/>
+            <Dimension name="Comptes">
+                <Hierarchy hasAll="true" allMemberName="Tous les Comptes" primaryKey="DEPARTEMENT">
+                    <Level name="Departement" column="DEPARTEMENT" uniqueMembers="true"/>
+                    <Level name="UserName" column="USERNAME" uniqueMembers="true">
+                        <Property name="Fonction" column="FONCTION"/>
+                        <Property name="pkIdnt" column="FKIDNT" />
+                   </Level>
+                    <Level name="pkCpte" column="FKCPTE" uniqueMembers="true"/>
+                </Hierarchy>
+            </Dimension>
+            <Measure name="nbre Idnt" column="NB_IDNT" aggregator="sum" formatString="#,###"/>
+            <Measure name="nbre Cpte" column="NB_CPTE" aggregator="sum" formatString="#,###"/>
+    </Cube>
+</Schema>
