@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <web-app version="2.5" xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
+    <description>Le module de visulaisation de l'EJB 1</description>
+    <display-name>techDecisionTest1</display-name>
     <context-param>
         <param-name>com.sun.faces.verifyObjects</param-name>
         <param-value>false</param-value>
@@ -12,11 +14,32 @@
         <param-name>javax.faces.STATE_SAVING_METHOD</param-name>
         <param-value>client</param-value>
     </context-param>
+    <filter>
+        <description>le filtre josso pour JSF</description>
+        <filter-name>josso</filter-name>
+        <filter-class>org.josso.servlet.agent.GenericServletSSOAgentFilter</filter-class>
+        <init-param>
+            <description>rien pour rire</description>
+            <param-name>josso</param-name>
+            <param-value>estla</param-value>
+        </init-param>
+        </filter>
+    <filter-mapping>
+        <filter-name>josso</filter-name>
+        <url-pattern>/*</url-pattern>
+        <dispatcher>REQUEST</dispatcher>
+        <dispatcher>FORWARD</dispatcher>
+    </filter-mapping>
     <servlet>
         <servlet-name>Faces Servlet</servlet-name>
         <servlet-class>javax.faces.webapp.FacesServlet</servlet-class>
         <load-on-startup>1</load-on-startup>
-    </servlet>
+        <security-role-ref>
+            <description>le rôleggggggggggggg</description>
+            <role-name>role1</role-name>
+            <role-link>role1</role-link>
+        </security-role-ref>
+        </servlet>
     <servlet-mapping>
         <servlet-name>Faces Servlet</servlet-name>
         <url-pattern>/faces/*</url-pattern>
@@ -29,4 +52,35 @@
     <welcome-file-list>
         <welcome-file>faces/welcomeJSF.jsp</welcome-file>
         </welcome-file-list>
+    <security-constraint>
+        <display-name>Constraint1</display-name>
+        <web-resource-collection>
+            <web-resource-name>the_faces</web-resource-name>
+            <description>les pages faces</description>
+            <url-pattern>/faces/*</url-pattern>
+            <http-method>GET</http-method>
+            <http-method>POST</http-method>
+            <http-method>HEAD</http-method>
+            <http-method>PUT</http-method>
+            <http-method>OPTIONS</http-method>
+            <http-method>TRACE</http-method>
+            <http-method>DELETE</http-method>
+        </web-resource-collection>
+        <auth-constraint>
+            <description/>
+            <role-name>role1</role-name>
+            </auth-constraint>
+        </security-constraint>
+    <login-config>
+        <auth-method>FORM</auth-method>
+        <realm-name>jossoRealm</realm-name>
+        <form-login-config>
+            <form-login-page>/login-redirect.jsp</form-login-page>
+            <form-error-page>/login-redirect.jsp</form-error-page>
+            </form-login-config>
+        </login-config>
+    <security-role>
+        <description>the role</description>
+        <role-name>role1</role-name>
+    </security-role>
     </web-app>

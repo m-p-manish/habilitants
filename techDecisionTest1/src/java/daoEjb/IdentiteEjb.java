@@ -1,5 +1,5 @@
 /*
-Copyright Stéphane Georges Popoff, (février 2009)
+Copyright Stéphane Georges Popoff, (février - octobre 2009)
 
 spopoff@rocketmail.com
 
@@ -48,10 +48,9 @@ import techDecision.entites.Identite;
 /**
  * Classe vers un ejb identite
  * @author spopoff@rocketmail.com
- * @version 0.1
+ * @version 0.2
  */
 public class IdentiteEjb implements IIdentiteDao {
-    //@EJB(name="ejb_identite")
     IIdentiteDaoRemote dao;
     /**
      * Fonction d'initialisation de la classe et donc de l'ejb

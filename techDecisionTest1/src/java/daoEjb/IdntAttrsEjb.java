@@ -1,5 +1,5 @@
 /*
-Copyright Stéphane Georges Popoff, (avril 2009)
+Copyright Stéphane Georges Popoff, (avril - octobre 2009)
 
 spopoff@rocketmail.com
 
@@ -47,10 +47,9 @@ import techDecision.entites.IdntAttrs;
 /**
  * Classe vers un ejb d'attributs des identités
  * @author spopoff@rocketmail.com
- * @version 0.1
+ * @version 0.2
  */
 public class IdntAttrsEjb implements IIdntattrDao {
-    //@EJB(name="ejb_identite")
     IIdntattrDaoRemote dao;
     /**
      * Fonction d'initialisation de la classe et donc de l'ejb
