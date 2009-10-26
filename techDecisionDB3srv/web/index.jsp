@@ -15,7 +15,7 @@
     </head>
     <body>
         <h1>The in-memory techDecision Datamart server (based on H2)</h1>
-        <a href="./console">Lien vers la console H2</a><br/>
-        <a href="./buildDatabase">Lien vers initialisation des tables</a>
+        <a href="<%=request.getContextPath()%>/console">Lien vers la console H2</a><br/>
+        <a href="<%=request.getContextPath()%>/buildDatabase">Lien vers initialisation des tables</a>
     </body>
 </html>
