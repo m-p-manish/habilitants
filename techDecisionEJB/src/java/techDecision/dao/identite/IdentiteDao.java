@@ -1,5 +1,5 @@
 /*
-Copyright Stéphane Georges Popoff, (avril 2009)
+Copyright Stéphane Georges Popoff, (avril - octobre 2009)
 
 spopoff@rocketmail.com
 
@@ -39,13 +39,12 @@ import techDecision.dao.exceptions.*;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import javax.ejb.EJB;
+//import javax.ejb.EJB;
 /**
  *
  * @author spopoff@rocketmail.com
- * @version 0.3
+ * @version 0.4
  */
-@EJB(name="ejbRefIdnt", beanInterface=techDecision.dao.identite.IIdentiteDaoLocal.class)
 @Stateless(mappedName="ejbIdentite")
 public class IdentiteDao implements IIdentiteDaoLocal, IIdentiteDaoRemote {
     @PersistenceContext(unitName="techDecisionEJBPU")
