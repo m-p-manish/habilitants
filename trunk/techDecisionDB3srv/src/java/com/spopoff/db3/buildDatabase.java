@@ -1,5 +1,5 @@
 /*
-Copyright Stéphane Georges Popoff, (mai -juin 2009)
+Copyright Stéphane Georges Popoff, (mai - octobre 2009)
 
 spopoff@rocketmail.com
 
@@ -41,6 +41,11 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.sql.Connection;
+import javax.naming.NamingEnumeration;
+import javax.naming.directory.Attribute;
+import javax.naming.directory.Attributes;
+import javax.naming.directory.SearchControls;
+import javax.naming.directory.SearchResult;
 
 /**
  * Cette classe permet la création des tables dans DB3 ou le vidage.
@@ -139,7 +144,29 @@ public class buildDatabase extends HttpServlet {
                 message = err.toString();
             }
             out.println(message+"<br/>");
+            //test de la base ldap
+            try {
+                javax.naming.InitialContext initCtx = new javax.naming.InitialContext();
+                javax.naming.directory.DirContext ctx = (javax.naming.directory.DirContext) initCtx.lookup("ldap/techDecision");
 
+                SearchControls ctls = new SearchControls();
+                ctls.setSearchScope(SearchControls.SUBTREE_SCOPE);
+
+                String searchfilter = "(cn=spo)";
+                NamingEnumeration answer = ctx.search("", searchfilter, ctls);
+
+                if(answer.hasMore()){
+                    SearchResult entry = (SearchResult) answer.next();
+                    Attributes attrs = entry.getAttributes();
+                    message = "Ouverture / fermeture de la ressource ldap/techDecision description="+attrs.get("description").get().toString();
+                } else {
+                    message="Erreur Ouverture / fermeture de la ressource ldap/techDecision pas trouvé cn=spo";
+                }
+                initCtx.close();
+            } catch (javax.naming.NamingException e) {
+                    message=e.toString();
+            }
+            out.println(message+"<br/>");
             out.println("<a href='./console'>lien vers console H2</a>");
             out.println("</body>");
             out.println("</html>");

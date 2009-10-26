@@ -3,6 +3,7 @@
     <listener>
        <listener-class>org.h2.server.web.DbStarter</listener-class>
     </listener>
+    <display-name>the h2</display-name>
     <context-param>
       <param-name>db.url</param-name>
       <param-value>jdbc:h2:mem:techdecision;DB_CLOSE_ON_EXIT=FALSE</param-value>
@@ -19,7 +20,12 @@
       <servlet-name>H2Console</servlet-name>
       <servlet-class>org.h2.server.web.WebServlet</servlet-class>
       <load-on-startup>1</load-on-startup>
-    </servlet>
+        <security-role-ref>
+            <description/>
+            <role-name>role1</role-name>
+            <role-link>role1</role-link>
+        </security-role-ref>
+        </servlet>
     <servlet-mapping>
         <servlet-name>buildDatabase</servlet-name>
         <url-pattern>/buildDatabase</url-pattern>
@@ -31,7 +37,12 @@
         <servlet-name>buildDatabase</servlet-name>
         <servlet-class>com.spopoff.db3.buildDatabase</servlet-class>
         <load-on-startup>2</load-on-startup>
-    </servlet>
+        <security-role-ref>
+            <description/>
+            <role-name>role1</role-name>
+            <role-link>role1</role-link>
+        </security-role-ref>
+        </servlet>
     <servlet-mapping>
       <servlet-name>H2Console</servlet-name>
       <url-pattern>/console/*</url-pattern>
@@ -39,4 +50,47 @@
     <welcome-file-list>
         <welcome-file>index.jsp</welcome-file>
     </welcome-file-list>
-</web-app>
+    <security-constraint>
+        <display-name>Constraint1</display-name>
+        <web-resource-collection>
+            <web-resource-name>une nouvelle</web-resource-name>
+            <description>construire</description>
+            <url-pattern>/buildDatabase</url-pattern>
+            <http-method>GET</http-method>
+            <http-method>POST</http-method>
+            <http-method>HEAD</http-method>
+            <http-method>PUT</http-method>
+            <http-method>OPTIONS</http-method>
+            <http-method>TRACE</http-method>
+            <http-method>DELETE</http-method>
+        </web-resource-collection>
+        <web-resource-collection>
+            <web-resource-name>la console</web-resource-name>
+            <description/>
+            <url-pattern>/console</url-pattern>
+            <http-method>GET</http-method>
+            <http-method>POST</http-method>
+            <http-method>HEAD</http-method>
+            <http-method>PUT</http-method>
+            <http-method>OPTIONS</http-method>
+            <http-method>TRACE</http-method>
+            <http-method>DELETE</http-method>
+        </web-resource-collection>
+        <auth-constraint>
+            <description>the role</description>
+            <role-name>role1</role-name>
+            </auth-constraint>
+        </security-constraint>
+    <login-config>
+        <auth-method>FORM</auth-method>
+        <realm-name>jossoRealm</realm-name>
+        <form-login-config>
+            <form-login-page>/login-redirect.jsp</form-login-page>
+            <form-error-page>/login-redirect.jsp</form-error-page>
+            </form-login-config>
+        </login-config>
+    <security-role>
+        <description>un rôle</description>
+        <role-name>role1</role-name>
+    </security-role>
+    </web-app>
