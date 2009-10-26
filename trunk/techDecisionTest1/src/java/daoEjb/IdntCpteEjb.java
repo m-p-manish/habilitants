@@ -1,5 +1,5 @@
 /*
-Copyright Stéphane Georges Popoff, (avril 2009)
+Copyright Stéphane Georges Popoff, (avril - octobre 2009)
 
 spopoff@rocketmail.com
 
@@ -47,10 +47,9 @@ import techDecision.entites.IdntCpte;
 /**
  * Classe vers un ejb d'association des identités et des comptes
  * @author spopoff@rocketmail.com
- * @version 0.2
+ * @version 0.3
  */
 public class IdntCpteEjb implements IIdntCpteDao {
-    //@EJB(name="ejb_identite")
     IIdntCpteDaoRemote dao;
     /**
      * Fonction d'initialisation de la classe et donc de l'ejb
