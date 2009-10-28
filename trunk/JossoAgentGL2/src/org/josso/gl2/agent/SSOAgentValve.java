@@ -210,8 +210,8 @@ public class SSOAgentValve extends ValveBase
 
         try {
             Lookup lookup = Lookup.getInstance();
-            lookup.init("josso-agent-config.xml");
-            _agent = (CatalinaSSOAgent) lookup.lookupSSOAgent();
+            lookup.add("josso-agent-config.xml");
+            _agent = (CatalinaSSOAgent) lookup.lookupSSOAgent("josso-agent-config.xml");
             _agent.setDebug(debug);
             _agent.setCatalinaContainer(container);
         } catch (Exception e) {

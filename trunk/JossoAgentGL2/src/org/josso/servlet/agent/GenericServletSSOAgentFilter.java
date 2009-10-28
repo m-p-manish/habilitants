@@ -27,11 +27,12 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.faces.FactoryFinder;
+//import javax.faces.FactoryFinder;
+import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
-import javax.faces.context.FacesContextFactory;
-import javax.faces.lifecycle.Lifecycle;
-import javax.faces.lifecycle.LifecycleFactory;
+//import javax.faces.context.FacesContextFactory;
+//import javax.faces.lifecycle.Lifecycle;
+//import javax.faces.lifecycle.LifecycleFactory;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
@@ -60,6 +61,8 @@ import org.apache.catalina.Session;
 import org.apache.coyote.tomcat5.CoyoteRequest;
 import org.apache.coyote.tomcat5.CoyoteRequestFacade;
 
+import org.josso.gl2.agent.FacesSSOAgent;
+
 
 /**
  * JOSSO Servlet Filter for Generic SSO Agent, this replaces the Valve in tomcat or other container specific components.
@@ -81,7 +84,7 @@ public class GenericServletSSOAgentFilter implements Filter {
     /**
      * One agent instance for all applications.
      */
-    private HttpSSOAgent _agent;
+    private FacesSSOAgent _agent;
     private int debug = 1;
     private ServletContext sCtx = null;
 
@@ -103,14 +106,16 @@ public class GenericServletSSOAgentFilter implements Filter {
 
                 Lookup lookup = Lookup.getInstance();
                 //O n'initialise pas on suppose que c'est déjà fait !!!
-                //lookup.init("josso-agent-config.xml"); // For spring compatibility ...
+                lookup.add("josso-agent2-config.xml"); // For spring compatibility ...
 
                 // We need at least an abstract SSO Agent
-                _agent = (HttpSSOAgent) lookup.lookupSSOAgent();
+                _agent = (FacesSSOAgent) lookup.lookupSSOAgent("josso-agent2-config.xml");
                 //on ne fait pas le start on suppose que c'est déjà fait par SSOAgentValve !!!
                 /*if (debug==1)
+                _agent.setDebug(1);*/
+                _agent.start();
                 _agent.setDebug(1);
-                _agent.start();*/
+                _agent.setsCtx(ctx);
             } catch (Exception e) {
                 throw new ServletException("Error starting SSO Agent : " + e.getMessage(), e);
             }
@@ -128,7 +133,30 @@ public class GenericServletSSOAgentFilter implements Filter {
         HttpServletRequest hreq = (HttpServletRequest) request;
 
         HttpServletResponse hres = (HttpServletResponse) response;
-
+        _agent.setRep(response);
+        _agent.setReq(request);
+        try {
+            FacesContext inst = _agent.getLeFacesContext(request, response);
+            Boolean bFaces = false;
+            if (inst != null) {
+                bFaces = true;
+                ExternalContext externalContext = inst.getExternalContext();
+                if (externalContext != null) {
+                    HttpSession session = (HttpSession) externalContext.getSession(false);
+                    if (session != null) {
+                        System.out.println("_-*-_On fonctionne dans Faces session=" + session.toString());
+                    } else {
+                        System.err.println("_-*-_On fonctionne dans Faces sans session !");
+                    }
+                } else {
+                    System.err.println("_-*-_On fonctionne dans Faces sans externalContext !");
+                }
+            } else {
+                System.err.println("_-*-_On fonctionne sans Faces !");
+            }
+        } catch (Exception e) {
+            System.err.println("_-*-_On fonctionne sans Faces mais avec erreur="+e.toString());
+        }
         if (debug==1)
             System.out.println("Processing : " + hreq.getContextPath());
 
@@ -149,6 +177,8 @@ public class GenericServletSSOAgentFilter implements Filter {
                     System.out.println("Context is not a josso partner app : " + hreq.getContextPath());
 
                 return;
+            }else{
+                System.out.println("Context IS a josso partner app =" + hreq.getContextPath());
             }
 
             // ------------------------------------------------------------------
@@ -281,10 +311,12 @@ public class GenericServletSSOAgentFilter implements Filter {
                 if (hreq.getRequestURI().endsWith(_agent.getJOSSOSecurityCheckUri()) &&
                     hreq.getParameter("josso_assertion_id") == null) {
 
-                	 if (debug==1)
-                		 System.out.println(_agent.getJOSSOSecurityCheckUri() + " received without assertion.  Login Optional Process failed");
+                    if (debug==1)
+                             System.out.println(_agent.getJOSSOSecurityCheckUri() + " received without assertion.  Login Optional Process failed");
 
                     String requestURI = getSavedRequestURL(session);
+                    if (debug==1)
+                             System.out.println("retour à l'envoyeur ="+requestURI);
                     _agent.prepareNonCacheResponse(hres);
                     hres.sendRedirect(hres.encodeRedirectURL(requestURI));
                     return;
@@ -645,22 +677,21 @@ public class GenericServletSSOAgentFilter implements Filter {
 
         req.setUserPrincipal(principal);
         req.setAuthType(WEBAUTH_PROGRAMMATIC);
-        HttpServletRequest req2 = null;
+        /*HttpServletRequest req2 = null;
         try{
-            FacesContext inst = getFacesContext(request, response);
-            req2 = (HttpServletRequest) inst.getExternalContext().getRequest();
+        FacesContext inst = getFacesContext(request, response);
+        req2 = (HttpServletRequest) inst.getExternalContext().getRequest();
         }catch(Exception err){
-            System.err.println("Erreur sur obtention du flux HTTP "+err.toString());
-            return Boolean.valueOf(false);
+        System.err.println("Erreur sur obtention du flux HTTP "+err.toString());
+        return Boolean.valueOf(false);
         }
         CoyoteRequest req3 = getUnwrappedCoyoteRequest(req2);
         if (req3 == null) {
-            System.err.println("flux HTTP vide");
-            return Boolean.valueOf(false);
+        System.err.println("flux HTTP vide");
+        return Boolean.valueOf(false);
         }
         req3.setUserPrincipal(principal);
-        req3.setAuthType(WEBAUTH_PROGRAMMATIC);
-
+        req3.setAuthType(WEBAUTH_PROGRAMMATIC);*/
 
         // Try to retrieve a Session object (not the facade); if it exists
         // store the principal there as well. This will allow web container
@@ -700,35 +731,5 @@ public class GenericServletSSOAgentFilter implements Filter {
             System.err.println("Programmatic login failed to get request"+ex.toString());
         }
         return req;
-    }
-    /**
-    *
-    * You need an inner class to be able to call FacesContext.setCurrentInstance since it's a protected method.
-    *
-    * @version $Revision: 1.2 $
-    */
-    private abstract static class AbstractInnerFacesContext
-    extends FacesContext {
-        protected static void setFacesContextAsCurrentInstance(final FacesContext facesContext) {
-            FacesContext.setCurrentInstance(facesContext);
-        }
-    }
-
-
-    @SuppressWarnings("unused")
-    private FacesContext getFacesContext(final ServletRequest request, final ServletResponse response) {
-
-        FacesContext facesContext = FacesContext.getCurrentInstance();
-        if (facesContext != null) {
-        return facesContext;
-        }
-
-        FacesContextFactory contextFactory = (FacesContextFactory)FactoryFinder.getFactory(FactoryFinder. FACES_CONTEXT_FACTORY);
-        LifecycleFactory lifecycleFactory = (LifecycleFactory)FactoryFinder.getFactory(FactoryFinder. LIFECYCLE_FACTORY);
-        Lifecycle lifecycle = lifecycleFactory.getLifecycle(LifecycleFactory. DEFAULT_LIFECYCLE);
-
-        facesContext = contextFactory.getFacesContext(sCtx, request, response, lifecycle);
-
-        return facesContext;
     }
 }
