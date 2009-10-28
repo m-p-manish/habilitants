@@ -75,8 +75,8 @@
         <auth-method>FORM</auth-method>
         <realm-name>jossoRealm</realm-name>
         <form-login-config>
-            <form-login-page>/login-redirect.jsp</form-login-page>
-            <form-error-page>/login-redirect.jsp</form-error-page>
+            <form-login-page>/faces/login-redirect.jsp</form-login-page>
+            <form-error-page>/faces/login-redirect.jsp</form-error-page>
             </form-login-config>
         </login-config>
     <security-role>
