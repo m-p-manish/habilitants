@@ -170,19 +170,19 @@ public class CatalinaSSOAgent extends HttpSSOAgent {
         return entry;
     }
     protected void log(String message) {
-        org.apache.catalina.Logger logger = _container.getLogger();
+        /*org.apache.catalina.Logger logger = _container.getLogger();
         if (logger != null)
-            logger.log(this.toString() + ": " + message);
-        else
-            System.out.println(this.toString() + ": " + message);
+        logger.log(this.toString() + ": " + message);
+        else*/
+        System.out.println(this.toString() + ": " + message);
     }
 
     protected void log(String message, Throwable throwable) {
-        org.apache.catalina.Logger logger = _container.getLogger();
+        /*org.apache.catalina.Logger logger = _container.getLogger();
         if (logger != null)
-            logger.log(this.toString() + ": " + message, throwable);
-        else
-            System.out.println(this.toString() + ": " + message);
+        logger.log(this.toString() + ": " + message, throwable);
+        else*/
+        System.out.println(this.toString() + ": " + message);
     }
 
     /**
