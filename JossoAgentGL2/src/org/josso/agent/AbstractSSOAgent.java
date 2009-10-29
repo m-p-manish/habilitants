@@ -316,6 +316,8 @@ public abstract class AbstractSSOAgent implements SSOAgent {
                 // Count the cache hit.
                 _l1CacheHits++;
 
+                if (debug > 0)
+                    log("Vérification accessSession " + jossoSessionId);
                 entry = accessSession(entry, jossoSessionId);
 
                 if (entry != null) {
@@ -331,10 +333,16 @@ public abstract class AbstractSSOAgent implements SSOAgent {
                     // security context might not be, therefore force an authentication
                     // so that the security context is recreated.
                     //
-                    propagateSecurityContext(request, entry.principal);
-
+                    try {
+                        propagateSecurityContext(request, entry.principal);
+                    } catch (Exception e) {
+                        log("Erreur propagation secuCtxt pour cached principal for " + entry.principal.getName());
+                        //on ne fait rien des fois que cela marche !
+                    }
                 }
 
+                if (debug > 0)
+                    log("Terminé checking for cached principal for " + jossoSessionId);
                 return entry;
             }
 
@@ -379,7 +387,7 @@ public abstract class AbstractSSOAgent implements SSOAgent {
 
     protected void propagateSecurityContext(SSOAgentRequest request, Principal principal) {
         throw new java.lang.UnsupportedOperationException(
-                "No support for alternative mechanisms for security context propagation"
+                "Doit être implémenté sur enfant !!"
         );
     }
 

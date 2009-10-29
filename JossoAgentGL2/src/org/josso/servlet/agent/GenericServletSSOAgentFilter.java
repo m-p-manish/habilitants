@@ -56,11 +56,13 @@ import org.josso.agent.http.HttpSSOAgent;
 import org.josso.agent.http.WebAccessControlUtil;
 import org.josso.gl2.agent.CatalinaSSOAgentRequest;
 
-import org.apache.catalina.Context;
+//import org.apache.catalina.Context;
+import org.apache.catalina.core.ApplicationContextFacade;
 import org.apache.catalina.Session;
 import org.apache.coyote.tomcat5.CoyoteRequest;
 import org.apache.coyote.tomcat5.CoyoteRequestFacade;
 
+import org.josso.agent.http.HttpSSOAgentRequest;
 import org.josso.gl2.agent.FacesSSOAgent;
 
 
@@ -395,28 +397,27 @@ public class GenericServletSSOAgentFilter implements Filter {
 
                 String assertionId = hreq.getParameter(Constants.JOSSO_ASSERTION_ID_PARAMETER);
 
-                CatalinaSSOAgentRequest relayRequest;
+                HttpSSOAgentRequest relayRequest;
 
                 if (debug==1)
                     System.out.println("Outbound relaying requested for assertion id [" + assertionId + "]");
 
-                relayRequest = new CatalinaSSOAgentRequest(
+                relayRequest = new HttpSSOAgentRequest(
                         SSOAgentRequest.ACTION_RELAY, null, localSession, assertionId);//(CatalinaSSOAgentRequest) doMakeSSOAgentRequest( SSOAgentRequest.ACTION_RELAY, null, localSession, assertionId, hreq, hres);
 
                relayRequest.setRequest(hreq);
                relayRequest.setResponse(hres);
-               Context c = null;
-               try{
-                    c = (org.apache.catalina.Context) sCtx;
-               }catch(Exception err){
-                   System.out.println("Erreur sur extraction du context ="+err.toString());
-               }
-               if(c==null){
-                   System.out.println("Arrive pas à extraire le context depuis FacesContext");
-               }else{
-                   relayRequest.setContext(c);
-               }
-
+                /*Context c = null;
+                try{
+                c = (org.apache.catalina.Context) sCtx;
+                }catch(Exception err){
+                System.out.println("Erreur sur extraction du context ="+err.toString());
+                }
+                if(c==null){
+                System.out.println("Arrive pas à extraire le context depuis FacesContext");
+                }else{
+                relayRequest.setContext(sCtx);
+                }*/
                SingleSignOnEntry entry = _agent.processRequest(relayRequest);
                 if (entry == null) {
                     // This is wrong! We should have an entry here!
@@ -473,7 +474,7 @@ public class GenericServletSSOAgentFilter implements Filter {
                 //on essaie une autre méthode pour associer le principal au flux http pour ne plus avoir la redirection
                 //sur la page de login
                 System.out.println("Classe du principal obtenu="+entry.getClass().toString());
-                if(!attachePrincipal(hreq, (WebPrincipal)entry.principal, hres)){
+                if(!attachePrincipal(hreq, (com.sun.enterprise.deployment.PrincipalImpl)entry.principal, hres)){
                     System.out.println("Marche pas mon truc !");
                 }else{
                     System.out.println("Essayer d'ajouter le principal au flux http="+entry.principal.toString());
@@ -663,7 +664,7 @@ public class GenericServletSSOAgentFilter implements Filter {
     	session.removeAttribute(Constants.JOSSO_SPLASH_RESOURCE_PARAMETER);
     }
 
-     private Boolean attachePrincipal(HttpServletRequest request, WebPrincipal principal, HttpServletResponse response)
+     private Boolean attachePrincipal(HttpServletRequest request, com.sun.enterprise.deployment.PrincipalImpl principal, HttpServletResponse response)
     {
         // Need real request object not facade
 

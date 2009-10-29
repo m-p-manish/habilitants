@@ -54,16 +54,6 @@ import javax.servlet.ServletResponse;
  */
 public class FacesSSOAgent extends HttpSSOAgent {
 
-    private ServletRequest req = null;
-    private ServletResponse rep = null;
-
-    public void setRep(ServletResponse rep) {
-        this.rep = rep;
-    }
-
-    public void setReq(ServletRequest req) {
-        this.req = req;
-    }
 
     @Override
     public void start() {
@@ -81,10 +71,11 @@ public class FacesSSOAgent extends HttpSSOAgent {
 
             if (debug==1)
             System.out.println("contexte CatalinaSSOAgentRequest="+c.toString());*/
-            FacesContext fCtx = super.getLeFacesContext(req, rep);
+            FacesContext fCtx = super.getLeFacesContext(super.getReq(), super.getRep());
             //Context ctx = (Context) fCtx.getExternalContext().getContext();
 
             Subject s = null;
+            Principal p = null;
             if (debug > 0)
                 System.out.println("Using JAASHelper SSOSID : " + r.getSessionId()+" assertId="+r.getAssertionId());
             //authenticate(user, password)
@@ -99,23 +90,28 @@ public class FacesSSOAgent extends HttpSSOAgent {
                     System.err.println("Erreur FacesSSOAgent le subject est vide !");
                     return null;
                 }
-                System.out.println("Info FacesSSOAgent on recheche sessionMap");
-                Map sm = fCtx.getExternalContext().getSessionMap();
-                if(sm==null){
-                    System.err.println("Erreur FacesSSOAgent le sessionmap est vide !");
+                System.out.println("Info FacesSSOAgent on recheche principal");
+                p = jaasHelper.getPrincipal();
+                if(p==null){
+                    System.err.println("Erreur FacesSSOAgent le principal est vide !");
                     return null;
                 }
-              // Put the authenticated subject in the session.
+                /*System.out.println("Info FacesSSOAgent on recheche sessionMap");
+                Map sm = fCtx.getExternalContext().getSessionMap();
+                if(sm==null){
+                System.err.println("Erreur FacesSSOAgent le sessionmap est vide !");
+                return null;
+                }
+                // Put the authenticated subject in the session.
                 System.out.println("Info FacesSSOAgent on ajoute subjet à la session s="+s.toString()+" sm="+sm.toString());
-                sm.put("JAASSubject", s);
+                sm.put("JAASSubject", s);*/
             }
 
-            if (debug > 0)
+            if (debug > 0){
                 System.out.println("Received Subject : " + s + "[" + ( s != null ? s.getClass().getName() : "<null>" ) +"]");
-                System.out.println("Info FacesSSOAgent on cherche le premier principal");
-                Principal p = s.getPrincipals().iterator().next();
+                //System.out.println("Info FacesSSOAgent on cherche le premier principal");
                 System.out.println("Received Principal : " + p + "[" + ( p != null ? p.getClass().getName() : "<null>" ) +"]");
-
+            }
             return p;
         }catch(Exception err){
             System.err.println("Erreur FacesSSOAgent.authenticate="+err.toString());

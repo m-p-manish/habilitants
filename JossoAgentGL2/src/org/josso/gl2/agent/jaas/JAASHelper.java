@@ -7,7 +7,7 @@ package org.josso.gl2.agent.jaas;
 
 //import com.sun.enterprise.security.LoginContext;
 //import com.sun.enterprise.security.LoginException;
-//import com.sun.enterprise.security.auth.login.PasswordCredential;
+import com.sun.enterprise.security.auth.login.PasswordCredential;
 
 import javax.security.auth.Subject;
 import javax.security.auth.callback.Callback;
@@ -18,6 +18,9 @@ import javax.security.auth.login.LoginContext;
 import javax.security.auth.login.LoginException;
 import javax.security.jacc.PolicyContext;
 import javax.security.jacc.PolicyContextException;
+import com.sun.enterprise.security.SecurityContext;
+import java.security.Principal;
+//import com.sun.enterprise.security.auth.realm.Realm;
 /**
  *
  * @author spopoff
@@ -26,6 +29,8 @@ public class JAASHelper {
 
   private LoginContext loginContext = null;
   private Subject sub = null;
+  private SecurityContext sc = null;
+  private Boolean bAuth =  false;
 
   public JAASHelper() {
   }
@@ -48,38 +53,51 @@ public class JAASHelper {
     return result;
   }
   public boolean authentif(String user, String pass){
-      Boolean ret = false;
       try {
             sub = new Subject();
-            sub.getPrivateCredentials().add(new com.sun.enterprise.security.auth.login.PasswordCredential(user,pass, com.sun.enterprise.security.auth.realm.Realm.getDefaultRealm()));
+            //sub.getPrivateCredentials().add(new PasswordCredential(user,pass, Realm.getDefaultRealm()));
+            sub.getPrivateCredentials().add(new PasswordCredential(user,pass, "jossoRealm"));
             LoginContext lc = new LoginContext("josso", sub);
             lc.login();
             System.out.println("Succès JAASHelper login recheche subject");
             sub = lc.getSubject();
-            //com.sun.enterprise.security.SecurityContext securityContext =  new com.sun.enterprise.security.SecurityContext(user,lc.getSubject(),com.sun.enterprise.security.auth.realm.Realm.getDefaultRealm());
+            //SecurityContext securityContext =  new SecurityContext(user,lc.getSubject(), Realm.getDefaultRealm());
+            sc =  new SecurityContext(user,lc.getSubject(), "jossoRealm");
 
-            //com.sun.enterprise.security.SecurityContext.setCurrent(securityContext);
-            ret = true;
+            SecurityContext.setCurrent(sc);
+            bAuth = true;
             System.out.println("Info JAASHelper fin authentif sub="+sub.toString());
       } catch (LoginException e) {
             System.err.println("Erreur JAASHelper login "+e.toString());
       }
-      return ret;
+      return bAuth;
   }
 
   public Subject getSubject () {
     //System.out.println("Info JAASHelper.getSubject sub="+sub.toString());
-    if(sub != null) return sub;
-    Subject result = null;
-    if (null != loginContext) {
-        try {
-          result = (Subject) PolicyContext.getContext("javax.security.auth.Subject.container");
-        } catch (PolicyContextException ex) {
-            System.err.println("Erreur JAASHelper retrouver subject "+ex.toString());
-        }
-        //result = loginContext.getSubject();
-    }
-    return result;
+      Subject s = null;
+      if(bAuth){
+          s = sc.getSubject();
+      }
+      return s;
+      /*if(sub != null) return sub;
+      Subject result = null;
+      if (null != loginContext) {
+      try {
+      result = (Subject) PolicyContext.getContext("javax.security.auth.Subject.container");
+      } catch (PolicyContextException ex) {
+      System.err.println("Erreur JAASHelper retrouver subject "+ex.toString());
+      }
+      //result = loginContext.getSubject();
+      }
+      return result;*/
+  }
+  public Principal getPrincipal(){
+      Principal p = null;
+      if (bAuth){
+            p = sc.getCallerPrincipal();
+      }
+      return p;
   }
 
   public static class LoginCallback implements CallbackHandler {
