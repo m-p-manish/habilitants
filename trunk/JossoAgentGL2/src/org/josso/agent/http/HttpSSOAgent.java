@@ -85,6 +85,21 @@ public abstract class HttpSSOAgent extends AbstractSSOAgent {
         leCtx = getFacesContext(request, response);
         return leCtx;
     }
+    private ServletRequest req = null;
+    private ServletResponse rep = null;
+
+    public void setRep(ServletResponse rep) {
+        this.rep = rep;
+    }
+    public ServletResponse getRep(){
+        return rep;
+    }
+    public void setReq(ServletRequest req) {
+        this.req = req;
+    }
+    public ServletRequest getReq(){
+        return req;
+    }
 
 
     /**
@@ -95,21 +110,36 @@ public abstract class HttpSSOAgent extends AbstractSSOAgent {
     }
 
     protected void propagateSecurityContext(SSOAgentRequest request, Principal principal) {
-        HttpSSOAgentRequest servletSSOAgentRequest = (HttpSSOAgentRequest) request;
+        if (debug > 0)
+            log("Propagated security context [" + principal + "]");
+        HttpSSOAgentRequest httpSSOAgentRequest = (HttpSSOAgentRequest) request;
         SSOPartnerAppConfig partnerAppConfig;
 
-        String contextPath = servletSSOAgentRequest.getRequest().getContextPath();
-
+        if (debug > 0)
+            log("Récupère le contexte [sessionID=" + request.getSessionId() + "]");
+        String contextPath = null;
+        String serverName = null;
+        try {
+            //contextPath = servletSSOAgentRequest.getRequest().getContextPath();
+            FacesContext fCtx = getFacesContext(req, rep);
+            contextPath = httpSSOAgentRequest.getRequest().getContextPath();
+            serverName = req.getServerName();
+        } catch (Exception e) {
+            log("Erreur Récupère le contexte et serveur "+e.toString());
+            return;
+        }
         // In catalina, the empty context is considered the root context
         if ("".equals(contextPath))
             contextPath = "/";
 
-        partnerAppConfig = getPartnerAppConfig(servletSSOAgentRequest.getRequest().getServerName(),
-                contextPath
-        );
+        if (debug > 0)
+            log("Récupère la méthode de propagation du contexte de sécurité contexte="+contextPath+" serveur="+serverName);
+        partnerAppConfig = getPartnerAppConfig(serverName,contextPath);
 
         if (partnerAppConfig.getSecurityContextPropagationConfig() == null) {
             // No security propagation configuration found, ignore this.
+            if (debug > 0)
+                log("Pas de méthode de propagation du contexte de sécurité");
             return;
         }
 
@@ -123,16 +153,16 @@ public abstract class HttpSSOAgent extends AbstractSSOAgent {
             SSORole[] roleSets;
 
             try {
-                roleSets = im.findRolesBySSOSessionId(servletSSOAgentRequest.getSessionId());
+                roleSets = im.findRolesBySSOSessionId(httpSSOAgentRequest.getSessionId());
             } catch (SSOIdentityException e) {
                 if (debug > 0)
-                    log("Error fetching roles for SSO Session [" + servletSSOAgentRequest.getSessionId() + "]" +
+                    log("Error fetching roles for SSO Session [" + httpSSOAgentRequest.getSessionId() + "]" +
                         " on attempting to propagate security context, aborting");
 
                 return;
             }
 
-            HttpServletRequest hreq = servletSSOAgentRequest.getRequest();
+            HttpServletRequest hreq = httpSSOAgentRequest.getRequest();
 
             if (binding.equalsIgnoreCase("HTTP_HEADERS")) {
 
