@@ -335,6 +335,7 @@ public class GenericServletSSOAgentFilter implements Filter {
                         	System.out.println("SSO cookie is not present, attempting automatic login");
 
                         // Save current request, so we can co back to it later ...
+                        System.out.println("***On sauve la requête 1 ***");
                         saveRequestURL(hreq, session);
                         String loginUrl = _agent.buildLoginOptionalUrl(hreq);
 
@@ -542,6 +543,7 @@ public class GenericServletSSOAgentFilter implements Filter {
                     	System.out.println("SSO Session is not valid, attempting automatic login");
 
                     // Save current request, so we can co back to it later ...
+                    System.out.println("***On sauve la requête 2 ***");
                     saveRequestURL(hreq, session);
                     String loginUrl = _agent.buildLoginOptionalUrl(hreq);
 
@@ -633,6 +635,7 @@ public class GenericServletSSOAgentFilter implements Filter {
             sb.append(hreq.getQueryString());
         }
         session.setAttribute(WebAccessControlUtil.KEY_JOSSO_SAVED_REQUEST_URI, sb.toString());
+        System.out.println("***On a sauvé la requête url="+sb.toString());
     }
 
     /**
