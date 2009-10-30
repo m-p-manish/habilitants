@@ -51,7 +51,7 @@
     </session-config>
     <welcome-file-list>
         <welcome-file>faces/welcomeJSF.jsp</welcome-file>
-        </welcome-file-list>
+    </welcome-file-list>
     <security-constraint>
         <display-name>Constraint1</display-name>
         <web-resource-collection>
@@ -70,7 +70,7 @@
             <description/>
             <role-name>role1</role-name>
             </auth-constraint>
-        </security-constraint>
+    </security-constraint>
     <login-config>
         <auth-method>FORM</auth-method>
         <realm-name>jossoRealm</realm-name>
@@ -78,7 +78,7 @@
             <form-login-page>/faces/login-redirect.jsp</form-login-page>
             <form-error-page>/faces/login-redirect.jsp</form-error-page>
             </form-login-config>
-        </login-config>
+    </login-config>
     <security-role>
         <description>the role</description>
         <role-name>role1</role-name>
