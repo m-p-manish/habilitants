@@ -73,7 +73,7 @@ public class FacesSSOAgent extends HttpSSOAgent {
 
             if (debug==1)
             System.out.println("contexte CatalinaSSOAgentRequest="+c.toString());*/
-            FacesContext fCtx = super.getLeFacesContext(super.getReq(), super.getRep());
+            //FacesContext fCtx = super.getLeFacesContext(super.getReq(), super.getRep());
             //Context ctx = (Context) fCtx.getExternalContext().getContext();
 
             Subject s = null;
