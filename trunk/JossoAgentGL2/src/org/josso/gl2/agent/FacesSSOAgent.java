@@ -37,15 +37,15 @@ package org.josso.gl2.agent;
 
 import org.josso.gl2.agent.jaas.JAASHelper;
 import java.security.Principal;
-import java.util.Map;
-import javax.faces.context.FacesContext;
-import javax.servlet.ServletRequest;
-import org.apache.catalina.Context;
+//import java.util.Map;
+//import javax.faces.context.FacesContext;
+//import javax.servlet.ServletRequest;
+//import org.apache.catalina.Context;
 import org.josso.agent.SSOAgentRequest;
 import org.josso.agent.http.HttpSSOAgent;
 import org.josso.agent.http.HttpSSOAgentRequest;
 import javax.security.auth.Subject;
-import javax.servlet.ServletResponse;
+//import javax.servlet.ServletResponse;
 import org.josso.agent.http.MutableHttpServletRequestImpl;
 
 /**
@@ -101,7 +101,7 @@ public class FacesSSOAgent extends HttpSSOAgent {
                 System.out.println("Info FacesSSOAgent on ajoute la clé du système d'authentification");
                 try {
                     MutableHttpServletRequestImpl modifReq = new MutableHttpServletRequestImpl(r.getRequest());
-                    modifReq.addHeader(AUTH_TYPE_INFO_KEY, "jossoRealm");
+                    modifReq.addHeader(AUTH_TYPE_INFO_KEY, "JOSSO");
                 } catch (Exception e) {
                     System.err.println("Erreur FacesSSOAgent arrive pas ajouter clé "+e.toString());
                 }
