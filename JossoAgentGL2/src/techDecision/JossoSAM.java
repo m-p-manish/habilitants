@@ -35,7 +35,10 @@ termes.
 
 package techDecision;
 
+   import com.sun.enterprise.security.SecurityContext;
    import java.io.IOException;
+   import java.security.AccessControlException;
+   import java.security.Principal;
    import java.util.Map;
    import javax.security.auth.Subject;
    import javax.security.auth.callback.Callback;
@@ -49,20 +52,27 @@ package techDecision;
    import javax.security.auth.message.callback.GroupPrincipalCallback;
    import javax.security.auth.message.callback.PasswordValidationCallback;
    import javax.security.auth.message.module.ServerAuthModule;
-import javax.servlet.http.Cookie;
+   import javax.servlet.ServletRequest;
+   import javax.servlet.ServletRequestWrapper;
+   import javax.servlet.http.Cookie;
    import javax.servlet.http.HttpServletRequest;
    import javax.servlet.http.HttpServletResponse;
 
-import javax.servlet.http.HttpSession;
+   import javax.servlet.http.HttpSession;
+   import org.apache.catalina.Context;
+   import org.apache.catalina.Manager;
+   import org.apache.catalina.Session;
+   import org.apache.coyote.tomcat5.CoyoteRequest;
+   import org.apache.coyote.tomcat5.CoyoteRequestFacade;
    import org.josso.agent.Lookup;
-import org.josso.agent.SSOPartnerAppConfig;
-import org.josso.agent.http.WebAccessControlUtil;
+   import org.josso.agent.SSOPartnerAppConfig;
+   import org.josso.agent.http.WebAccessControlUtil;
    import org.josso.gl2.agent.FacesSSOAgent;
    import org.josso.agent.Constants;
-import org.josso.agent.SSOAgentRequest;
-import org.josso.agent.SingleSignOnEntry;
-import org.josso.agent.http.HttpSSOAgentRequest;
-import org.josso.servlet.agent.GenericServletLocalSession;
+   import org.josso.agent.SSOAgentRequest;
+   import org.josso.agent.SingleSignOnEntry;
+   import org.josso.agent.http.HttpSSOAgentRequest;
+   import org.josso.servlet.agent.GenericServletLocalSession;
    //import org.apache.catalina.util.Base64;
 /**
  * Module de sécurité basé sur JSR 196
@@ -156,7 +166,7 @@ public class JossoSAM implements ServerAuthModule {
              //equivalent à la page de login si pas autorisé on passe par l'authent
              String username = processAuthorizationToken(msgInfo, client);
              if (username == null && requestPolicy.isMandatory()) {
-                 System.out.println("**JossoSAM** Il faut une authentification préalable (première URL)!");
+                 System.out.println("**JossoSAM** Il faut une authentification préalable (première URL)! session="+session.getId());
                  //return sendAuthenticateChallenge(msgInfo);
                  //return sendAuthenticateChallenge2(msgInfo);
                  saveRequestURL(request, session);
@@ -379,9 +389,9 @@ public class JossoSAM implements ServerAuthModule {
                 relayRequest = new HttpSSOAgentRequest(
                         SSOAgentRequest.ACTION_RELAY, null, localSession, assertionId);
 
-               relayRequest.setRequest(request);
-               relayRequest.setResponse(hres);
-               SingleSignOnEntry entry = _agent.processRequest(relayRequest);
+                relayRequest.setRequest(request);
+                relayRequest.setResponse(hres);
+                SingleSignOnEntry entry = _agent.processRequest(relayRequest);
                 if (entry == null) {
                     // This is wrong! We should have an entry here!
                     System.err.println("Outbound relaying failed for assertion id [" + assertionId + "], no Principal found.");
@@ -443,8 +453,16 @@ public class JossoSAM implements ServerAuthModule {
                 }else{
                 System.out.println("Essayer d'ajouter le principal au flux http="+entry.principal.toString());
                 }*/
-
-                setAuthenticationResult(username, client, msgInfo);
+                SecurityContext secCtx = null;
+                try {
+                    secCtx = SecurityContext.getCurrent();
+                } catch (Exception e) {
+                    System.err.println("**JossoSAM** Erreur recup context secu "+e.toString());
+                }
+                if(secCtx!=null){
+                    System.out.println("**JossoSAM** security context ="+secCtx.toString());
+                    setAuthenticationResult(entry.ssoId, secCtx.getSubject(), msgInfo);
+                }
 
                	// Check if we have a post login resource :
                 String postAuthURI = cfg.getPostAuthenticationResource();
@@ -462,7 +480,8 @@ public class JossoSAM implements ServerAuthModule {
                 return AuthStatus.SUCCESS;
             }
 
-
+            //A partir de là c'est pour un retour avec un client authentifié
+            //**************************************************************
             SSOAgentRequest r = new HttpSSOAgentRequest(
                     SSOAgentRequest.ACTION_ESTABLISH_SECURITY_CONTEXT, jossoSessionId, localSession);
             SingleSignOnEntry entry = _agent.processRequest(r);
@@ -533,7 +552,7 @@ public class JossoSAM implements ServerAuthModule {
             request.setAttribute("org.josso.agent.ssoSessionid", jossoSessionId);
 
              System.out.println("**JossoSAM** On est authentifé donc autorisé donc on ajoute le groupe qui va bien ...");
-             setAuthenticationResult(username, client, msgInfo);
+             setAuthenticationResult(jossoSessionId, client, msgInfo);
              return AuthStatus.SUCCESS;
 
           } catch (Exception e) {
@@ -587,20 +606,6 @@ public class JossoSAM implements ServerAuthModule {
       return null;
    }
    /**
-    * on redirige vers le serveur d'authentification
-    * @param msgInfo
-    * @return
-    */
-   private AuthStatus sendAuthenticateChallenge2(MessageInfo msgInfo) {
-      HttpServletRequest request = (HttpServletRequest) msgInfo.getRequestMessage();
-      String leretour = request.getRequestURL().toString();
-      System.out.println("On redirige vers une page de login="+pasBonFautPas+leretour+pourLeRetour);
-      HttpServletResponse response = (HttpServletResponse) msgInfo.getResponseMessage();
-      response.setStatus(HttpServletResponse.SC_MOVED_TEMPORARILY);
-      response.setHeader("Location", pasBonFautPas+leretour+pourLeRetour);
-      return AuthStatus.SEND_CONTINUE;
-   }
-   /**
     * on renvoit une demande d'authentification classique
     * @param msgInfo
     * @return
@@ -627,6 +632,7 @@ public class JossoSAM implements ServerAuthModule {
    }
 
    public AuthStatus secureResponse(MessageInfo msgInfo, Subject service) throws AuthException {
+       System.out.println("**JossoSAM** on retourne une réponse SUCCESS !!");
        return AuthStatus.SEND_SUCCESS;
    }
 
@@ -641,18 +647,58 @@ public class JossoSAM implements ServerAuthModule {
    // distinguish the caller principal
    // and assign default groups
    private void setAuthenticationResult(String name, Subject s, MessageInfo m) throws IOException, UnsupportedCallbackException {
-       handler.handle(new Callback[]{
-           new CallerPrincipalCallback(s, name)
-       });
-       if (name != null) {
-	     // add the default group if the property is set
-           if (defaultGroup != null) {
-               handler.handle(new Callback[]{
-                   new GroupPrincipalCallback(s, defaultGroup)
-               });
-           }
-           m.getMap().put(AUTH_TYPE_INFO_KEY, "techDecisionSAM");
-       }
+      System.out.println("**JossoSAM** finalise le flux http nom="+name);
+      HttpServletRequest request = (HttpServletRequest) m.getRequestMessage();
+      handler.handle(new Callback[]{new CallerPrincipalCallback(s, name)});
+      if (name != null) {
+      // add the default group if the property is set
+          if (defaultGroup != null) {
+              handler.handle(new Callback[]{
+                  new GroupPrincipalCallback(s, defaultGroup)
+              });
+          }
+          m.getMap().put(AUTH_TYPE_INFO_KEY, "jossoRealm");
+      }else{
+          System.err.println("**JossoSAM** pas de callback pour le principal");
+      }
+      //on essaie une methode pour mettre à jour le flux http au niveau securité
+      CoyoteRequest httpReq = null;
+      Session session = null;
+      try {
+          httpReq = getUnwrappedCoyoteRequest(request);
+          session = getSession(httpReq);
+      } catch (Exception e) {
+          System.err.println("**JossoSAM** erreur sur la requête coyote ou la session "+e.toString());
+          return;
+      }
+      if(httpReq==null){
+          System.err.println("**JossoSAM** requête coyote vide");
+          return;
+      }else{
+          for(Principal p : s.getPrincipals()){
+              if(p.getName().equals(name)){
+                httpReq.setUserPrincipal(p);
+                httpReq.setAuthType("JOSSO");
+                System.out.println("**JossoSAM** requête coyote avec principal p="+p.getName());
+                break;
+              }
+
+          }
+      }
+      if(session==null){
+          System.err.println("**JossoSAM** session active vide");
+          return;
+      }else{
+          for(Principal p : s.getPrincipals()){
+              if(p.getName().equals(name)){
+                session.setPrincipal(p);
+                session.setAuthType("JOSSO");
+                System.out.println("**JossoSAM** session avec principal p="+p.getName());
+               break;
+              }
+
+          }
+      }
    }
     /**
      * Return the splash resource from session so that we can redirect the user to it
@@ -720,6 +766,62 @@ public class JossoSAM implements ServerAuthModule {
     protected void clearSavedRequestURLs(HttpSession session) {
     	session.removeAttribute(WebAccessControlUtil.KEY_JOSSO_SAVED_REQUEST_URI);
     	session.removeAttribute(Constants.JOSSO_SPLASH_RESOURCE_PARAMETER);
+    }
+    /**
+     * retrouve la requête coyote (transmise par grizzly)
+     * @param request
+     * @return getUnwrappedCoyoteRequest une requête http
+     */
+    private static CoyoteRequest getUnwrappedCoyoteRequest(HttpServletRequest request){
+        CoyoteRequest req = null;
+        ServletRequest servletRequest = request;
+        try{
+
+            ServletRequest prevRequest = null;
+            while (servletRequest != prevRequest
+                    && servletRequest instanceof ServletRequestWrapper) {
+                prevRequest = servletRequest;
+                servletRequest =
+                    ((ServletRequestWrapper)servletRequest).getRequest();
+	    }
+
+	    if (servletRequest instanceof CoyoteRequestFacade) {
+		req = ((CoyoteRequestFacade)servletRequest).getUnwrappedCoyoteRequest();
+	    }
+
+        } catch (AccessControlException ex){
+            System.out.println("**JossoSAM** pas trouvé la requête http="+ex.toString());
+        }
+        return req;
+    }
+    /**
+     * Returns the underlying Session object from the request, if one is
+     * available, or null.
+     *
+     */
+    private static Session getSession(CoyoteRequest request)
+    {
+        HttpSession session = request.getSession(false);
+
+        if (session != null) {
+            Context context = request.getContext();
+            if (context != null) {
+                Manager manager = context.getManager();
+                if (manager != null) {
+                                // need to locate the real Session obj
+                    String sessionId = session.getId();
+                    try {
+                        Session realSession = manager.findSession(sessionId);
+                        return realSession;
+                    } catch (IOException e) {
+                        // ignored
+                        return null;
+                    }
+                }
+            }
+        }
+
+        return null;
     }
 
 }
