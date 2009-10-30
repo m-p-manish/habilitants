@@ -46,6 +46,7 @@ import org.josso.agent.http.HttpSSOAgent;
 import org.josso.agent.http.HttpSSOAgentRequest;
 import javax.security.auth.Subject;
 import javax.servlet.ServletResponse;
+import org.josso.agent.http.MutableHttpServletRequestImpl;
 
 /**
  * Agent JOSSO pour Faces
@@ -53,6 +54,7 @@ import javax.servlet.ServletResponse;
  * @version 0.1
  */
 public class FacesSSOAgent extends HttpSSOAgent {
+    private static final String AUTH_TYPE_INFO_KEY = "javax.servlet.http.authType";
 
 
     @Override
@@ -95,6 +97,13 @@ public class FacesSSOAgent extends HttpSSOAgent {
                 if(p==null){
                     System.err.println("Erreur FacesSSOAgent le principal est vide !");
                     return null;
+                }
+                System.out.println("Info FacesSSOAgent on ajoute la clé du système d'authentification");
+                try {
+                    MutableHttpServletRequestImpl modifReq = new MutableHttpServletRequestImpl(r.getRequest());
+                    modifReq.addHeader(AUTH_TYPE_INFO_KEY, "jossoRealm");
+                } catch (Exception e) {
+                    System.err.println("Erreur FacesSSOAgent arrive pas ajouter clé "+e.toString());
                 }
                 /*System.out.println("Info FacesSSOAgent on recheche sessionMap");
                 Map sm = fCtx.getExternalContext().getSessionMap();
