@@ -657,7 +657,7 @@ public class JossoSAM implements ServerAuthModule {
                   new GroupPrincipalCallback(s, defaultGroup)
               });
           }
-          m.getMap().put(AUTH_TYPE_INFO_KEY, "jossoRealm");
+          m.getMap().put(AUTH_TYPE_INFO_KEY, "JOSSO");
       }else{
           System.err.println("**JossoSAM** pas de callback pour le principal");
       }
