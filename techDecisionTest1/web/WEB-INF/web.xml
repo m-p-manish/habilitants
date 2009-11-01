@@ -37,7 +37,7 @@
         <servlet-class>javax.faces.webapp.FacesServlet</servlet-class>
         <load-on-startup>1</load-on-startup>
         <security-role-ref>
-            <description>le rôleggggggggggggg</description>
+            <description>le rôle</description>
             <role-name>role1</role-name>
             <role-link>role1</role-link>
         </security-role-ref>
@@ -57,22 +57,17 @@
     <security-constraint>
         <display-name>Constraint1</display-name>
         <web-resource-collection>
-            <web-resource-name>the_faces</web-resource-name>
-            <description>les pages faces</description>
+            <web-resource-name>faces</web-resource-name>
+            <description>merde</description>
             <url-pattern>/faces/*</url-pattern>
             <http-method>GET</http-method>
             <http-method>POST</http-method>
-            <http-method>HEAD</http-method>
-            <http-method>PUT</http-method>
-            <http-method>OPTIONS</http-method>
-            <http-method>TRACE</http-method>
-            <http-method>DELETE</http-method>
         </web-resource-collection>
         <auth-constraint>
             <description/>
             <role-name>role1</role-name>
             </auth-constraint>
-    </security-constraint>
+        </security-constraint>
     <login-config>
         <auth-method>FORM</auth-method>
         <realm-name>jossoRealm</realm-name>
@@ -80,9 +75,9 @@
             <form-login-page>/faces/login-redirect.jsp</form-login-page>
             <form-error-page>/faces/login-redirect.jsp</form-error-page>
             </form-login-config>
-    </login-config>
+        </login-config>
     <security-role>
-        <description>the role</description>
+        <description>le role</description>
         <role-name>role1</role-name>
     </security-role>
     </web-app>
