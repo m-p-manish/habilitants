@@ -19,6 +19,7 @@ import javax.security.auth.login.LoginException;
 import javax.security.jacc.PolicyContext;
 import javax.security.jacc.PolicyContextException;
 import com.sun.enterprise.security.SecurityContext;
+import com.sun.enterprise.security.auth.realm.User;
 import java.security.Principal;
 //import com.sun.enterprise.security.auth.realm.Realm;
 /**
@@ -57,15 +58,18 @@ public class JAASHelper {
             sub = new Subject();
             //sub.getPrivateCredentials().add(new PasswordCredential(user,pass, Realm.getDefaultRealm()));
             sub.getPrivateCredentials().add(new PasswordCredential(user,pass, "jossoRealm"));
-            LoginContext lc = new LoginContext("josso", sub);
-            lc.login();
+            loginContext = new LoginContext("josso", sub);
+            loginContext.login();
             System.out.println("Succès JAASHelper login recheche subject");
-            sub = lc.getSubject();
+            sub = loginContext.getSubject();
             //SecurityContext securityContext =  new SecurityContext(user,lc.getSubject(), Realm.getDefaultRealm());
-            sc =  new SecurityContext(user,lc.getSubject(), "jossoRealm");
+            sc =  new SecurityContext(user,loginContext.getSubject(), "jossoRealm");
 
             SecurityContext.setCurrent(sc);
             bAuth = true;
+            if(sc.didServerGenerateCredentials()){
+                System.out.println("Info JAASHelper credential OK");
+            }
             System.out.println("Info JAASHelper fin authentif sub="+sub.toString());
       } catch (LoginException e) {
             System.err.println("Erreur JAASHelper login "+e.toString());
@@ -99,6 +103,12 @@ public class JAASHelper {
       }
       return p;
   }
+    public User infoUser(String nom){
+        User ret = null;
+        if(loginContext!=null){
+        }
+        return ret;
+    }
 
   public static class LoginCallback implements CallbackHandler {
     private String userName = null;
