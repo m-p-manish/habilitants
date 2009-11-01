@@ -160,8 +160,7 @@ public class GenericServletSSOAgentFilter implements Filter {
             System.out.println("_-*-_Filtre Checking for SSO cookie");
             Cookie cookie = null;
             Cookie cookies[] = hreq.getCookies();
-            if (cookies == null)
-                cookies = new Cookie[0];
+            if (cookies == null) cookies = new Cookie[0];
             for (int i = 0; i < cookies.length; i++) {
                 if (org.josso.gateway.Constants.JOSSO_SINGLE_SIGN_ON_COOKIE.equals(cookies[i].getName())) {
                     cookie = cookies[i];

@@ -84,7 +84,6 @@ public class GL2jaasJossoRealm extends AppservRealm{
    public void init(Properties props) throws BadRealmException, NoSuchRealmException{
 
        super.init(props);
-       System.out.println("*** init() de GL2jaasJossoRealm");
 
 
 
@@ -107,6 +106,7 @@ public class GL2jaasJossoRealm extends AppservRealm{
        }else{
            this.authType = AUTH_TYPE;
        }
+       System.out.println("*** init() de GL2jaasJossoRealm jaasCtx="+jaasCtx+" authTypeProp="+authTypeProp);
 
 
    }

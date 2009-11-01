@@ -37,8 +37,10 @@ package org.josso.gl2.agent.jaas;
 
 import com.sun.appserv.security.AppservPasswordLoginModule;
 //import com.sun.enterprise.security.auth.realm.AuthenticationHandler;
+import com.sun.enterprise.security.auth.realm.BadRealmException;
 import com.sun.enterprise.security.auth.realm.InvalidOperationException;
 import com.sun.enterprise.security.auth.realm.NoSuchUserException;
+import com.sun.enterprise.security.auth.realm.User;
 import java.util.Iterator;
 //import java.util.Map;
 //import java.util.logging.Logger;
@@ -56,6 +58,7 @@ import org.josso.gateway.identity.SSORole;
 import org.josso.gateway.identity.SSOUser;
 import org.josso.gateway.identity.exceptions.SSOIdentityException;
 import org.josso.gateway.identity.service.SSOIdentityManagerService;
+import org.josso.gl2.agent.FacesSSOAgent;
 
 
 /**
@@ -164,11 +167,23 @@ public class GL2jossoGwLoginModule extends AppservPasswordLoginModule {
         /* commitUserAuthentication(_username, _password,
                              _currentRealm, groupListToForward);
         */
+        String[] retAgent = new String[grpList.length+1];
+        retAgent[0] = _username;
         String l = "";
+        int i = 1;
         for(String s : groupListToForward){
             l+="["+s+"]";
+            retAgent[i] = s;
+            i++;
         }
-        System.out.println("***avant commitUserAuthentication groupe="+l);
+        System.out.println("***avant commitUserAuthentication groupe="+l+" retAgent taille="+retAgent.length);
+        FacesSSOAgent ag = null;
+        try {
+            ag = (FacesSSOAgent) Lookup.getInstance().lookupSSOAgent();
+        } catch (Exception ex) {
+            System.err.println("Erreur GL2jossoGwLoginModule trouve pas FacesSSOAgent "+ex.toString());
+        }
+        ag.setInfoUserGroups(retAgent);
         commitUserAuthentication(groupListToForward);
         //super.commit();
         System.out.println("***terminé authenticateUser");
@@ -255,6 +270,17 @@ public class GL2jossoGwLoginModule extends AppservPasswordLoginModule {
             System.err.println("passwordlm.nocreds="+ e.toString());
         }
 
+    }
+    public User infoUser(String nom){
+        User ret = null;
+        try {
+            ret = _currentRealm.getUser(nom);
+        } catch (NoSuchUserException ex) {
+            System.err.println("JossoLoginModule user="+nom+" existe pas "+ ex.toString());
+        } catch (BadRealmException ex) {
+            System.err.println("JossoLoginModule user="+nom+" erreur sur real "+ ex.toString());
+        }
+        return ret;
     }
 
 }

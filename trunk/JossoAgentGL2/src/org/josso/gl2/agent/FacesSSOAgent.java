@@ -35,17 +35,21 @@ termes.
 
 package org.josso.gl2.agent;
 
+import com.sun.enterprise.security.auth.realm.User;
 import org.josso.gl2.agent.jaas.JAASHelper;
 import java.security.Principal;
 //import java.util.Map;
 //import javax.faces.context.FacesContext;
 //import javax.servlet.ServletRequest;
 //import org.apache.catalina.Context;
+import java.util.ArrayList;
+import java.util.List;
 import org.josso.agent.SSOAgentRequest;
 import org.josso.agent.http.HttpSSOAgent;
 import org.josso.agent.http.HttpSSOAgentRequest;
 import javax.security.auth.Subject;
 //import javax.servlet.ServletResponse;
+import org.josso.agent.SingleSignOnEntry;
 import org.josso.agent.http.MutableHttpServletRequestImpl;
 
 /**
@@ -55,12 +59,17 @@ import org.josso.agent.http.MutableHttpServletRequestImpl;
  */
 public class FacesSSOAgent extends HttpSSOAgent {
     private static final String AUTH_TYPE_INFO_KEY = "javax.servlet.http.authType";
+    private JAASHelper jaasHelper;
+    private List<String> ssoId = null;
+    private List<String[]> groups = null;
 
 
     @Override
     public void start() {
         super.start();
+        ssoId = new ArrayList<String>();
         System.out.println("****Started FacesSSOAgent !");
+        groups = new ArrayList<String[]>();
    }
     @Override
     protected Principal authenticate(SSOAgentRequest request) {
@@ -68,7 +77,7 @@ public class FacesSSOAgent extends HttpSSOAgent {
             System.out.println("Attempting SSO Session authentication FacesSSOAgent.authenticate ");
         try{
             HttpSSOAgentRequest r = (HttpSSOAgentRequest) request;
-            JAASHelper jaasHelper = new JAASHelper();
+            jaasHelper = new JAASHelper();
             /*Context c = r.getContext();
 
             if (debug==1)
@@ -127,5 +136,45 @@ public class FacesSSOAgent extends HttpSSOAgent {
             return null;
         }
     }
-
+    public void setInfoUserGroups(String[] grp){
+        groups.add(grp);
+    }
+    public String[] getInfoUserGroups(String nom){
+        String[] ret = null;
+        for(String[] g : groups){
+            if(g[0].equals(nom)){
+                System.out.println("Info FacesSSOAgent trouvé user="+nom+" groupe taille="+g.length);
+                ret = new String[g.length-1];
+                for(int i=1;i<g.length;i++){
+                    ret[i-1] = g[i];
+                }
+                break;
+            }
+        }
+        return ret;
+    }
+    public void addEntrySSOIDsuccessed(String ssoid){
+        System.out.println("Info FacesSSOAgent ajoute ssoid="+ssoid);
+        ssoId.add(ssoid);
+    }
+    public Boolean isSSOIDloged(String ssoid){
+        Boolean ret = false;
+        if(ssoid!=null){
+            for(String s : ssoId){
+                if(s.equals(ssoid)){
+                    ret = true;
+                    System.out.println("Info FacesSSOAgent trouvé ssoid="+ssoid);
+                    break;
+                }
+            }
+        }
+        if(!ret) System.out.println("Info FacesSSOAgent pas trouvé ssoid="+ssoid);
+        return ret;
+    }
+    @Override
+    public SingleSignOnEntry processRequest(SSOAgentRequest request) {
+        SingleSignOnEntry entry = null;
+        entry = super.processRequest(request);
+        return entry;
+    }
 }

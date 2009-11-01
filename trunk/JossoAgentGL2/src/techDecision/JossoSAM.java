@@ -73,6 +73,7 @@ package techDecision;
    import org.josso.agent.SingleSignOnEntry;
    import org.josso.agent.http.HttpSSOAgentRequest;
    import org.josso.servlet.agent.GenericServletLocalSession;
+   import com.sun.appserv.security.ProgrammaticLogin;
    //import org.apache.catalina.util.Base64;
 /**
  * Module de sécurité basé sur JSR 196
@@ -104,10 +105,10 @@ public class JossoSAM implements ServerAuthModule {
       private static final String BASIC = "Basic";
       static final String AUTHORIZATION_HEADER = "authorization";
       static final String AUTHENTICATION_HEADER = "WWW-Authenticate";
-      private final String pourLeRetour = "josso_security_check";
-      private final String pasBonFautPas = "http://localhost:8082/josso/signon/login.do?josso_cmd=login_optional&josso_back_to=";
       private FacesSSOAgent _agent;
       private int debug = 1;
+      private Cookie cookie = null;
+      private String jossoSessionId = null;
 
       public void initialize(MessagePolicy reqPolicy, MessagePolicy resPolicy, CallbackHandler cBH, Map opts) throws AuthException {
           requestPolicy = reqPolicy;
@@ -162,7 +163,87 @@ public class JossoSAM implements ServerAuthModule {
                 hres.setHeader("P3P", cfg.getP3PHeaderValue());
             }
              // Get our session ...
-             HttpSession session = request.getSession(true);
+            HttpSession session = request.getSession(true);
+            testCookieSession(request);
+            //et si on était déjà authentifié !!
+            if(_agent.isSSOIDloged(jossoSessionId)){
+                 //ah ah on revient alors que lon est authentifié !
+                //A partir de là c'est pour un retour avec un client authentifié
+                //**************************************************************
+                GenericServletLocalSession localSession = new GenericServletLocalSession(session);
+                SSOAgentRequest r = new HttpSSOAgentRequest(
+                        SSOAgentRequest.ACTION_ESTABLISH_SECURITY_CONTEXT, jossoSessionId, localSession);
+                SingleSignOnEntry entry = _agent.processRequest(r);
+
+                if (debug==1)
+                    System.out.println("Executed agent.");
+
+                // Get session map for this servlet context.
+                Map sessionMap = (Map) request.getSession().getServletContext().getAttribute(KEY_SESSION_MAP);
+                if (sessionMap.get(localSession.getWrapped()) == null) {
+                    // the local session is new so, make the valve listen for its events so that it can
+                    // map them to local session events.
+                    // Not supported : session.addSessionListener(this);
+                    sessionMap.put(session, localSession);
+                }
+
+                // ------------------------------------------------------------------
+                // Has a valid user already been authenticated?
+                // ------------------------------------------------------------------
+                if (debug==1)
+                    System.out.println("Process request for '" + request.getRequestURI() + "'");
+
+                if (entry != null) {
+                    if (debug==1)
+                        System.out.println("Principal '" + entry.principal +
+                            "' has already been authenticated");
+                    // TODO : Not supported
+                    // (request).setAuthType(entry.authType);
+                    // (request).setUserPrincipal(entry.principal);
+                } else {
+                    System.out.println("No Valid SSO Session, attempt an optional login?");
+                    // This is a standard anonymous request!
+
+                    if (cookie != null) {
+                            // cookie is not valid
+                            cookie = _agent.newJossoCookie(request.getContextPath(), "-");
+                            hres.addCookie(cookie);
+                    }
+
+                    if (cookie != null || (getSavedRequestURL(session) == null && _agent.isAutomaticLoginRequired(request))) {
+
+                        if (debug==1)
+                            System.out.println("SSO Session is not valid, attempting automatic login");
+
+                        // Save current request, so we can co back to it later ...
+                        System.out.println("***On sauve la requête 2 ***");
+                        saveRequestURL(request, session);
+                        String loginUrl = _agent.buildLoginOptionalUrl(request);
+
+                        if (debug==1)
+                            System.out.println("Redirecting to login url '" + loginUrl + "'");
+
+                        //set non cache headers
+                        _agent.prepareNonCacheResponse(hres);
+                        hres.sendRedirect(hres.encodeRedirectURL(loginUrl));
+                        return AuthStatus.SEND_CONTINUE;
+                    } else {
+                        if (debug==1)
+                            System.out.println("SSO cookie is not present, but login optional process is not required");
+                    }
+
+                }
+
+                // propagate the login and logout URLs to
+                // partner applications.
+                request.setAttribute("org.josso.agent.gateway-login-url", _agent.getGatewayLoginUrl() );
+                request.setAttribute("org.josso.agent.gateway-logout-url", _agent.getGatewayLogoutUrl() );
+                request.setAttribute("org.josso.agent.ssoSessionid", jossoSessionId);
+
+                System.out.println("**JossoSAM** On est authentifé donc autorisé tout va bien on finalise ...");
+                setAuthenticationResult(jossoSessionId, client, msgInfo);
+                return AuthStatus.SUCCESS;
+             }
              //equivalent à la page de login si pas autorisé on passe par l'authent
              String username = processAuthorizationToken(msgInfo, client);
              if (username == null && requestPolicy.isMandatory()) {
@@ -246,20 +327,7 @@ public class JossoSAM implements ServerAuthModule {
             // ------------------------------------------------------------------
             // Check for the single sign on cookie
             // ------------------------------------------------------------------
-            if (debug==1)
-                System.out.println("Checking for SSO cookie");
-            Cookie cookie = null;
-            Cookie cookies[] = request.getCookies();
-            if (cookies == null)
-                cookies = new Cookie[0];
-            for (int i = 0; i < cookies.length; i++) {
-                if (org.josso.gateway.Constants.JOSSO_SINGLE_SIGN_ON_COOKIE.equals(cookies[i].getName())) {
-                    cookie = cookies[i];
-                    break;
-                }
-            }
-
-            String jossoSessionId = (cookie == null) ? null : cookie.getValue();
+            testCookieSession(request);
             GenericServletLocalSession localSession = new GenericServletLocalSession(session);
 
             // ------------------------------------------------------------------
@@ -342,8 +410,9 @@ public class JossoSAM implements ServerAuthModule {
 
                 if (!(request.getRequestURI().endsWith(_agent.getJOSSOSecurityCheckUri()) &&
                     request.getParameter("josso_assertion_id") != null)) {
-                    System.out.println("SSO cookie not present and relaying was not requested, skipping");
-                    return AuthStatus.SUCCESS;
+                    System.out.println("SSO cookie not present and relaying was not requested, Erreur!");
+                    //c'est peut être un peut léger comme sécurité !!
+                    return AuthStatus.SEND_FAILURE;
                 }
 
             }
@@ -459,10 +528,20 @@ public class JossoSAM implements ServerAuthModule {
                 } catch (Exception e) {
                     System.err.println("**JossoSAM** Erreur recup context secu "+e.toString());
                 }
-                if(secCtx!=null){
-                    System.out.println("**JossoSAM** security context ="+secCtx.toString());
-                    setAuthenticationResult(entry.ssoId, secCtx.getSubject(), msgInfo);
+                //on ne fait plus ne marche pas de toute façon
+                /*if(secCtx!=null){
+                System.out.println("**JossoSAM** security context ="+secCtx.toString());
+                setAuthenticationResult(entry.ssoId, secCtx.getSubject(), msgInfo);
+                }*/
+                //et si il fallait tout simplement faire un programmaticlogin ??
+                ProgrammaticLogin log = new ProgrammaticLogin();
+                //if (!log.login(entry.ssoId, assertionId, realmName, request, hres, true)){
+                if (!log.login(entry.ssoId, assertionId, request, hres)){
+                    System.err.println("**JossoSAM** programmaticlogin failed");
+                } else {
+                    System.err.println("**JossoSAM** programmaticlogin success");
                 }
+
 
                	// Check if we have a post login resource :
                 String postAuthURI = cfg.getPostAuthenticationResource();
@@ -472,88 +551,16 @@ public class JossoSAM implements ServerAuthModule {
                         System.out.println("Redirecting to post-auth-resource '" + postAuthURL  + "'");
                     hres.sendRedirect(postAuthURL);
                 } else {
-                	if (debug==1)
-                         System.out.println("Redirecting to original '" + requestURI + "' on SUCCESS!");
+                    if (debug==1) System.out.println("Redirecting to original '" + requestURI + "' on SEND_SUCCESS!");
                     hres.sendRedirect(hres.encodeRedirectURL(requestURI));
+                    _agent.addEntrySSOIDsuccessed(entry.ssoId);
                 }
 
-                return AuthStatus.SUCCESS;
+                return AuthStatus.SEND_SUCCESS;
             }
-
-            //A partir de là c'est pour un retour avec un client authentifié
-            //**************************************************************
-            SSOAgentRequest r = new HttpSSOAgentRequest(
-                    SSOAgentRequest.ACTION_ESTABLISH_SECURITY_CONTEXT, jossoSessionId, localSession);
-            SingleSignOnEntry entry = _agent.processRequest(r);
-
-            if (debug==1)
-                System.out.println("Executed agent.");
-
-            // Get session map for this servlet context.
-            Map sessionMap = (Map) request.getSession().getServletContext().getAttribute(KEY_SESSION_MAP);
-            if (sessionMap.get(localSession.getWrapped()) == null) {
-                // the local session is new so, make the valve listen for its events so that it can
-                // map them to local session events.
-                // Not supported : session.addSessionListener(this);
-                sessionMap.put(session, localSession);
-            }
-
-            // ------------------------------------------------------------------
-            // Has a valid user already been authenticated?
-            // ------------------------------------------------------------------
-            if (debug==1)
-                System.out.println("Process request for '" + request.getRequestURI() + "'");
-
-            if (entry != null) {
-                if (debug==1)
-                    System.out.println("Principal '" + entry.principal +
-                        "' has already been authenticated");
-                // TODO : Not supported
-                // (request).setAuthType(entry.authType);
-                // (request).setUserPrincipal(entry.principal);
-            } else {
-            	System.out.println("No Valid SSO Session, attempt an optional login?");
-                // This is a standard anonymous request!
-
-            	if (cookie != null) {
-                	// cookie is not valid
-                	cookie = _agent.newJossoCookie(request.getContextPath(), "-");
-                	hres.addCookie(cookie);
-                }
-
-            	if (cookie != null || (getSavedRequestURL(session) == null && _agent.isAutomaticLoginRequired(request))) {
-
-                    if (debug==1)
-                    	System.out.println("SSO Session is not valid, attempting automatic login");
-
-                    // Save current request, so we can co back to it later ...
-                    System.out.println("***On sauve la requête 2 ***");
-                    saveRequestURL(request, session);
-                    String loginUrl = _agent.buildLoginOptionalUrl(request);
-
-                    if (debug==1)
-                    	System.out.println("Redirecting to login url '" + loginUrl + "'");
-
-                    //set non cache headers
-                    _agent.prepareNonCacheResponse(hres);
-                    hres.sendRedirect(hres.encodeRedirectURL(loginUrl));
-                    return AuthStatus.SEND_CONTINUE;
-                } else {
-                    if (debug==1)
-                    	System.out.println("SSO cookie is not present, but login optional process is not required");
-                }
-
-            }
-
-            // propagate the login and logout URLs to
-            // partner applications.
-            request.setAttribute("org.josso.agent.gateway-login-url", _agent.getGatewayLoginUrl() );
-            request.setAttribute("org.josso.agent.gateway-logout-url", _agent.getGatewayLogoutUrl() );
-            request.setAttribute("org.josso.agent.ssoSessionid", jossoSessionId);
-
-             System.out.println("**JossoSAM** On est authentifé donc autorisé donc on ajoute le groupe qui va bien ...");
-             setAuthenticationResult(jossoSessionId, client, msgInfo);
-             return AuthStatus.SUCCESS;
+            // si on arrive la c'est une erreur!
+            System.err.println("**JossoSAM** Fin de la boucle validate donc erreur!!!");
+            return AuthStatus.SEND_FAILURE;
 
           } catch (Exception e) {
               System.err.println("**JossoSAM** Erreur "+e.toString());
@@ -565,10 +572,10 @@ public class JossoSAM implements ServerAuthModule {
 
       private String processAuthorizationToken(MessageInfo msgInfo, Subject s) throws AuthException {
 
-          System.out.println("**JossoSAM** Analyse du message en vue d'authentification...");
           HttpServletRequest request = (HttpServletRequest) msgInfo.getRequestMessage();
 
           String token = request.getHeader(AUTHORIZATION_HEADER);
+          System.out.println("**JossoSAM** Analyse du message en vue d'authentification sur token="+token);
 
           if (token != null && token.startsWith(BASIC + " ")) {
               token = token.substring(6).trim();
@@ -647,6 +654,31 @@ public class JossoSAM implements ServerAuthModule {
    // distinguish the caller principal
    // and assign default groups
    private void setAuthenticationResult(String name, Subject s, MessageInfo m) throws IOException, UnsupportedCallbackException {
+      System.out.println("**JossoSAM** finalise le flux http nom="+name);
+      HttpServletRequest request = (HttpServletRequest) m.getRequestMessage();
+      handler.handle(new Callback[]{new CallerPrincipalCallback(s, name)});
+      if (name != null) {
+      // add the group
+          String[] group = _agent.getInfoUserGroups(name);
+          if(group!=null){
+              handler.handle(new Callback[]{new GroupPrincipalCallback(s, group)});
+              System.out.println("**JossoSAM** ajoute le(s) groupe(s)="+group.toString());          }
+          /*if (defaultGroup != null) {
+          handler.handle(new Callback[]{
+          new GroupPrincipalCallback(s, defaultGroup)
+          });
+          System.out.println("**JossoSAM** ajoute le groupe="+defaultGroup.toString());
+          }*/          m.getMap().put(AUTH_TYPE_INFO_KEY, "JOSSO");
+      }else{
+          System.err.println("**JossoSAM** pas de callback pour le principal");
+      }
+      for(Principal p : s.getPrincipals()){
+          System.out.println("**JossoSAM** subject contient principal="+p.getName());
+      }
+   }
+   // distinguish the caller principal
+   // and assign default groups
+   private void setAuthenticationResult2(String name, Subject s, MessageInfo m) throws IOException, UnsupportedCallbackException {
       System.out.println("**JossoSAM** finalise le flux http nom="+name);
       HttpServletRequest request = (HttpServletRequest) m.getRequestMessage();
       handler.handle(new Callback[]{new CallerPrincipalCallback(s, name)});
@@ -822,6 +854,26 @@ public class JossoSAM implements ServerAuthModule {
         }
 
         return null;
+    }
+    private void testCookieSession(HttpServletRequest req){
+        // ------------------------------------------------------------------
+        // Check for the single sign on cookie
+        // ------------------------------------------------------------------
+        if (debug==1)
+            System.out.println("Checking for SSO cookie");
+        cookie = null;
+        Cookie cookies[] = req.getCookies();
+        if (cookies == null)
+            cookies = new Cookie[0];
+        for (int i = 0; i < cookies.length; i++) {
+            if (org.josso.gateway.Constants.JOSSO_SINGLE_SIGN_ON_COOKIE.equals(cookies[i].getName())) {
+                cookie = cookies[i];
+                break;
+            }
+        }
+
+        jossoSessionId = (cookie == null) ? null : cookie.getValue();
+
     }
 
 }
