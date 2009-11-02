@@ -1,5 +1,5 @@
 /*
-Copyright Stéphane Georges Popoff, (mai - juillet 2009)
+Copyright Stéphane Georges Popoff, (mai - septembre 2009)
 
 spopoff@rocketmail.com
 
@@ -50,7 +50,7 @@ import javax.persistence.Table;
 /**
  * Classe entité qui porte les habilitants
  * @author spopoff@rocketmail.com
- * @version 0.7
+ * @version 0.8
  */
 @Entity
 @Table(name = "HABILITANT", schema="SPOPOFF")
@@ -162,7 +162,7 @@ public class Habilitant implements Serializable, theCube.roleMining.IHabilitant 
 
     @Override
     public String toString() {
-        return "pkhblt=" + pkhblt + " val="+val+" type"+type;
+        return "pkhblt=" + pkhblt + " val="+val+" type="+type;
     }
     /**
      * donne la commande d'insertion SQL de l'objet
