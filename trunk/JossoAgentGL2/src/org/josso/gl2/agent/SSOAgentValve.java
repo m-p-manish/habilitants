@@ -77,10 +77,9 @@ import javax.servlet.ServletRequestWrapper;
 
 
 /**
- * Single Sign-On Agent implementation for Tomcat Catalina.
- *
- * @author <a href="mailto:gbrigand@josso.org">Gianluca Brigandi</a>
- * @version CVS $Id: SSOAgentValve.java 1489 2009-09-02 19:30:46Z gnastov $
+ * Boucle de traitement JOSSO pour servlet Catalina
+ * @author spopoff@rocketmail.com <a href="mailto:gbrigand@josso.org">Gianluca Brigandi</a>
+ * @version 0.2
  */
 public class SSOAgentValve extends ValveBase
         implements Lifecycle, SessionListener {
@@ -107,7 +106,7 @@ public class SSOAgentValve extends ValveBase
      * Component started flag.
      */
     protected boolean started = false;
-    private CatalinaSSOAgent _agent;
+    private FacesSSOAgent _agent;
 
     /**
      * Catalina Session to Local Session Map.
@@ -210,8 +209,8 @@ public class SSOAgentValve extends ValveBase
 
         try {
             Lookup lookup = Lookup.getInstance();
-            lookup.add("josso-agent-config.xml");
-            _agent = (CatalinaSSOAgent) lookup.lookupSSOAgent("josso-agent-config.xml");
+            lookup.add("josso-agent2-config.xml");
+            _agent = (FacesSSOAgent) lookup.lookupSSOAgent("josso-agent2-config.xml");
             _agent.setDebug(debug);
             _agent.setCatalinaContainer(container);
         } catch (Exception e) {
