@@ -81,10 +81,10 @@ public class GenericServletSSOAgentFilter implements Filter {
 
     public void init(FilterConfig filterConfig) throws ServletException {
         // Validate and update our current component state
-        System.out.println("** Initialisation du filtre josso sur servlet (debut)");
         ServletContext ctx = filterConfig.getServletContext();
         sCtx = ctx;
         ctx.setAttribute(KEY_SESSION_MAP, new HashMap());
+        System.out.println("** Initialisation du filtre josso sur servlet (debut) context="+ctx.getContextPath());
 
         if (_agent == null) {
 
