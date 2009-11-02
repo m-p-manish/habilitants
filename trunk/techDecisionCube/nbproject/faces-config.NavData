@@ -5,8 +5,8 @@
         <Node id="objsecu/List.jsp" x="477" y="65" zoom="true"/>
         <Node id="role/role/List.jsp" x="5" y="105" zoom="true"/>
         <Node id="cpteAttrs/List.jsp" x="163" y="208" zoom="true"/>
-        <Node id="identite/List.jsp" x="426" y="152" zoom="true"/>
         <Node id="cpteAttrs/Detail.jsp" x="817" y="267" zoom="true"/>
+        <Node id="identite/List.jsp" x="426" y="152" zoom="true"/>
         <Node id="cpteAttrs/Edit.jsp" x="810" y="216" zoom="true"/>
         <Node id="cpteAttrs/New.jsp" x="782" y="105" zoom="true"/>
         <Node id="identite/List2.jsp" x="815" y="157" zoom="true"/>

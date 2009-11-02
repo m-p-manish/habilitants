@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <web-app version="2.5" xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
+    <display-name>the cube</display-name>
     <context-param>
         <param-name>com.sun.faces.verifyObjects</param-name>
         <param-value>false</param-value>
@@ -12,30 +13,30 @@
         <param-name>javax.faces.STATE_SAVING_METHOD</param-name>
         <param-value>client</param-value>
     </context-param>
+    <filter>
+        <description>un de plus</description>
+        <filter-name>josso</filter-name>
+        <filter-class>org.josso.servlet.agent.GenericServletSSOAgentFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>josso</filter-name>
+        <url-pattern>/faces/*</url-pattern>
+        <dispatcher>REQUEST</dispatcher>
+        <dispatcher>FORWARD</dispatcher>
+    </filter-mapping>
     <servlet>
         <servlet-name>Faces Servlet</servlet-name>
         <servlet-class>javax.faces.webapp.FacesServlet</servlet-class>
         <load-on-startup>1</load-on-startup>
-    </servlet>
-    <servlet>
-        <servlet-name>Datamart3</servlet-name>
-        <servlet-class>theCube.jsp.Datamart3</servlet-class>
-    </servlet>
-    <servlet>
-        <servlet-name>ConnectH2</servlet-name>
-        <servlet-class>theCube.spopoff.ConnectH2</servlet-class>
-    </servlet>
+        <security-role-ref>
+            <description/>
+            <role-name>role1</role-name>
+            <role-link>role1</role-link>
+        </security-role-ref>
+        </servlet>
     <servlet-mapping>
         <servlet-name>Faces Servlet</servlet-name>
         <url-pattern>/faces/*</url-pattern>
-    </servlet-mapping>
-    <servlet-mapping>
-        <servlet-name>Datamart3</servlet-name>
-        <url-pattern>/Datamart3</url-pattern>
-    </servlet-mapping>
-    <servlet-mapping>
-        <servlet-name>ConnectH2</servlet-name>
-        <url-pattern>/connect</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>
@@ -45,6 +46,34 @@
     <welcome-file-list>
         <welcome-file>faces/welcomeJSF.jsp</welcome-file>
         </welcome-file-list>
+    <security-constraint>
+        <display-name>Constraint1</display-name>
+        <web-resource-collection>
+            <web-resource-name>faces</web-resource-name>
+            <description>jsf</description>
+            <url-pattern>/faces/*</url-pattern>
+            <http-method>GET</http-method>
+            <http-method>PUT</http-method>
+            <http-method>HEAD</http-method>
+            <http-method>POST</http-method>
+        </web-resource-collection>
+        <auth-constraint>
+            <description>teeeee</description>
+            <role-name>role1</role-name>
+            </auth-constraint>
+        </security-constraint>
+    <login-config>
+        <auth-method>FORM</auth-method>
+        <realm-name>jossoRealm</realm-name>
+        <form-login-config>
+            <form-login-page>/faces/login-redirect.jsp</form-login-page>
+            <form-error-page>/faces/login-redirect.jsp</form-error-page>
+            </form-login-config>
+        </login-config>
+    <security-role>
+        <description>le role</description>
+        <role-name>role1</role-name>
+    </security-role>
     <resource-ref>
         <res-ref-name>amemTechDecision</res-ref-name>
         <res-type>javax.sql.DataSource</res-type>
