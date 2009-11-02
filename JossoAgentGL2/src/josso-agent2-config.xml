@@ -33,8 +33,8 @@
 
     <gll:FacesSSOAgent id="josso-gl2-agent2"
         sessionAccessMinInterval="1000"
-        gatewayLoginUrl="http://localhost:8082/josso/signon/login.do"
-        gatewayLogoutUrl="http://localhost:8082/josso/signon/logout.do"
+        gatewayLoginUrl="https://localhost:8443/josso/signon/login.do"
+        gatewayLogoutUrl="https://localhost:8443/josso/signon/logout.do"
 	debug="1">
 
         <gll:configuration>
@@ -51,10 +51,10 @@
 
                 <agent:partner-apps>
 
-                    <!-- Simple definition of a partner application -->
-                    <agent:partner-app id="all" context="/techDecisionDB3srv"/>
-                    <agent:partner-app id="data" context="/techDecisionDB3srv/buildDatabase"/>
-                    <agent:partner-app id="t1" context="/techDecisionTest1"/>
+                    <!-- Simple definition of a partner application de type JSF Faces uniquement -->
+                    <agent:partner-app id="datamart" context="/techDecisionDB3srv"/>
+                    <agent:partner-app id="cube" context="/techDecisionCube"/>
+                    <agent:partner-app id="ejb1" context="/techDecisionTest1"/>
                 </agent:partner-apps>
 
             </agent:agent-configuration>

@@ -35,7 +35,7 @@ termes.
 
 package org.josso.gl2.agent;
 
-import com.sun.enterprise.security.auth.realm.User;
+//import com.sun.enterprise.security.auth.realm.User;
 import org.josso.gl2.agent.jaas.JAASHelper;
 import java.security.Principal;
 //import java.util.Map;
@@ -49,13 +49,13 @@ import org.josso.agent.http.HttpSSOAgent;
 import org.josso.agent.http.HttpSSOAgentRequest;
 import javax.security.auth.Subject;
 //import javax.servlet.ServletResponse;
-import org.josso.agent.SingleSignOnEntry;
+//import org.josso.agent.SingleSignOnEntry;
 import org.josso.agent.http.MutableHttpServletRequestImpl;
 
 /**
  * Agent JOSSO pour Faces
  * @author spopoff@rocketmail.com
- * @version 0.1
+ * @version 0.2
  */
 public class FacesSSOAgent extends HttpSSOAgent {
     private static final String AUTH_TYPE_INFO_KEY = "javax.servlet.http.authType";
@@ -78,12 +78,6 @@ public class FacesSSOAgent extends HttpSSOAgent {
         try{
             HttpSSOAgentRequest r = (HttpSSOAgentRequest) request;
             jaasHelper = new JAASHelper();
-            /*Context c = r.getContext();
-
-            if (debug==1)
-            System.out.println("contexte CatalinaSSOAgentRequest="+c.toString());*/
-            //FacesContext fCtx = super.getLeFacesContext(super.getReq(), super.getRep());
-            //Context ctx = (Context) fCtx.getExternalContext().getContext();
 
             Subject s = null;
             Principal p = null;
@@ -114,15 +108,6 @@ public class FacesSSOAgent extends HttpSSOAgent {
                 } catch (Exception e) {
                     System.err.println("Erreur FacesSSOAgent arrive pas ajouter clé "+e.toString());
                 }
-                /*System.out.println("Info FacesSSOAgent on recheche sessionMap");
-                Map sm = fCtx.getExternalContext().getSessionMap();
-                if(sm==null){
-                System.err.println("Erreur FacesSSOAgent le sessionmap est vide !");
-                return null;
-                }
-                // Put the authenticated subject in the session.
-                System.out.println("Info FacesSSOAgent on ajoute subjet à la session s="+s.toString()+" sm="+sm.toString());
-                sm.put("JAASSubject", s);*/
             }
 
             if (debug > 0){
@@ -137,7 +122,15 @@ public class FacesSSOAgent extends HttpSSOAgent {
         }
     }
     public void setInfoUserGroups(String[] grp){
-        groups.add(grp);
+        List<String[]> group2 = new ArrayList<String[]>();
+        group2.addAll(groups);
+        for(String[] g : group2){
+            if(g[0].equals(grp[0])){
+                groups.remove(g);
+            }
+            break;
+        }
+       groups.add(grp);
     }
     public String[] getInfoUserGroups(String nom){
         String[] ret = null;
@@ -170,11 +163,5 @@ public class FacesSSOAgent extends HttpSSOAgent {
         }
         if(!ret) System.out.println("Info FacesSSOAgent pas trouvé ssoid="+ssoid);
         return ret;
-    }
-    @Override
-    public SingleSignOnEntry processRequest(SSOAgentRequest request) {
-        SingleSignOnEntry entry = null;
-        entry = super.processRequest(request);
-        return entry;
     }
 }

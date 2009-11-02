@@ -73,7 +73,7 @@ package techDecision;
    import org.josso.agent.SingleSignOnEntry;
    import org.josso.agent.http.HttpSSOAgentRequest;
    import org.josso.servlet.agent.GenericServletLocalSession;
-   import com.sun.appserv.security.ProgrammaticLogin;
+   //import com.sun.appserv.security.ProgrammaticLogin;
    //import org.apache.catalina.util.Base64;
 /**
  * Module de sécurité basé sur JSR 196
@@ -534,15 +534,12 @@ public class JossoSAM implements ServerAuthModule {
                 setAuthenticationResult(entry.ssoId, secCtx.getSubject(), msgInfo);
                 }*/
                 //et si il fallait tout simplement faire un programmaticlogin ??
-                ProgrammaticLogin log = new ProgrammaticLogin();
-                //if (!log.login(entry.ssoId, assertionId, realmName, request, hres, true)){
+                /*ProgrammaticLogin log = new ProgrammaticLogin();
                 if (!log.login(entry.ssoId, assertionId, request, hres)){
-                    System.err.println("**JossoSAM** programmaticlogin failed");
+                System.err.println("**JossoSAM** programmaticlogin failed");
                 } else {
-                    System.err.println("**JossoSAM** programmaticlogin success");
-                }
-
-
+                System.err.println("**JossoSAM** programmaticlogin success");
+                }*/
                	// Check if we have a post login resource :
                 String postAuthURI = cfg.getPostAuthenticationResource();
                 if (postAuthURI != null) {
