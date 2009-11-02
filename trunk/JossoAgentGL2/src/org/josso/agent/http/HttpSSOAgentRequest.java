@@ -24,7 +24,7 @@ package org.josso.agent.http;
 
 import org.josso.agent.SSOAgentRequestImpl;
 import org.josso.agent.LocalSession;
-
+import org.apache.catalina.Context;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -40,6 +40,7 @@ import javax.servlet.http.HttpServletResponse;
  */
 public class HttpSSOAgentRequest extends SSOAgentRequestImpl {
 
+    private Context _context;
     private HttpServletRequest request;
 
     private HttpServletResponse response;
@@ -66,6 +67,16 @@ public class HttpSSOAgentRequest extends SSOAgentRequestImpl {
 
     public HttpServletResponse getResponse() {
         return response;
+    }
+    public void setContext(Context c) {
+        _context = c;
+    }
+
+    /**
+     * The context associated with this request.
+     */
+    public Context getContext() {
+        return _context;
     }
 
 }

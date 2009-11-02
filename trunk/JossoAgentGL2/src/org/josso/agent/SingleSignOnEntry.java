@@ -22,7 +22,7 @@
 package org.josso.agent;
 
 import java.security.Principal;
-
+import javax.security.auth.Subject;
 /**
  * A class representing entries in the cache of authenticated users.
  *
@@ -37,6 +37,15 @@ public class SingleSignOnEntry {
     public LocalSession sessions[] = new LocalSession[0];
     public String ssoId = null;
     public long lastAccessTime;
+    private Subject sujet = null;
+
+    public Subject getSujet() {
+        return sujet;
+    }
+
+    public void setSujet(Subject sujet) {
+        this.sujet = sujet;
+    }
 
     public SingleSignOnEntry(String ssoId, Principal principal,
                              String authType) {

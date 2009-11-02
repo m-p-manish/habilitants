@@ -54,6 +54,9 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 
 /**
  * @author <a href="mailto:sgonzalez@atricore.org">Sebastian Gonzalez Oyuela</a>
@@ -77,6 +80,7 @@ public abstract class HttpSSOAgent extends AbstractSSOAgent {
 
     private FacesContext leCtx = null;
 
+    private static final Log logg = LogFactory.getLog(HttpSSOAgent.class);
     public void setsCtx(ServletContext sCtx) {
         this.sCtx = sCtx;
     }
@@ -109,6 +113,7 @@ public abstract class HttpSSOAgent extends AbstractSSOAgent {
         return false;
     }
 
+    @Override
     protected void propagateSecurityContext(SSOAgentRequest request, Principal principal) {
         if (debug > 0)
             log("Propagated security context [" + principal + "]");
@@ -753,19 +758,11 @@ public abstract class HttpSSOAgent extends AbstractSSOAgent {
         return _builders;
     }
     protected void log(String message) {
-        /*org.apache.catalina.Logger logger = _container.getLogger();
-        if (logger != null)
-        logger.log(this.toString() + ": " + message);
-        else*/
-        System.out.println(this.toString() + ": " + message);
+        logg.info(this.toString() + ": " + message);
     }
 
     protected void log(String message, Throwable throwable) {
-        /*org.apache.catalina.Logger logger = _container.getLogger();
-        if (logger != null)
-        logger.log(this.toString() + ": " + message, throwable);
-        else*/
-        System.out.println(this.toString() + ": " + message);
+        logg.error(this.toString() + ": " + message, throwable);
     }
 
     /**
