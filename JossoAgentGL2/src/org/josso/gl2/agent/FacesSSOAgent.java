@@ -70,6 +70,7 @@ public class FacesSSOAgent extends HttpSSOAgent {
     private List<String> ssoId = null;
     private List<String[]> groups = null;
     private Container _container;
+    private Boolean bStarted = false;
     //private int debug = 1;
     private static final Log logg = LogFactory.getLog(FacesSSOAgent.class);
 
@@ -87,6 +88,10 @@ public class FacesSSOAgent extends HttpSSOAgent {
     }
     @Override
     public void start() {
+        if (bStarted){
+            log("****INFO Already Started FacesSSOAgent");
+            return;
+        }
         super.start();
         ssoId = new ArrayList<String>();
         groups = new ArrayList<String[]>();
@@ -94,7 +99,8 @@ public class FacesSSOAgent extends HttpSSOAgent {
             Context context = (Context) _container;
             _cfg.addSSOPartnerApp(context.getPublicId(), null, context.getPath(), null, null);
         }
-        log("****INFO Started FacesSSOAgent !");
+        log("****INFO Started FacesSSOAgent once !");
+        bStarted = true;
     }
     @Override
     protected Principal authenticate(SSOAgentRequest request) {

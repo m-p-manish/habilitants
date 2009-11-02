@@ -109,7 +109,7 @@ public class GenericServletSSOAgentFilter implements Filter {
 
         }
 
-        System.out.println("** Initialisation du filtre josso sur servlet (fin)");
+        System.out.println("** Initialisation du filtre josso sur servlet (fin) context="+ctx.getContextPath());
     }
 
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain filterChain) throws IOException, ServletException {

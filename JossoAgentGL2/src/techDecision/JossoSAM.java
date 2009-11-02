@@ -75,6 +75,7 @@ package techDecision;
    import org.josso.servlet.agent.GenericServletLocalSession;
    //import com.sun.appserv.security.ProgrammaticLogin;
    //import org.apache.catalina.util.Base64;
+
 /**
  * Module de sécurité basé sur JSR 196
  * @author spopoff@rocketmail.com
@@ -138,7 +139,7 @@ public class JossoSAM implements ServerAuthModule {
 
       public AuthStatus validateRequest(MessageInfo msgInfo, Subject client, Subject server) throws AuthException {
           try {
-              //en premier vérifier qu'on ne revient pas en boucle
+              //en premier vérifier si application partenaire
               HttpServletRequest request = (HttpServletRequest) msgInfo.getRequestMessage();
               String jeVeux = request.getRequestURL().toString();
               System.out.println("**JossoSAM** On traite le message en vue d'authentification="+jeVeux);
@@ -652,20 +653,15 @@ public class JossoSAM implements ServerAuthModule {
    // and assign default groups
    private void setAuthenticationResult(String name, Subject s, MessageInfo m) throws IOException, UnsupportedCallbackException {
       System.out.println("**JossoSAM** finalise le flux http nom="+name);
-      HttpServletRequest request = (HttpServletRequest) m.getRequestMessage();
       handler.handle(new Callback[]{new CallerPrincipalCallback(s, name)});
       if (name != null) {
       // add the group
           String[] group = _agent.getInfoUserGroups(name);
           if(group!=null){
               handler.handle(new Callback[]{new GroupPrincipalCallback(s, group)});
-              System.out.println("**JossoSAM** ajoute le(s) groupe(s)="+group.toString());          }
-          /*if (defaultGroup != null) {
-          handler.handle(new Callback[]{
-          new GroupPrincipalCallback(s, defaultGroup)
-          });
-          System.out.println("**JossoSAM** ajoute le groupe="+defaultGroup.toString());
-          }*/          m.getMap().put(AUTH_TYPE_INFO_KEY, "JOSSO");
+              System.out.println("**JossoSAM** ajoute le(s) groupe(s)="+group.toString());
+          }
+          m.getMap().put(AUTH_TYPE_INFO_KEY, "JOSSO");
       }else{
           System.err.println("**JossoSAM** pas de callback pour le principal");
       }
@@ -872,5 +868,4 @@ public class JossoSAM implements ServerAuthModule {
         jossoSessionId = (cookie == null) ? null : cookie.getValue();
 
     }
-
 }
