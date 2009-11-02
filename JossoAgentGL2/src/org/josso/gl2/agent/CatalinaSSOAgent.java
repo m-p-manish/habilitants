@@ -29,16 +29,17 @@ import org.josso.agent.SSOAgentRequest;
 import org.josso.agent.http.HttpSSOAgent;
 
 import java.security.Principal;
-import javax.security.auth.Subject;
-import javax.security.auth.callback.CallbackHandler;
-import javax.security.auth.login.LoginContext;
-import javax.security.auth.login.LoginException;
+//import javax.security.auth.Subject;
+//import javax.security.auth.callback.CallbackHandler;
+//import javax.security.auth.login.LoginContext;
+//import javax.security.auth.login.LoginException;
 import org.josso.agent.SingleSignOnEntry;
 
-import org.josso.agent.http.JOSSOSecurityContext;
+//import org.josso.agent.http.JOSSOSecurityContext;
 import org.josso.servlet.agent.GenericServletLocalSession;
 import org.josso.servlet.agent.GenericServletSSOAgentRequest;
-import org.josso.servlet.agent.SSOGatewayHandler;
+//import org.josso.servlet.agent.SSOGatewayHandler;
+
 
 /**
  * @org.apache.xbean.XBean element="agent"

@@ -52,29 +52,54 @@ import javax.security.auth.Subject;
 //import org.josso.agent.SingleSignOnEntry;
 import org.josso.agent.http.MutableHttpServletRequestImpl;
 
+import org.apache.catalina.Container;
+import org.apache.catalina.Context;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+
 /**
- * Agent JOSSO pour Faces
+ * Agent JOSSO pour Faces et autre servlet
  * @author spopoff@rocketmail.com
- * @version 0.2
+ * @version 0.3
  */
 public class FacesSSOAgent extends HttpSSOAgent {
     private static final String AUTH_TYPE_INFO_KEY = "javax.servlet.http.authType";
     private JAASHelper jaasHelper;
     private List<String> ssoId = null;
     private List<String[]> groups = null;
+    private Container _container;
+    //private int debug = 1;
+    private static final Log logg = LogFactory.getLog(FacesSSOAgent.class);
 
 
+    public FacesSSOAgent() {
+        super();
+    }
+
+
+    public FacesSSOAgent(Container container) {
+        super();
+        log("*** INFO FacesSSOAgent Création et Mise à jour du container!");
+        _container  = container;
+
+    }
     @Override
     public void start() {
         super.start();
         ssoId = new ArrayList<String>();
-        System.out.println("****Started FacesSSOAgent !");
         groups = new ArrayList<String[]>();
-   }
+         if (_container instanceof Context) {
+            Context context = (Context) _container;
+            _cfg.addSSOPartnerApp(context.getPublicId(), null, context.getPath(), null, null);
+        }
+        log("****INFO Started FacesSSOAgent !");
+    }
     @Override
     protected Principal authenticate(SSOAgentRequest request) {
         if (debug==1)
-            System.out.println("Attempting SSO Session authentication FacesSSOAgent.authenticate ");
+            log("Attempting SSO Session authentication FacesSSOAgent.authenticate ");
         try{
             HttpSSOAgentRequest r = (HttpSSOAgentRequest) request;
             jaasHelper = new JAASHelper();
@@ -82,26 +107,26 @@ public class FacesSSOAgent extends HttpSSOAgent {
             Subject s = null;
             Principal p = null;
             if (debug > 0)
-                System.out.println("Using JAASHelper SSOSID : " + r.getSessionId()+" assertId="+r.getAssertionId());
+                log("Using JAASHelper SSOSID : " + r.getSessionId()+" assertId="+r.getAssertionId());
             //authenticate(user, password)
             // If JAAS authentication failed
             if (!jaasHelper.authentif(r.getSessionId(), r.getAssertionId())) {
                 return null;
             }
             else {
-                System.out.println("Info FacesSSOAgent on recheche subjet");
+                log("Info FacesSSOAgent on recheche subjet");
                 s = jaasHelper.getSubject();
                 if(s==null){
                     System.err.println("Erreur FacesSSOAgent le subject est vide !");
                     return null;
                 }
-                System.out.println("Info FacesSSOAgent on recheche principal");
+                log("Info FacesSSOAgent on recheche principal");
                 p = jaasHelper.getPrincipal();
                 if(p==null){
                     System.err.println("Erreur FacesSSOAgent le principal est vide !");
                     return null;
                 }
-                System.out.println("Info FacesSSOAgent on ajoute la clé du système d'authentification");
+                log("Info FacesSSOAgent on ajoute la clé du système d'authentification");
                 try {
                     MutableHttpServletRequestImpl modifReq = new MutableHttpServletRequestImpl(r.getRequest());
                     modifReq.addHeader(AUTH_TYPE_INFO_KEY, "JOSSO");
@@ -111,9 +136,9 @@ public class FacesSSOAgent extends HttpSSOAgent {
             }
 
             if (debug > 0){
-                System.out.println("Received Subject : " + s + "[" + ( s != null ? s.getClass().getName() : "<null>" ) +"]");
-                //System.out.println("Info FacesSSOAgent on cherche le premier principal");
-                System.out.println("Received Principal : " + p + "[" + ( p != null ? p.getClass().getName() : "<null>" ) +"]");
+                log("Received Subject : " + s + "[" + ( s != null ? s.getClass().getName() : "<null>" ) +"]");
+                //log("Info FacesSSOAgent on cherche le premier principal");
+                log("Received Principal : " + p + "[" + ( p != null ? p.getClass().getName() : "<null>" ) +"]");
             }
             return p;
         }catch(Exception err){
@@ -136,7 +161,7 @@ public class FacesSSOAgent extends HttpSSOAgent {
         String[] ret = null;
         for(String[] g : groups){
             if(g[0].equals(nom)){
-                System.out.println("Info FacesSSOAgent trouvé user="+nom+" groupe taille="+g.length);
+                log("Info FacesSSOAgent trouvé user="+nom+" groupe taille="+g.length);
                 ret = new String[g.length-1];
                 for(int i=1;i<g.length;i++){
                     ret[i-1] = g[i];
@@ -147,7 +172,7 @@ public class FacesSSOAgent extends HttpSSOAgent {
         return ret;
     }
     public void addEntrySSOIDsuccessed(String ssoid){
-        System.out.println("Info FacesSSOAgent ajoute ssoid="+ssoid);
+        log("Info FacesSSOAgent ajoute ssoid="+ssoid);
         ssoId.add(ssoid);
     }
     public Boolean isSSOIDloged(String ssoid){
@@ -156,12 +181,61 @@ public class FacesSSOAgent extends HttpSSOAgent {
             for(String s : ssoId){
                 if(s.equals(ssoid)){
                     ret = true;
-                    System.out.println("Info FacesSSOAgent trouvé ssoid="+ssoid);
+                    log("Info FacesSSOAgent trouvé ssoid="+ssoid);
                     break;
                 }
             }
         }
-        if(!ret) System.out.println("Info FacesSSOAgent pas trouvé ssoid="+ssoid);
+        if(!ret) log("Info FacesSSOAgent pas trouvé ssoid="+ssoid);
         return ret;
+    }
+    /**
+     * Sets the Catalina Context to be used by the authenticator.
+     *
+     * @param container
+     */
+    public void setCatalinaContainer(Container container) {
+        log("****Mise à jour du container CatalinaSSOAgent !");
+        _container = container;
+
+    }
+    @Override
+    protected void log(String message) {
+        if(_container != null){
+            org.apache.catalina.Logger logger = _container.getLogger();
+            if (logger != null){
+                logger.log(this.toString() + ": " + message);
+            }else{
+                logg.info(this.toString() + ": " + message);
+            }
+        } else {
+            logg.info(this.toString() + ": " + message);
+        }
+    }
+
+    @Override
+    protected void log(String message, Throwable throwable) {
+        if(_container != null){
+            org.apache.catalina.Logger logger = _container.getLogger();
+            if (logger != null){
+                logger.log(this.toString() + ": " + message, throwable);
+            }else{
+                logg.info(this.toString() + ": " + message);
+            }
+        } else {
+            logg.info(this.toString() + ": " + message);
+        }
+    }
+
+    /**
+     * Return a String rendering of this object.
+     */
+    public String toString() {
+
+        StringBuffer sb = new StringBuffer("FacesSSOAgent[");
+        sb.append(_container != null ? _container.getName() : "");
+        sb.append("]");
+        return (sb.toString());
+
     }
 }
