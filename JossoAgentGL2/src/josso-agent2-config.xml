@@ -52,7 +52,9 @@
                 <agent:partner-apps>
 
                     <!-- Simple definition of a partner application de type JSF Faces uniquement -->
-                    <agent:partner-app id="datamart" context="/techDecisionDB3srv"/>
+                    <agent:partner-app id="datamart" context="/techDecisionDB3srv">
+                        <agent:ignore-web-resource-collections>libre</agent:ignore-web-resource-collections>
+                    </agent:partner-app>
                     <agent:partner-app id="cube" context="/techDecisionCube"/>
                     <agent:partner-app id="ejb1" context="/techDecisionTest1"/>
                 </agent:partner-apps>
