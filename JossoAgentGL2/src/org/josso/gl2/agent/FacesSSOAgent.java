@@ -50,7 +50,7 @@ import org.josso.agent.http.HttpSSOAgentRequest;
 import javax.security.auth.Subject;
 //import javax.servlet.ServletResponse;
 //import org.josso.agent.SingleSignOnEntry;
-import org.josso.agent.http.MutableHttpServletRequestImpl;
+//import org.josso.agent.http.MutableHttpServletRequestImpl;
 
 import org.apache.catalina.Container;
 import org.apache.catalina.Context;
@@ -84,6 +84,11 @@ public class FacesSSOAgent extends HttpSSOAgent {
         super();
         log("*** INFO FacesSSOAgent Création et Mise à jour du container!");
         _container  = container;
+        // Add context config as partner app ...
+        if (_container instanceof Context) {
+            Context context = (Context) _container;
+            _cfg.addSSOPartnerApp(context.getPublicId(), null, context.getPath(), null, null);
+        }
 
     }
     @Override
@@ -132,14 +137,13 @@ public class FacesSSOAgent extends HttpSSOAgent {
                     System.err.println("Erreur FacesSSOAgent le principal est vide !");
                     return null;
                 }
-                log("Info FacesSSOAgent on ajoute la clé du système d'authentification");
+                /*log("Info FacesSSOAgent on ajoute la clé du système d'authentification");
                 try {
-                    MutableHttpServletRequestImpl modifReq = new MutableHttpServletRequestImpl(r.getRequest());
-                    modifReq.addHeader(AUTH_TYPE_INFO_KEY, "JOSSO");
+                MutableHttpServletRequestImpl modifReq = new MutableHttpServletRequestImpl(r.getRequest());
+                modifReq.addHeader(AUTH_TYPE_INFO_KEY, "JOSSO");
                 } catch (Exception e) {
-                    System.err.println("Erreur FacesSSOAgent arrive pas ajouter clé "+e.toString());
-                }
-            }
+                System.err.println("Erreur FacesSSOAgent arrive pas ajouter clé "+e.toString());
+                }*/            }
 
             if (debug > 0){
                 log("Received Subject : " + s + "[" + ( s != null ? s.getClass().getName() : "<null>" ) +"]");
@@ -204,6 +208,9 @@ public class FacesSSOAgent extends HttpSSOAgent {
         log("****Mise à jour du container CatalinaSSOAgent !");
         _container = container;
 
+    }
+    public Container getCatalinaContainer(){
+        return _container;
     }
     @Override
     protected void log(String message) {

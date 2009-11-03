@@ -126,7 +126,7 @@ public class JossoSAM implements ServerAuthModule {
           }
           Lookup lookup = Lookup.getInstance();
         try {
-            _agent = (FacesSSOAgent) lookup.lookupSSOAgent("josso-agent2-config.xml");
+            _agent = (FacesSSOAgent) lookup.lookupSSOAgent();
         } catch (Exception ex) {
              System.err.println("Erreur initialisation module techDecision.JossoSAM trouve pas agent "+ex.toString());
         }
