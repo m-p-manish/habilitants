@@ -1,5 +1,5 @@
 /*
-Copyright Stéphane Georges Popoff, (octobre 2009)
+Copyright Stéphane Georges Popoff, (octobre - novembre 2009)
 
 spopoff@rocketmail.com
 
@@ -57,6 +57,8 @@ import org.josso.gateway.identity.SSORole;
 import org.josso.gateway.identity.SSOUser;
 //import org.josso.gateway.identity.exceptions.SSOIdentityException;
 import org.josso.gateway.identity.service.SSOIdentityManagerService;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 public class GL2jaasJossoRealm extends AppservRealm{
 
@@ -68,6 +70,7 @@ public class GL2jaasJossoRealm extends AppservRealm{
     protected String _currentSSOSessionId;
     protected SSOUser _ssoUserPrincipal;
     protected SSORole[] _ssoRolePrincipals;
+    private static final Log logg = LogFactory.getLog(GL2jaasJossoRealm.class);
     /*
      * This method is invoked during server startup when the realm is
      * initially loaded.
@@ -106,7 +109,7 @@ public class GL2jaasJossoRealm extends AppservRealm{
        }else{
            this.authType = AUTH_TYPE;
        }
-       System.out.println("*** init() de GL2jaasJossoRealm jaasCtx="+jaasCtx+" authTypeProp="+authTypeProp);
+       log("*** init() de GL2jaasJossoRealm jaasCtx="+jaasCtx+" authTypeProp="+authTypeProp);
 
 
    }
@@ -163,6 +166,30 @@ public class GL2jaasJossoRealm extends AppservRealm{
 
     public void authenticatedUser(String sessionId){
         _currentSSOSessionId = sessionId;
-        System.out.println("authenticatedUser pour=" + _currentSSOSessionId);
+        log("set authenticatedUser pour=" + _currentSSOSessionId);
+    }
+    /**
+     * Log a message on the Logger associated with our Container (if any).
+     *
+     * @param message Message to be logged
+     */
+    protected void log(String message) {
+
+        logg.info(this.toString() + ": " + message);
+        //je sais c'est pas bien mais des fois il faut !!!
+        //log(this.toString() + ": " + message);
+    }
+
+
+    /**
+     * Log a message on the Logger associated with our Container (if any).
+     *
+     * @param message   Message to be logged
+     * @param throwable Associated exception
+     */
+    protected void log(String message, Throwable throwable) {
+
+        logg.error(this.toString() + ": " + message);
+        throwable.printStackTrace(System.out);
     }
 }

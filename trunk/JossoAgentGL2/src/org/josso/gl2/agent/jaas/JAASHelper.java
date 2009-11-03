@@ -1,6 +1,36 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+Copyright Stéphane Georges Popoff, (octobre - novembre 2009)
+
+spopoff@rocketmail.com
+
+Ce logiciel est un programme informatique servant à gérer des habilitations.
+
+Ce logiciel est régi par la licence [CeCILL|CeCILL-B|CeCILL-C] soumise au droit français et
+respectant les principes de diffusion des logiciels libres. Vous pouvez
+utiliser, modifier et/ou redistribuer ce programme sous les conditions
+de la licence [CeCILL|CeCILL-B|CeCILL-C] telle que diffusée par le CEA, le CNRS et l'INRIA
+sur le site "http://www.cecill.info".
+
+En contrepartie de l'accessibilité au code source et des droits de copie,
+de modification et de redistribution accordés par cette licence, il n'est
+offert aux utilisateurs qu'une garantie limitée.  Pour les mêmes raisons,
+seule une responsabilité restreinte pèse sur l'auteur du programme,  le
+titulaire des droits patrimoniaux et les concédants successifs.
+
+A cet égard  l'attention de l'utilisateur est attirée sur les risques
+associés au chargement,  à l'utilisation,  à la modification et/ou au
+développement et à la reproduction du logiciel par l'utilisateur étant
+donné sa spécificité de logiciel libre, qui peut le rendre complexe à
+manipuler et qui le réserve donc à des développeurs et des professionnels
+avertis possédant  des  connaissances  informatiques approfondies.  Les
+utilisateurs sont donc invités à charger  et  tester  l'adéquation  du
+logiciel à leurs besoins dans des conditions permettant d'assurer la
+sécurité de leurs systèmes et ou de leurs données et, plus généralement,
+à l'utiliser et l'exploiter dans les mêmes conditions de sécurité.
+
+Le fait que vous puissiez accéder à cet en-tête signifie que vous avez
+pris connaissance de la licence [CeCILL|CeCILL-B|CeCILL-C], et que vous en avez accepté les
+termes.
  */
 
 package org.josso.gl2.agent.jaas;
@@ -16,15 +46,18 @@ import javax.security.auth.callback.NameCallback;
 import javax.security.auth.callback.PasswordCallback;
 import javax.security.auth.login.LoginContext;
 import javax.security.auth.login.LoginException;
-import javax.security.jacc.PolicyContext;
-import javax.security.jacc.PolicyContextException;
+//import javax.security.jacc.PolicyContext;
+//import javax.security.jacc.PolicyContextException;
 import com.sun.enterprise.security.SecurityContext;
 import com.sun.enterprise.security.auth.realm.User;
 import java.security.Principal;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 //import com.sun.enterprise.security.auth.realm.Realm;
 /**
- *
- * @author spopoff
+ * Module utilisé par l'agent bricolé pour faire une authent sur le Realm / LoginModule
+ * @author spopoff@rocketmail.com
+ * @version 0.1
  */
 public class JAASHelper {
 
@@ -32,6 +65,7 @@ public class JAASHelper {
   private Subject sub = null;
   private SecurityContext sc = null;
   private Boolean bAuth =  false;
+  private static final Log logg = LogFactory.getLog(JAASHelper.class);
 
   public JAASHelper() {
   }
@@ -48,7 +82,7 @@ public class JAASHelper {
     }
     catch (Exception e) {
       // A production quality implementation would log this message
-      System.err.println("Erreur login JAASHelper "+e.toString());
+      log("Erreur login JAASHelper ",e);
       result = false;
     }
     return result;
@@ -60,7 +94,7 @@ public class JAASHelper {
             sub.getPrivateCredentials().add(new PasswordCredential(user,pass, "jossoRealm"));
             loginContext = new LoginContext("josso", sub);
             loginContext.login();
-            System.out.println("Succès JAASHelper login recheche subject");
+            log("Succès JAASHelper login recheche subject");
             sub = loginContext.getSubject();
             //SecurityContext securityContext =  new SecurityContext(user,lc.getSubject(), Realm.getDefaultRealm());
             sc =  new SecurityContext(user,loginContext.getSubject(), "jossoRealm");
@@ -68,17 +102,17 @@ public class JAASHelper {
             SecurityContext.setCurrent(sc);
             bAuth = true;
             if(sc.didServerGenerateCredentials()){
-                System.out.println("Info JAASHelper credential OK");
+                log("Info JAASHelper credential OK");
             }
-            System.out.println("Info JAASHelper fin authentif sub="+sub.toString());
+            log("Info JAASHelper fin authentif sub="+sub.toString());
       } catch (LoginException e) {
-            System.err.println("Erreur JAASHelper login "+e.toString());
+            log("Erreur JAASHelper login ",e);
       }
       return bAuth;
   }
 
   public Subject getSubject () {
-    //System.out.println("Info JAASHelper.getSubject sub="+sub.toString());
+    //log("Info JAASHelper.getSubject sub="+sub.toString());
       Subject s = null;
       if(bAuth){
           s = sc.getSubject();
@@ -90,7 +124,7 @@ public class JAASHelper {
       try {
       result = (Subject) PolicyContext.getContext("javax.security.auth.Subject.container");
       } catch (PolicyContextException ex) {
-      System.err.println("Erreur JAASHelper retrouver subject "+ex.toString());
+      log("Erreur JAASHelper retrouver subject "+ex.toString());
       }
       //result = loginContext.getSubject();
       }
@@ -108,6 +142,34 @@ public class JAASHelper {
         if(loginContext!=null){
         }
         return ret;
+    }
+    /**
+     * Log a message on the Logger associated with our Container (if any).
+     *
+     * @param message Message to be logged
+     */
+    protected void log(String message) {
+
+        logg.info(this.toString() + ": " + message);
+        //je sais c'est pas bien mais des fois il faut !!!
+        //log(this.toString() + ": " + message);
+    }
+
+
+    /**
+     * Log a message on the Logger associated with our Container (if any).
+     *
+     * @param message   Message to be logged
+     * @param throwable Associated exception
+     */
+    protected void log(String message, Throwable throwable) {
+
+        logg.error(this.toString() + ": " + message);
+        throwable.printStackTrace(System.out);
+    }
+    @Override
+    public String toString(){
+        return "JAASHelper ";
     }
 
   public static class LoginCallback implements CallbackHandler {

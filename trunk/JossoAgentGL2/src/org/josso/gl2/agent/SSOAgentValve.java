@@ -86,7 +86,7 @@ import techDecision.Base64;
 
 
 /**
- * Boucle de traitement JOSSO pour servlet Catalina
+ * Boucle de traitement JOSSO pour servlet Catalina qui n'est pas un agent mais en relation avec lui
  * @author spopoff@rocketmail.com <a href="mailto:gbrigand@josso.org">Gianluca Brigandi</a>
  * @version 0.2
  */
@@ -304,7 +304,7 @@ public class SSOAgentValve extends ValveBase
                 !(response instanceof HttpResponse)) {
             //context.invokeNext(request, response);
             ret = Valve.INVOKE_NEXT;
-            return 0;
+            return ret;
         }
 
         HttpServletRequest hreq =
@@ -331,7 +331,7 @@ public class SSOAgentValve extends ValveBase
                     log("T1 Context is not a josso partner app : " + hreq.getContextPath());
 
                 ret =  Valve.INVOKE_NEXT;
-                return 0;
+                return ret;
               }else{
                   log("T1 Context IS a josso partner app =" + hreq.getContextPath());
               }
@@ -343,6 +343,16 @@ public class SSOAgentValve extends ValveBase
             SSOPartnerAppConfig cfg = _agent.getPartnerAppConfig(vhost, contextPath);
             if (cfg.isSendP3PHeader() && !hres.isCommitted()) {
                 hres.setHeader("P3P", cfg.getP3PHeaderValue());
+            }
+
+            // ------------------------------------------------------------------
+            // Check if this URI is subject to SSO protection
+            // ------------------------------------------------------------------
+            //T9
+            if (isResourceIgnored(cfg, request)) {
+                log("T9 ressource non ssoisé (accès libre)");
+                ret = Valve.INVOKE_NEXT;
+                return ret;
             }
 
             // Get our session ...
@@ -399,8 +409,8 @@ public class SSOAgentValve extends ValveBase
                         //set non cache headers
                         _agent.prepareNonCacheResponse(hres);
                         hres.sendRedirect(hres.encodeRedirectURL(loginUrl));
-                        ret =  Valve.END_PIPELINE;
-                        return 0;
+                        ret =  Valve.INVOKE_NEXT;
+                        return ret;
                            } else {
                         if (debug==1)
                             log("T3-2-1 SSO cookie is not present, but login optional process is not required");
@@ -428,11 +438,27 @@ public class SSOAgentValve extends ValveBase
                 hreq.setAttribute("org.josso.agent.ssoSessionid", jossoSessionId);
 
                 hres.sendRedirect(theOriginal);
-                ret =  Valve.END_PIPELINE;
-                return 0;
+                System.out.println("**********************Terminé**********************");
+                ret =  Valve.INVOKE_NEXT;
+                return ret;
             }else{
                 log("T3 SSOAgentValve Info retour pas authentifié pour " + jossoSessionId);
                 iBoucle = 0;
+            }
+            //TA
+             //equivalent à la page de login si pas autorisé on passe par l'authent
+             String username = processAuthorizationToken(hreq);
+             if (username == null && getSavedRequestURL(session)==null) {
+                 log("TA Il faut une authentification préalable (première URL)! session="+session.getId());
+                 //return sendAuthenticateChallenge(msgInfo);
+                 //return sendAuthenticateChallenge2(msgInfo);
+                 saveRequest((HttpRequest) request, session);
+                 theOriginal = getSavedRequestURL(session);
+                 hres.setStatus(HttpServletResponse.SC_MOVED_TEMPORARILY);
+                 //response.setHeader("Location", jeVeux);
+                 hres.sendRedirect(hreq.getContextPath() + "/josso_login/");
+                 ret =  Valve.INVOKE_NEXT;
+                 return ret;
             }
             //T4
             // ------------------------------------------------------------------
@@ -465,8 +491,8 @@ public class SSOAgentValve extends ValveBase
                 _agent.prepareNonCacheResponse(hres);
                 hres.sendRedirect(hres.encodeRedirectURL(loginUrl));
                 //question on termine ou on continue
-                ret =  Valve.END_PIPELINE;
-                return 0;
+                ret =  Valve.INVOKE_NEXT;
+                return ret;
 
             }
             //T5
@@ -495,7 +521,7 @@ public class SSOAgentValve extends ValveBase
                 hres.sendRedirect(hres.encodeRedirectURL(logoutUrl));
 
                 ret = Valve.INVOKE_NEXT;
-                return 0;
+                return ret;
 
             }
             //T6
@@ -505,7 +531,7 @@ public class SSOAgentValve extends ValveBase
             testCookieSession(hreq);
             if (debug >= 1)
                 log("T6 Session is: " + session);
-            LocalSession localSession = new CatalinaLocalSession(session);
+            localSession = new CatalinaLocalSession(session);
             //T7
             // ------------------------------------------------------------------
             // Check if the partner application submitted custom login form
@@ -529,7 +555,7 @@ public class SSOAgentValve extends ValveBase
                 _agent.processRequest(customAuthRequest);
                 
                 ret = Valve.INVOKE_NEXT;
-                return 0;
+                return ret;
             }            
             //T8
             // si pas de cookie de session SSO
@@ -553,8 +579,8 @@ public class SSOAgentValve extends ValveBase
                     String requestURI = this.getSavedRequestURL(session);
                     _agent.prepareNonCacheResponse(hres);
                     hres.sendRedirect(hres.encodeRedirectURL(requestURI));
-                    ret =  Valve.END_PIPELINE;
-                    return 0;
+                    ret =  Valve.INVOKE_NEXT;
+                    return ret;
 
                 }
                 //T8-2
@@ -579,7 +605,7 @@ public class SSOAgentValve extends ValveBase
                         _agent.prepareNonCacheResponse(hres);
                         hres.sendRedirect(hres.encodeRedirectURL(loginUrl));
                         ret = Valve.INVOKE_NEXT;
-                        return 0;
+                        return ret;
                     } else {
                         if (debug >= 1)
                             log("T8-2 SSO cookie is not present, but login optional process is not required");
@@ -593,21 +619,10 @@ public class SSOAgentValve extends ValveBase
                     hreq.getParameter("josso_assertion_id") != null)) {
                     log("T8-3 SSO cookie not present and relaying was not requested, skipping");
                     //context.invokeNext(request, response);
-                    ret = Valve.END_PIPELINE;
-                    return 0;
+                    ret = Valve.INVOKE_NEXT;
+                    return ret;
                 }
 
-            }
-
-
-            // ------------------------------------------------------------------
-            // Check if this URI is subject to SSO protection
-            // ------------------------------------------------------------------
-            //T9
-            if (isResourceIgnored(cfg, request)) {
-                //context.invokeNext(request, response);
-                ret = Valve.INVOKE_NEXT;
-                return 0;
             }
 
             // This URI should be protected by SSO, go on ...
@@ -726,13 +741,13 @@ public class SSOAgentValve extends ValveBase
                 log("T10 Fin josso_check jossoSessionId="+jossoSessionId);
                 //c'est pas fini et pas en erreur pourtant ...
                 ret = Valve.INVOKE_NEXT;
-                return 0;
+                return ret;
             }
             //T11
             // si on arrive la c'est une erreur!
             log("T11 Fin de la boucle validate donc erreur!!!");
             ret = Valve.END_PIPELINE;
-            return 0;
+            return ret;
         } catch (Throwable t) {
             //  This is a 'hack' : Because this valve exectues before the ErrorReportingValve, we need to preapare
             // some stuff and invoke the next valve in the chain always ...
@@ -750,6 +765,7 @@ public class SSOAgentValve extends ValveBase
         } finally {
             if (debug >= 1)
                 log("Processed : " + hreq.getContextPath() + " ["+hreq.getRequestURL()+"] ret="+ret);
+            //return ret;
         }
         log("retourne ret="+ret);
         return ret;
@@ -1016,6 +1032,8 @@ public class SSOAgentValve extends ValveBase
                         }
                     }
                 }
+            } else {
+                log("Pas trouvé les contraintes de sécurité sur les ressources");
             }
         }
 
@@ -1121,7 +1139,7 @@ public class SSOAgentValve extends ValveBase
         // Check for the single sign on cookie
         // ------------------------------------------------------------------
         if (debug==1)
-            System.out.println("Checking for SSO cookie");
+            log("Checking for SSO cookie");
         cookie = null;
         Cookie cookies[] = req.getCookies();
         if (cookies == null)

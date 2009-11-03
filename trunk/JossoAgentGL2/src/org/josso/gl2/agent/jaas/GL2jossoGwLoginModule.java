@@ -1,5 +1,5 @@
 /*
-Copyright Stéphane Georges Popoff, (octobre 2009)
+Copyright Stéphane Georges Popoff, (octobre - novembre 2009)
 
 spopoff@rocketmail.com
 
@@ -59,6 +59,8 @@ import org.josso.gateway.identity.SSOUser;
 import org.josso.gateway.identity.exceptions.SSOIdentityException;
 import org.josso.gateway.identity.service.SSOIdentityManagerService;
 import org.josso.gl2.agent.FacesSSOAgent;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 
 /**
@@ -75,6 +77,7 @@ public class GL2jossoGwLoginModule extends AppservPasswordLoginModule {
     protected String _currentSSOSessionId;
     protected SSOUser _ssoUserPrincipal;
     protected SSORole[] _ssoRolePrincipals;
+    private static final Log logg = LogFactory.getLog(GL2jossoGwLoginModule.class);
     /*
      * Initialize this  LoginModule
      *
@@ -93,14 +96,14 @@ public class GL2jossoGwLoginModule extends AppservPasswordLoginModule {
     @Override
     protected void authenticateUser() throws LoginException {
 
-        System.out.println("GL2jossoGwLoginModule Auth Info:_username:"+_username+";_password:"+_password+";_currentrealm:"+_currentRealm);
+        log("GL2jossoGwLoginModule Auth Info:_username:"+_username+";_password:"+_password+";_currentrealm:"+_currentRealm);
 
         //vérifie la présence d'un mot de passe mais normalement déjà fait dans super.login()
         testPassw();
 
         // Get the current realm and check whether it is instance of your realm
         if (!(_currentRealm instanceof GL2jaasJossoRealm)) {
-            System.err.println("Le realm n'est pas du bon type GL2jaasJossoRealm");
+            log("Le realm n'est pas du bon type GL2jaasJossoRealm");
             throw new LoginException("GL2jaasJossoRealm:badrealm");
         }
 
@@ -116,7 +119,7 @@ public class GL2jossoGwLoginModule extends AppservPasswordLoginModule {
                     _subject.getPrincipals().add(_ssoUserPrincipal);
                 }
 
-                System.out.println("Added SSOUser Principal to the Subject : " + _ssoUserPrincipal);
+                log("Added SSOUser Principal to the Subject : " + _ssoUserPrincipal);
 
                 _ssoRolePrincipals = getRoleSets();
 
@@ -126,7 +129,7 @@ public class GL2jossoGwLoginModule extends AppservPasswordLoginModule {
                         continue;
 
                     _subject.getPrincipals().add(_ssoRolePrincipals [i]);
-                    System.out.println("Added SSORole Principal to the Subject : " + _ssoRolePrincipals [i]);
+                    log("Added SSORole Principal to the Subject : " + _ssoRolePrincipals [i]);
                 }
 
             } catch (Exception e) {
@@ -141,19 +144,19 @@ public class GL2jossoGwLoginModule extends AppservPasswordLoginModule {
 
         myCustomRealm.authenticatedUser(_username);
 
-        System.out.println("***Avant myCustomRealm.getGroups");
+        log("***Avant myCustomRealm.getGroups");
         String[] grpList;
         try {
             grpList = myCustomRealm.getGroups(_username);
         } catch (InvalidOperationException ex) {
-            System.err.println(GL2jossoGwLoginModule.class.getName()+" " +ex.toString());
+            log(GL2jossoGwLoginModule.class.getName()+" " +ex.toString());
             throw new LoginException("GL2jaasJossoRealm:Login Failed with user  "+_username);
         } catch (NoSuchUserException ex) {
-            System.err.println(GL2jossoGwLoginModule.class.getName()+" " +ex.toString());
+            log(GL2jossoGwLoginModule.class.getName()+" " +ex.toString());
             throw new LoginException("GL2jaasJossoRealm:Login Failed with user  "+_username);
         }
 
-        System.out.println("login succeeded for  " + _username);
+        log("login succeeded for  " + _username);
 
         // Add the code related to authenticating to your user database.
         String[] groupListToForward = (String[])grpList.clone();
@@ -176,17 +179,17 @@ public class GL2jossoGwLoginModule extends AppservPasswordLoginModule {
             retAgent[i] = s;
             i++;
         }
-        System.out.println("***avant commitUserAuthentication groupe="+l+" retAgent taille="+retAgent.length);
+        log("***avant commitUserAuthentication groupe="+l+" retAgent taille="+retAgent.length);
         FacesSSOAgent ag = null;
         try {
             ag = (FacesSSOAgent) Lookup.getInstance().lookupSSOAgent();
         } catch (Exception ex) {
-            System.err.println("Erreur GL2jossoGwLoginModule trouve pas FacesSSOAgent "+ex.toString());
+            log("Erreur GL2jossoGwLoginModule trouve pas FacesSSOAgent "+ex.toString());
         }
         ag.setInfoUserGroups(retAgent);
         commitUserAuthentication(groupListToForward);
         //super.commit();
-        System.out.println("***terminé authenticateUser");
+        log("***terminé authenticateUser");
     }
     /**
      * Authenticate the user by prompting for the SSO Session Identifier assigned by the SSO Gateway on logon.
@@ -205,10 +208,10 @@ public class GL2jossoGwLoginModule extends AppservPasswordLoginModule {
      *        is unable to perform the authentication.
      */
     private boolean jossoLogin() throws LoginException {
-        System.out.println("***login josso");
+        log("***login josso");
         String ssoSessionId = _username;
         String ssoSessionId2 = _password;
-        System.out.println("Session requested authentication to gateway : " + ssoSessionId + "/" + ssoSessionId2 );
+        log("Session requested authentication to gateway : " + ssoSessionId + "/" + ssoSessionId2 );
         try {
 
             _currentSSOSessionId = ssoSessionId;
@@ -217,14 +220,14 @@ public class GL2jossoGwLoginModule extends AppservPasswordLoginModule {
             SSOIdentityManagerService im = Lookup.getInstance().lookupSSOAgent().getSSOIdentityManager();
             SSOUser ssoUser = im.findUserInSession(ssoSessionId);
 
-            System.out.println("Session authentication succeeded : " + ssoSessionId);
+            log("Session authentication succeeded : " + ssoSessionId);
             _ssoUserPrincipal = ssoUser;
             _succeeded = true;
 
         } catch (SSOIdentityException e) {
             // Ignore this ... (user does not exist for this session)
             //if ( logger.isDebugEnabled())
-                System.out.println(e.getMessage());
+                log(e.getMessage());
             _succeeded = false;
             return false;
 
@@ -264,10 +267,10 @@ public class GL2jossoGwLoginModule extends AppservPasswordLoginModule {
         try {
             Iterator i = _subject.getPrivateCredentials().iterator();
             if(!i.hasNext()) {
-                    System.err.println("Erreur pas de mot de passe !");
+                    log("Erreur pas de mot de passe !");
             }
         } catch (Exception e) {
-            System.err.println("passwordlm.nocreds="+ e.toString());
+            log("passwordlm.nocreds=",e);
         }
 
     }
@@ -276,11 +279,39 @@ public class GL2jossoGwLoginModule extends AppservPasswordLoginModule {
         try {
             ret = _currentRealm.getUser(nom);
         } catch (NoSuchUserException ex) {
-            System.err.println("JossoLoginModule user="+nom+" existe pas "+ ex.toString());
+            log("JossoLoginModule user="+nom+" existe pas ",ex);
         } catch (BadRealmException ex) {
-            System.err.println("JossoLoginModule user="+nom+" erreur sur real "+ ex.toString());
+            log("JossoLoginModule user="+nom+" erreur sur real ",ex);
         }
         return ret;
+    }
+    /**
+     * Log a message on the Logger associated with our Container (if any).
+     *
+     * @param message Message to be logged
+     */
+    protected void log(String message) {
+
+        logg.info(this.toString() + ": " + message);
+        //je sais c'est pas bien mais des fois il faut !!!
+        //log(this.toString() + ": " + message);
+    }
+
+
+    /**
+     * Log a message on the Logger associated with our Container (if any).
+     *
+     * @param message   Message to be logged
+     * @param throwable Associated exception
+     */
+    protected void log(String message, Throwable throwable) {
+
+        logg.error(this.toString() + ": " + message);
+        throwable.printStackTrace(System.out);
+    }
+    @Override
+    public String toString(){
+        return "GL2jossoGwLoginModule ";
     }
 
 }
