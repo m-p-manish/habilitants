@@ -10,7 +10,7 @@
    <logger name="org.apache.axis">
         <level value="info"/>
     </logger>
-   <logger name="org.josso.agent.AbstractSSOAgent">
+   <logger name="org.josso.gl2.agent">
         <level value="debug"/>
     </logger>
     <root>
