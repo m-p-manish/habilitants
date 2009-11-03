@@ -140,11 +140,16 @@ public class Lookup {
      * @return a reference to the agent component.
      */
     public synchronized SSOAgent lookupSSOAgent(String nom) throws Exception {
+        Boolean bFound = false;
+        int i = 0;
         for(String n : list){
-            if(n.equals(nom)){
-                _ssoAgent = (SSOAgent) listCK.get(list.indexOf(nom)).fetchSSOAgent();
+            if(n.equals(configResourceName)){
+                bFound = true;
             }
+            i++;
         }
+        if(!bFound) return null;
+        _ssoAgent = (SSOAgent) listCK.get(i).fetchSSOAgent();
 
         return _ssoAgent;
     }

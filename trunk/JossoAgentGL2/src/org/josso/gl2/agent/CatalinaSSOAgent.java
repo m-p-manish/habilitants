@@ -170,6 +170,7 @@ public class CatalinaSSOAgent extends HttpSSOAgent {
         }
         return entry;
     }
+
     protected void log(String message) {
         /*org.apache.catalina.Logger logger = _container.getLogger();
         if (logger != null)

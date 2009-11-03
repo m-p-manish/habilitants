@@ -297,7 +297,8 @@ public abstract class AbstractSSOAgent implements SSOAgent {
 
                 String assertionId = request.getAssertionId();
                 jossoSessionId = resolveAssertion(assertionId);
-                request.setSessionId(jossoSessionId);
+                if(jossoSessionId!=null) request.setSessionId(jossoSessionId);
+                else log("Erreur sur obtention jossoSessionId vide!");
             }
 
 

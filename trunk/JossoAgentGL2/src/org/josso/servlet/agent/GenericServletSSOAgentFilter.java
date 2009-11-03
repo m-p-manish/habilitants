@@ -92,10 +92,12 @@ public class GenericServletSSOAgentFilter implements Filter {
 
                 Lookup lookup = Lookup.getInstance();
                 //O n'initialise pas on suppose que c'est déjà fait !!!
-                lookup.add("josso-agent2-config.xml"); // For spring compatibility ...
+                //lookup.add("josso-agent2-config.xml"); // For spring compatibility ...
+                lookup.init("josso-agent2-config.xml");
 
                 // We need at least an abstract SSO Agent
-                _agent = (FacesSSOAgent) lookup.lookupSSOAgent("josso-agent2-config.xml");
+                //_agent = (FacesSSOAgent) lookup.lookupSSOAgent("josso-agent2-config.xml");
+                _agent = (FacesSSOAgent) lookup.lookupSSOAgent();
                 //on ne fait pas le start on suppose que c'est déjà fait par SSOAgentValve !!!
                 /*if (debug==1)
                 _agent.setDebug(1);*/
