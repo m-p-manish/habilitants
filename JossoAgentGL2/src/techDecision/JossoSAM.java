@@ -114,8 +114,10 @@ public class JossoSAM implements ServerAuthModule {
       private String jossoSessionId = null;
       private static final Log logg = LogFactory.getLog(JossoSAM.class);
       private String theOriginal = null;
+      private String state = null;
 
       public void initialize(MessagePolicy reqPolicy, MessagePolicy resPolicy, CallbackHandler cBH, Map opts) throws AuthException {
+          state = "init";
           requestPolicy = reqPolicy;
           responsePolicy = resPolicy;
           handler = cBH;
@@ -142,12 +144,14 @@ public class JossoSAM implements ServerAuthModule {
       }
 
       public AuthStatus validateRequest(MessageInfo msgInfo, Subject client, Subject server) throws AuthException {
+
           try {
               //en premier vérifier si application partenaire
               HttpServletRequest request = (HttpServletRequest) msgInfo.getRequestMessage();
               String jeVeux = request.getRequestURL().toString();
               log("T1 On traite le message en vue d'authentification="+jeVeux);
               String contextPath = request.getContextPath();
+              state = "validate="+contextPath;
               String vhost = request.getServerName();
               // T1 si l'appli n'est pas partenaire alors pas de SSO on continue
               if (!_agent.isPartnerApp(vhost, contextPath)) {
@@ -171,6 +175,15 @@ public class JossoSAM implements ServerAuthModule {
              // Get our session ...
             HttpSession session = request.getSession(true);
             testCookieSession(request);
+            //T9
+            // ------------------------------------------------------------------
+            // Check if this URI is subject to SSO protection
+            // ------------------------------------------------------------------
+            if (_agent.isResourceIgnored(cfg, request)) {
+                log("T9 ressource non ssoisé (accès libre)");
+                return AuthStatus.SUCCESS;
+            }
+
             //et si on était déjà authentifié !!
             //T3 on revient après authentification réussie et pour finalisation
             if(_agent.isSSOIDloged(jossoSessionId)){
@@ -434,14 +447,6 @@ public class JossoSAM implements ServerAuthModule {
                 }
 
             }
-            //T9
-            // ------------------------------------------------------------------
-            // Check if this URI is subject to SSO protection
-            // ------------------------------------------------------------------
-            if (_agent.isResourceIgnored(cfg, request)) {
-                return AuthStatus.SUCCESS;
-            }
-
             // This URI should be protected by SSO, go on ...
             if (debug==1)
                 log("Session is: " + session);
@@ -878,7 +883,7 @@ public class JossoSAM implements ServerAuthModule {
 
         logg.info(this.toString() + ": " + message);
         //je sais c'est pas bien mais des fois il faut !!!
-        System.out.println(this.toString() + ": " + message);
+        //System.out.println(this.toString() + ": " + message);
     }
 
 
@@ -890,7 +895,11 @@ public class JossoSAM implements ServerAuthModule {
      */
     protected void log(String message, Throwable throwable) {
 
-            logg.error(this.toString() + ": " + message);
-            throwable.printStackTrace(System.out);
+        logg.error(this.toString() + ": " + message);
+        throwable.printStackTrace(System.out);
+    }
+    @Override
+    public String toString(){
+        return "JossoSAM "+state+" ";
     }
 }

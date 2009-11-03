@@ -1,5 +1,5 @@
 /*
-Copyright Stéphane Georges Popoff, (octobre 2009)
+Copyright Stéphane Georges Popoff, (octobre - novembre 2009)
 
 spopoff@rocketmail.com
 
