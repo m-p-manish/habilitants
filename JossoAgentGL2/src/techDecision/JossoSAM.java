@@ -198,15 +198,17 @@ public class JossoSAM implements ServerAuthModule {
                 SingleSignOnEntry entry = _agent.processRequest(r);
 
                 if (debug==1)
-                    log("T3 Executed agent acction ACTION_ESTABLISH_SECURITY_CONTEXT");
+                    log("T3 Executed agent action ACTION_ESTABLISH_SECURITY_CONTEXT");
 
                 // Get session map for this servlet context.
                 Map sessionMap = (Map) request.getSession().getServletContext().getAttribute(KEY_SESSION_MAP);
-                if (sessionMap.get(localSession.getWrapped()) == null) {
-                    // the local session is new so, make the valve listen for its events so that it can
-                    // map them to local session events.
-                    // Not supported : session.addSessionListener(this);
-                    sessionMap.put(session, localSession);
+                if(sessionMap != null){
+                    if (sessionMap.get(localSession.getWrapped()) == null) {
+                        // the local session is new so, make the valve listen for its events so that it can
+                        // map them to local session events.
+                        // Not supported : session.addSessionListener(this);
+                        sessionMap.put(session, localSession);
+                    }
                 }
 
                 // ------------------------------------------------------------------
