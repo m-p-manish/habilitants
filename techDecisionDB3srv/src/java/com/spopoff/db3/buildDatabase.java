@@ -1,5 +1,5 @@
 /*
-Copyright Stéphane Georges Popoff, (mai - octobre 2009)
+Copyright Stéphane Georges Popoff, (mai - novembre 2009)
 
 spopoff@rocketmail.com
 
@@ -50,7 +50,7 @@ import javax.naming.directory.SearchResult;
 /**
  * Cette classe permet la création des tables dans DB3 ou le vidage.
  * @author spopoff@rocketmail.com
- * @version 0.2
+ * @version 0.3
  */
 public class buildDatabase extends HttpServlet {
     private Connection connn = null;
@@ -61,13 +61,14 @@ public class buildDatabase extends HttpServlet {
      * @throws ServletException if a servlet-specific error occurs
      * @throws IOException if an I/O error occurs
      */
-    protected void processRequest(HttpServletRequest request, HttpServletResponse response)
-    throws ServletException, IOException {
-        response.setContentType("text/html;charset=UTF-8");
-        PrintWriter out = response.getWriter();
-        String message = "";
-        Datamart dm = null;
+    protected void processRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        PrintWriter out = null;
+        System.out.println("Arrivé dans la servlet buildDatabase !");
         try {
+            response.setContentType("text/html;charset=UTF-8");
+            out = response.getWriter();
+            String message = "";
+            Datamart dm = null;
             out.println("<html>");
             out.println("<head>");
             out.println("<title>Datamart builder</title>");
