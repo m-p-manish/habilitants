@@ -14,24 +14,10 @@
         <param-name>javax.faces.STATE_SAVING_METHOD</param-name>
         <param-value>client</param-value>
     </context-param>
-    <filter>
-        <description>un filtre de rien</description>
-        <filter-name>josso</filter-name>
-        <filter-class>org.josso.servlet.agent.GenericServletSSOAgentFilter</filter-class>
-        <init-param>
-            <description>pour rien</description>
-            <param-name>ducon</param-name>
-            <param-value>dugenoux</param-value>
-        </init-param>
-        </filter>
-    <filter-mapping>
-        <filter-name>josso</filter-name>
-        <url-pattern>/faces/*</url-pattern>
-        <dispatcher>REQUEST</dispatcher>
-        <dispatcher>FORWARD</dispatcher>
-        <dispatcher>INCLUDE</dispatcher>
-        <dispatcher>ERROR</dispatcher>
-    </filter-mapping>
+    <listener>
+        <description>lance agent et / ou prend une référence</description>
+        <listener-class>org.josso.gl2.agent.JossoAgentStartup</listener-class>
+    </listener>
     <servlet>
         <servlet-name>Faces Servlet</servlet-name>
         <servlet-class>javax.faces.webapp.FacesServlet</servlet-class>
