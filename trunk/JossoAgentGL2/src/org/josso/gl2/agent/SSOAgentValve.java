@@ -746,6 +746,11 @@ public class SSOAgentValve extends ValveBase
             //T11
             // si on arrive la c'est une erreur!
             log("T11 Fin de la boucle validate donc erreur!!!");
+            // Store this error, it will be checked by the ErrorReportingValve
+            hreq.setAttribute(Globals.EXCEPTION_ATTR, "Pas normal!");
+
+            // Mark this response as error!
+            response.setError();
             ret = Valve.END_PIPELINE;
             return ret;
         } catch (Throwable t) {
@@ -1179,5 +1184,10 @@ public class SSOAgentValve extends ValveBase
       log("Rien dans le header échec de l'authentification...");
       return null;
    }
+    @Override
+   public void postInvoke(Request request, Response response) {
+      System.out.println("Ne sert à rien dans cette logique mais fait plaisir");
+  }
+
 
 }
