@@ -437,7 +437,7 @@ public class SSOAgentValve extends ValveBase
                 hreq.setAttribute("org.josso.agent.gateway-logout-url", _agent.getGatewayLogoutUrl() );
                 hreq.setAttribute("org.josso.agent.ssoSessionid", jossoSessionId);
 
-                hres.sendRedirect(theOriginal);
+                //hres.sendRedirect(theOriginal);
                 System.out.println("**********************Terminé**********************");
                 ret =  Valve.INVOKE_NEXT;
                 return ret;
@@ -457,7 +457,7 @@ public class SSOAgentValve extends ValveBase
                  hres.setStatus(HttpServletResponse.SC_MOVED_TEMPORARILY);
                  //response.setHeader("Location", jeVeux);
                  hres.sendRedirect(hreq.getContextPath() + "/josso_login/");
-                 ret =  Valve.INVOKE_NEXT;
+                 ret =  Valve.END_PIPELINE;
                  return ret;
             }
             //T4
@@ -491,7 +491,7 @@ public class SSOAgentValve extends ValveBase
                 _agent.prepareNonCacheResponse(hres);
                 hres.sendRedirect(hres.encodeRedirectURL(loginUrl));
                 //question on termine ou on continue
-                ret =  Valve.INVOKE_NEXT;
+                ret =  Valve.END_PIPELINE;
                 return ret;
 
             }
@@ -520,7 +520,7 @@ public class SSOAgentValve extends ValveBase
                 _agent.prepareNonCacheResponse(hres);
                 hres.sendRedirect(hres.encodeRedirectURL(logoutUrl));
 
-                ret = Valve.INVOKE_NEXT;
+                ret = Valve.END_PIPELINE;
                 return ret;
 
             }
@@ -604,7 +604,7 @@ public class SSOAgentValve extends ValveBase
                			//set non cache headers
                         _agent.prepareNonCacheResponse(hres);
                         hres.sendRedirect(hres.encodeRedirectURL(loginUrl));
-                        ret = Valve.INVOKE_NEXT;
+                        ret = Valve.END_PIPELINE;
                         return ret;
                     } else {
                         if (debug >= 1)
@@ -740,18 +740,13 @@ public class SSOAgentValve extends ValveBase
                 _agent.addEntrySSOIDsuccessed(entry.ssoId);
                 log("T10 Fin josso_check jossoSessionId="+jossoSessionId);
                 //c'est pas fini et pas en erreur pourtant ...
-                ret = Valve.INVOKE_NEXT;
+                ret = Valve.END_PIPELINE;
                 return ret;
             }
             //T11
             // si on arrive la c'est une erreur!
-            log("T11 Fin de la boucle validate donc erreur!!!");
-            // Store this error, it will be checked by the ErrorReportingValve
-            hreq.setAttribute(Globals.EXCEPTION_ATTR, "Pas normal!");
-
-            // Mark this response as error!
-            response.setError();
-            ret = Valve.END_PIPELINE;
+            log("T11 Fin de la boucle validate donc tout va bien");
+            ret = Valve.INVOKE_NEXT;
             return ret;
         } catch (Throwable t) {
             //  This is a 'hack' : Because this valve exectues before the ErrorReportingValve, we need to preapare

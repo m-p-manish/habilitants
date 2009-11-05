@@ -56,6 +56,7 @@
                         <agent:ignore-web-resource-collections>libre</agent:ignore-web-resource-collections>
                     </agent:partner-app>
                     <agent:partner-app id="cube" context="/techDecisionCube"/>
+                    <agent:partner-app id="test" context="/testJossoGL3"/>
                     <agent:partner-app id="ejb1" context="/techDecisionTest1"/>
                 </agent:partner-apps>
 
