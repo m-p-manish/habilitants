@@ -3,6 +3,10 @@
 <sun-web-app error-url="">
   <context-root>/mondrian</context-root>
   <class-loader delegate="true"/>
+  <security-role-mapping>
+    <role-name>role1</role-name>
+    <group-name>role1</group-name>
+  </security-role-mapping>
   <resource-ref>
     <res-ref-name>jdbc/memTechDecision</res-ref-name>
     <res-ref-type>javax.sql.DataSource</res-ref-type>
