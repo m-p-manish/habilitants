@@ -153,11 +153,11 @@ public class JossoSAM implements ServerAuthModule {
               String contextPath = request.getContextPath();
               state = "validate="+contextPath;
               String vhost = request.getServerName();
-              // T1 si l'appli n'est pas partenaire alors pas de SSO on continue
+              // T1 si l'appli n'est pas partenaire c'est pas normal car on ne doit pas utiliser le SAM
               if (!_agent.isPartnerApp(vhost, contextPath)) {
                   log("T1 Context is not a josso partner app : " + request.getContextPath());
                  HttpServletResponse response = (HttpServletResponse) msgInfo.getResponseMessage();
-                 response.sendRedirect(jeVeux);
+                 response.sendError(response.SC_UNAUTHORIZED, "vérifier config agent ajouter le contexte");
                   return AuthStatus.SUCCESS;
               }else{
                   System.out.println("T1 Context IS a josso partner app =" + request.getContextPath());

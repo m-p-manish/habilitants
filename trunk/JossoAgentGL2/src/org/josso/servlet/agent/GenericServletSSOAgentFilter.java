@@ -38,13 +38,9 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.josso.agent.Lookup;
-import org.josso.agent.SSOPartnerAppConfig;
 
 //import org.apache.catalina.Context;
 import org.josso.gl2.agent.FacesSSOAgent;
@@ -116,14 +112,9 @@ public class GenericServletSSOAgentFilter implements Filter {
 
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain filterChain) throws IOException, ServletException {
 
-        /*FacesContext inst = getFacesContext(request, response);
-        HttpServletRequest hreq = (HttpServletRequest) inst.getExternalContext().getRequest();*/
-        HttpServletRequest hreq = (HttpServletRequest) request;
-
-        HttpServletResponse hres = (HttpServletResponse) response;
-        _agent.setRep(response);
-        _agent.setReq(request);
         try {
+            _agent.setRep(response);
+            _agent.setReq(request);
             FacesContext inst = _agent.getLeFacesContext(request, response);
             Boolean bFaces = false;
             if (inst != null) {
@@ -144,36 +135,12 @@ public class GenericServletSSOAgentFilter implements Filter {
             }
         } catch (Exception e) {
             System.err.println("_-*-_Filtre On fonctionne sans Faces mais avec erreur="+e.toString());
-        }
-            String contextPath = hreq.getContextPath();
-            String vhost = hreq.getServerName();
-
-            // ------------------------------------------------------------------
-            // Check some basic HTTP handling
-            // ------------------------------------------------------------------
-            // P3P Header for IE 6+ compatibility when embedding JOSSO in a IFRAME
-            SSOPartnerAppConfig cfg = _agent.getPartnerAppConfig(vhost, contextPath);
-            if (cfg.isSendP3PHeader() && !hres.isCommitted()) {
-                hres.setHeader("P3P", cfg.getP3PHeaderValue());
-            }
-            // ------------------------------------------------------------------
-            // Check for the single sign on cookie
-            // ------------------------------------------------------------------
-            System.out.println("_-*-_Filtre Checking for SSO cookie");
-            Cookie cookie = null;
-            Cookie cookies[] = hreq.getCookies();
-            if (cookies == null) cookies = new Cookie[0];
-            for (int i = 0; i < cookies.length; i++) {
-                if (org.josso.gateway.Constants.JOSSO_SINGLE_SIGN_ON_COOKIE.equals(cookies[i].getName())) {
-                    cookie = cookies[i];
-                    System.out.println("_-*-_Filtre SSO cookie="+cookie.toString());
-                    break;
-                }
-            }
+        } finally {
             // ------------------------------------------------------------------
             // Invoke the next Valve in our pipeline
             // ------------------------------------------------------------------
             filterChain.doFilter (request, response);
+        }
     }
 
     public void destroy() {
