@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Scene Scope="Project" version="2">
+    <Scope Scope="Faces Configuration Only"/>
+    <Scope Scope="Project">
+        <Node id="simple.jsp" x="650" y="600" zoom="true"/>
+        <Node id="taglib.jsp" x="400" y="150" zoom="true"/>
+        <Node id="busy.jsp" x="900" y="150" zoom="true"/>
+        <Node id="index.jsp" x="150" y="600" zoom="true"/>
+        <Node id="test/param2.jsp" x="1400" y="150" zoom="true"/>
+        <Node id="test/param3.jsp" x="400" y="300" zoom="true"/>
+        <Node id="clearCache.jsp" x="400" y="750" zoom="true"/>
+        <Node id="wcf/showxml.jsp" x="150" y="750" zoom="true"/>
+        <Node id="error.jsp" x="400" y="450" zoom="true"/>
+        <Node id="morph_pivot.jsp" x="150" y="450" zoom="true"/>
+        <Node id="pivot.jsp" x="150" y="300" zoom="true"/>
+        <Node id="welcomeJSF.jsp" x="1150" y="300" zoom="true"/>
+        <Node id="index.html" x="650" y="300" zoom="true"/>
+        <Node id="xmla.jsp" x="400" y="600" zoom="true"/>
+        <Node id="adhoc.jsp" x="900" y="450" zoom="true"/>
+        <Node id="test/param4.jsp" x="900" y="300" zoom="true"/>
+        <Node id="zero.jsp" x="650" y="450" zoom="true"/>
+        <Node id="testpage.jsp" x="650" y="150" zoom="true"/>
+        <Node id="xmlaTest.jsp" x="150" y="150" zoom="true"/>
+        <Node id="test/param1.jsp" x="1150" y="150" zoom="true"/>
+    </Scope>
+    <Scope Scope="All Faces Configurations"/>
+</Scene>
