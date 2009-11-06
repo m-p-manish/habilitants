@@ -67,7 +67,8 @@
             <h:form styleClass="jsfcrud_list_form">
                 <h:commandButton id="stopperRole" action="#{roleMinerBean.stopperRoles}" value="Stop !" actionListener="#{roleBuilder.stopper}" >
                 </h:commandButton>
-            </h:form>
+            </h:form><br/>
+            <h:outputText value="Etat Agent Josso: " /><h:outputText value="#{jossoInsideFaces.etatAgent}" /><h:outputText value=" logour Url: " /><h:outputText value="#{jossoInsideFaces.logoutUrl}" />
          <br/>
          <a href="../../techDecisionDB3srv/console/">Lien vers la console H2</a><br/>
          <a href="../../techDecisionDB3srv/buildDatabase/">Lien vers la page de construction de la base</a>

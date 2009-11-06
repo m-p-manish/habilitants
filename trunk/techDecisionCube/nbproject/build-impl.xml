@@ -383,10 +383,16 @@ exists or setup the property manually. For example like this:
         <ant antfile="${project.ClassementPerso}/build.xml" inheritall="false" target="jar">
             <property name="deploy.on.save" value="false"/>
         </ant>
+        <ant antfile="${project.JossoAgentGL2}/build.xml" inheritall="false" target="jar">
+            <property name="deploy.on.save" value="false"/>
+        </ant>
         <ant antfile="${project.techDecisionEJB}/build.xml" inheritall="false" target="dist"/>
     </target>
     <target depends="init" if="dist.ear.dir" name="deps-ear-jar" unless="no.deps">
         <ant antfile="${project.ClassementPerso}/build.xml" inheritall="false" target="jar">
+            <property name="deploy.on.save" value="false"/>
+        </ant>
+        <ant antfile="${project.JossoAgentGL2}/build.xml" inheritall="false" target="jar">
             <property name="deploy.on.save" value="false"/>
         </ant>
         <ant antfile="${project.techDecisionEJB}/build.xml" inheritall="false" target="dist-ear">
@@ -533,10 +539,11 @@ exists or setup the property manually. For example like this:
         <copyfiles files="${reference.techDecisionEJB.dist}" iftldtodir="${build.web.dir}/WEB-INF" manifestproperty="manifest.reference.techDecisionEJB.dist" todir="${dist.ear.dir}"/>
         <copyfiles files="${libs.toplink.classpath}" iftldtodir="${build.web.dir}/WEB-INF" manifestproperty="manifest.libs.toplink.classpath" todir="${dist.ear.dir}"/>
         <copyfiles files="${reference.ClassementPerso.jar}" iftldtodir="${build.web.dir}/WEB-INF" manifestproperty="manifest.reference.ClassementPerso.jar" todir="${dist.ear.dir}"/>
+        <copyfiles files="${reference.JossoAgentGL2.jar}" iftldtodir="${build.web.dir}/WEB-INF" manifestproperty="manifest.reference.JossoAgentGL2.jar" todir="${dist.ear.dir}"/>
         <copyfiles files="${libs.exceptionhandler-runtime.classpath}" todir="${build.web.dir}/WEB-INF/lib"/>
         <mkdir dir="${build.web.dir}/META-INF"/>
         <manifest file="${build.web.dir}/META-INF/MANIFEST.MF" mode="update">
-            <attribute name="Class-Path" value="${manifest.file.reference.h2-1.1.112.jar} ${manifest.file.reference.log4j-1.2.15.jar} ${manifest.reference.techDecisionEJB.dist} ${manifest.libs.toplink.classpath} ${manifest.reference.ClassementPerso.jar} "/>
+            <attribute name="Class-Path" value="${manifest.file.reference.h2-1.1.112.jar} ${manifest.file.reference.log4j-1.2.15.jar} ${manifest.reference.techDecisionEJB.dist} ${manifest.libs.toplink.classpath} ${manifest.reference.ClassementPerso.jar} ${manifest.reference.JossoAgentGL2.jar} "/>
         </manifest>
     </target>
     <target depends="init" name="library-inclusion-in-archive" unless="dist.ear.dir">
@@ -545,6 +552,7 @@ exists or setup the property manually. For example like this:
         <copyfiles files="${reference.techDecisionEJB.dist}" todir="${build.web.dir}/WEB-INF/lib"/>
         <copyfiles files="${libs.toplink.classpath}" todir="${build.web.dir}/WEB-INF/lib"/>
         <copyfiles files="${reference.ClassementPerso.jar}" todir="${build.web.dir}/WEB-INF/lib"/>
+        <copyfiles files="${reference.JossoAgentGL2.jar}" todir="${build.web.dir}/WEB-INF/lib"/>
         <copyfiles files="${libs.exceptionhandler-runtime.classpath}" todir="${build.web.dir}/WEB-INF/lib"/>
     </target>
     <target depends="init,compile,compile-jsps,-pre-dist,library-inclusion-in-manifest" if="do.tmp.war.package" name="do-ear-dist">
@@ -840,6 +848,7 @@ exists or setup the property manually. For example like this:
             -->
     <target depends="init" if="no.dist.ear.dir" name="deps-clean" unless="no.deps">
         <ant antfile="${project.ClassementPerso}/build.xml" inheritall="false" target="clean"/>
+        <ant antfile="${project.JossoAgentGL2}/build.xml" inheritall="false" target="clean"/>
         <ant antfile="${project.techDecisionEJB}/build.xml" inheritall="false" target="clean"/>
     </target>
     <target depends="init" name="do-clean">

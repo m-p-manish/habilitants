@@ -192,4 +192,11 @@
             <to-view-id>/cpteAttrs/Detail.jsp</to-view-id>
         </navigation-case>
     </navigation-rule>
+    <managed-bean>
+        <description>un bean pour causer avec bean Josso</description>
+        <managed-bean-name>jossoInsideFaces</managed-bean-name>
+        <managed-bean-class>theCube.josso.JossoInsideFaces</managed-bean-class>
+        <managed-bean-scope>request</managed-bean-scope>
+    </managed-bean>
 </faces-config>
+
