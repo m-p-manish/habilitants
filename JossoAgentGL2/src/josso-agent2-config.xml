@@ -33,8 +33,8 @@
 
     <gll:FacesSSOAgent id="josso-gl2-agent2"
         sessionAccessMinInterval="1000"
-        gatewayLoginUrl="https://localhost:8443/josso/signon/login.do"
         gatewayLogoutUrl="https://localhost:8443/josso/signon/logout.do"
+        gatewayLoginUrl="https://localhost:8443/josso/signon/login.do"
 	debug="1">
 
         <gll:configuration>
@@ -52,9 +52,7 @@
                 <agent:partner-apps>
 
                     <!-- Simple definition of a partner application de type JSF Faces uniquement -->
-                    <agent:partner-app id="datamart" context="/techDecisionDB3srv">
-                        <agent:ignore-web-resource-collections>libre</agent:ignore-web-resource-collections>
-                    </agent:partner-app>
+                    <agent:partner-app id="datamart" context="/techDecisionDB3srv"/>
                     <agent:partner-app id="cube" context="/techDecisionCube"/>
                     <agent:partner-app id="test" context="/testJossoGL3"/>
                     <agent:partner-app id="ejb1" context="/techDecisionTest1"/>
@@ -68,11 +66,6 @@
             -->
             <protocol:ws-service-locator endpoint="localhost:8082" />
         </gll:gatewayServiceLocator>
-        <!-- Gateway LOGIN and LOGOUT URLs-->
-        <gatewayLoginUrl>https://localhost:8443/josso/signon/login.do</gatewayLoginUrl>
-        <gatewayLogoutUrl>https://localhost:8443/josso/signon/logout.do</gatewayLogoutUrl>
-        
-
     </gll:FacesSSOAgent>
 
 </s:beans>

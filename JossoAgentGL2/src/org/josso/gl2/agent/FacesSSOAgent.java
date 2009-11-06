@@ -212,10 +212,10 @@ public class FacesSSOAgent extends HttpSSOAgent {
     public Container getCatalinaContainer(){
         return _container;
     }
-    @Override
-    public String getGatewayLogoutUrl() {
-        return super.getGatewayLogoutUrl();
+    public String urlLogout(){
+        return super.urlLogout1();
     }
+
     protected void log2(String message) {
         if(_container != null){
             org.apache.catalina.Logger logger = _container.getLogger();
