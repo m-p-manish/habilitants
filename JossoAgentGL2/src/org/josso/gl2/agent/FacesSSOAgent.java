@@ -214,7 +214,7 @@ public class FacesSSOAgent extends HttpSSOAgent {
     }
     @Override
     public String getGatewayLogoutUrl() {
-        return _gatewayLogoutUrl;
+        return super.getGatewayLogoutUrl();
     }
     protected void log2(String message) {
         if(_container != null){
