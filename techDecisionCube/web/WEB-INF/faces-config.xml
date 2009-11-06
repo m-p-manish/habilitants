@@ -81,6 +81,11 @@
             <from-outcome>cpteattrs_list</from-outcome>
             <to-view-id>/cpteAttrs/List.jsp</to-view-id>
         </navigation-case>
+        <navigation-case>
+            <from-action>#{jossoInsideFaces.terminer}</from-action>
+            <from-outcome>logout</from-outcome>
+            <to-view-id>/login-redirect.jsp</to-view-id>
+        </navigation-case>
     </navigation-rule>
     <managed-bean>
         <description>Recherche des rôles applicatifs dans le scope du datamart H2</description>
@@ -196,7 +201,8 @@
         <description>un bean pour causer avec bean Josso</description>
         <managed-bean-name>jossoInsideFaces</managed-bean-name>
         <managed-bean-class>theCube.josso.JossoInsideFaces</managed-bean-class>
-        <managed-bean-scope>request</managed-bean-scope>
+        <managed-bean-scope>session</managed-bean-scope>
     </managed-bean>
 </faces-config>
+
 
