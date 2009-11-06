@@ -366,6 +366,9 @@ public abstract class HttpSSOAgent extends AbstractSSOAgent {
 
         return loginUrl;
     }
+    public String urlLogout1(){
+        return getGatewayLogoutUrl();
+    }
 
     /**
      * This method builds a login URL based on a HttpServletRequest.  The url contains all necessary parameters
