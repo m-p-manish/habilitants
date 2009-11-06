@@ -85,7 +85,10 @@ public class JossoInsideFaces {
                 _agent = (FacesSSOAgent) lookup.lookupSSOAgent();
                 //_agent.setsCtx(externalContext);
                 etatAgent = "démarré";
-                logoutUrl = _agent.getGatewayLogoutUrl();
+                logoutUrl = _agent.urlLogout();
+                if(logoutUrl==null){
+                    logg.info("trouve pas la valeur de logout url!");
+                }
             } catch (Exception e) {
                 logg.error("** JossoInsideFaces Erreur Initialisation du (debut) context=",e);
                 etatAgent = "erreur";
