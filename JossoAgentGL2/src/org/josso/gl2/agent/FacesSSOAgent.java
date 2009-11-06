@@ -62,7 +62,7 @@ import org.apache.commons.logging.LogFactory;
 /**
  * Agent JOSSO pour Faces et autre servlet
  * @author spopoff@rocketmail.com
- * @version 0.3
+ * @version 0.4
  */
 public class FacesSSOAgent extends HttpSSOAgent {
     private static final String AUTH_TYPE_INFO_KEY = "javax.servlet.http.authType";
@@ -213,7 +213,10 @@ public class FacesSSOAgent extends HttpSSOAgent {
         return _container;
     }
     @Override
-    protected void log(String message) {
+    public String getGatewayLogoutUrl() {
+        return _gatewayLogoutUrl;
+    }
+    protected void log2(String message) {
         if(_container != null){
             org.apache.catalina.Logger logger = _container.getLogger();
             if (logger != null){
@@ -226,8 +229,7 @@ public class FacesSSOAgent extends HttpSSOAgent {
         }
     }
 
-    @Override
-    protected void log(String message, Throwable throwable) {
+    protected void log2(String message, Throwable throwable) {
         if(_container != null){
             org.apache.catalina.Logger logger = _container.getLogger();
             if (logger != null){
@@ -239,10 +241,20 @@ public class FacesSSOAgent extends HttpSSOAgent {
             logg.info(this.toString() + ": " + message);
         }
     }
+    @Override
+    protected void log(String message) {
+        logg.info(this.toString() + ": " + message);
+    }
+
+    @Override
+    protected void log(String message, Throwable throwable) {
+        logg.error(this.toString() + ": " + message, throwable);
+    }
 
     /**
      * Return a String rendering of this object.
      */
+    @Override
     public String toString() {
 
         StringBuffer sb = new StringBuffer("FacesSSOAgent[");

@@ -68,10 +68,10 @@
             -->
             <protocol:ws-service-locator endpoint="localhost:8082" />
         </gll:gatewayServiceLocator>
-        <!-- Gateway LOGIN and LOGOUT URLs
-        <gatewayLoginUrl>http://localhost:8082/josso/signon/login.do</gatewayLoginUrl>
-        <gatewayLogoutUrl>http://localhost:8082/josso/signon/logout.do</gatewayLogoutUrl>
-        -->
+        <!-- Gateway LOGIN and LOGOUT URLs-->
+        <gatewayLoginUrl>https://localhost:8443/josso/signon/login.do</gatewayLoginUrl>
+        <gatewayLogoutUrl>https://localhost:8443/josso/signon/logout.do</gatewayLogoutUrl>
+        
 
     </gll:FacesSSOAgent>
 
