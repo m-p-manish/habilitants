@@ -72,9 +72,9 @@ package techDecision;
    import org.josso.agent.SSOAgentRequest;
    import org.josso.agent.SingleSignOnEntry;
    import org.josso.agent.http.HttpSSOAgentRequest;
-   import org.josso.servlet.agent.GenericServletLocalSession;
    import org.apache.commons.logging.Log;
    import org.apache.commons.logging.LogFactory;
+import org.josso.servlet.agent.GenericServletLocalSession;
    //import com.sun.appserv.security.ProgrammaticLogin;
    //import org.apache.catalina.util.Base64;
 

@@ -94,8 +94,8 @@ public class Lookup {
      *
      * @param configResourceName the name of the resource holding josso configuration (agent or gateway)
      */
-    public void init(String configResourceName) {
-        logger.info("Init resourceName <" + configResourceName + ">");
+    public void init(String configResourceName, String from) {
+        logger.info("Init resourceName <" + configResourceName + "> from="+from);
         this.configResourceName = configResourceName;
     }
 

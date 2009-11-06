@@ -1,5 +1,5 @@
 /*
-Copyright Stéphane Georges Popoff, (octobre 2009)
+Copyright Stéphane Georges Popoff, (novembre 2009)
 
 spopoff@rocketmail.com
 
@@ -37,6 +37,8 @@ package org.josso.gl2.agent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.ServletContextEvent;
 import org.josso.agent.Lookup;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * Initialisation de 'agent sur le startup de l'application
@@ -45,25 +47,26 @@ import org.josso.agent.Lookup;
  */
 public class JossoAgentStartup implements ServletContextListener {
     private FacesSSOAgent _agent;
+    private static final Log logg = LogFactory.getLog(JossoAgentStartup.class);
 
     public void contextInitialized(ServletContextEvent ctx) {
-        System.out.println("** Initialisation du context="+ctx.getServletContext().getContextPath());
+        logg.info("** JossoAgentStartup Initialisation du context="+ctx.getServletContext().getContextPath());
         if (_agent == null) {
 
             try {
 
                 Lookup lookup = Lookup.getInstance();
-                lookup.init("josso-agent2-config.xml");
+                lookup.init("josso-agent2-config.xml", ctx.getServletContext().getContextPath());
                 _agent = (FacesSSOAgent) lookup.lookupSSOAgent();
                 _agent.start();
                 _agent.setDebug(1);
                 _agent.setsCtx(ctx.getServletContext());
             } catch (Exception e) {
-                System.out.println("** Erreur Initialisation du (debut) context="+e.toString());
+                logg.error("** JossoAgentStartup Erreur Initialisation du (debut) context=",e);
             }
         }
 
-        System.out.println("** Fin Initialisation du context="+ctx.getServletContext().getContextPath());
+        logg.info("** Fin Initialisation du context="+ctx.getServletContext().getContextPath());
     }
 
     public void contextDestroyed(ServletContextEvent arg0) {
