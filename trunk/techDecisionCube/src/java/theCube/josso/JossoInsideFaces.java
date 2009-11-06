@@ -35,8 +35,10 @@ termes.
 
 package theCube.josso;
 
+import java.io.IOException;
 import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
+import javax.servlet.http.HttpServletResponse;
 import org.josso.gl2.agent.FacesSSOAgent;
 import org.apache.log4j.Logger;
 import org.josso.agent.Lookup;
@@ -87,7 +89,9 @@ public class JossoInsideFaces {
                 etatAgent = "démarré";
                 logoutUrl = _agent.urlLogout();
                 if(logoutUrl==null){
-                    logg.info("trouve pas la valeur de logout url!");
+                    logg.info("** JossoInsideFaces trouve pas la valeur de logout url!");
+                }else{
+                    logg.info("** JossoInsideFaces logout url = "+logoutUrl);
                 }
             } catch (Exception e) {
                 logg.error("** JossoInsideFaces Erreur Initialisation du (debut) context=",e);
@@ -99,5 +103,15 @@ public class JossoInsideFaces {
 
         logg.info("** JossoInsideFaces Fin Initialisation du context="+externalContext.toString());
     }
-
+    public String terminer(){
+        /*FacesContext context = FacesContext.getCurrentInstance();
+        ExternalContext external = context.getExternalContext();
+        HttpServletResponse response = (HttpServletResponse) external.getResponse();
+        try {
+        response.sendRedirect(logoutUrl);
+        } catch (IOException ex) {
+        logg.error(JossoInsideFaces.class.getName(), ex);
+        }*/
+        return "logout";
+    }
 }
