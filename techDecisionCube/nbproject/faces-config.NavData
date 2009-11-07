@@ -11,7 +11,7 @@
         <Node id="cpteAttrs/New.jsp" x="782" y="105" zoom="true"/>
         <Node id="cpteAttrs/Edit.jsp" x="810" y="216" zoom="true"/>
         <Node id="identite/List2.jsp" x="815" y="157" zoom="true"/>
-        <Node id="welcomeJSF.jsp" x="176" y="34" zoom="true"/>
+        <Node id="welcomeJSF.jsp" x="176" y="34" zoom="false"/>
     </Scope>
     <Scope Scope="All Faces Configurations"/>
 </Scene>

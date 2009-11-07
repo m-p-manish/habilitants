@@ -104,14 +104,15 @@ public class JossoInsideFaces {
         logg.info("** JossoInsideFaces Fin Initialisation du context="+externalContext.toString());
     }
     public String terminer(){
-        /*FacesContext context = FacesContext.getCurrentInstance();
+        FacesContext context = FacesContext.getCurrentInstance();
         ExternalContext external = context.getExternalContext();
-        HttpServletResponse response = (HttpServletResponse) external.getResponse();
+        //HttpServletResponse response = (HttpServletResponse) external.getResponse();
         try {
-        response.sendRedirect(logoutUrl);
+            external.redirect(logoutUrl);
         } catch (IOException ex) {
-        logg.error(JossoInsideFaces.class.getName(), ex);
-        }*/
-        return "logout";
+            logg.error(JossoInsideFaces.class.getName(), ex);
+            return "logout";
+        }
+        return null;
     }
 }

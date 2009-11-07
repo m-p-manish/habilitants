@@ -82,7 +82,6 @@
             <to-view-id>/cpteAttrs/List.jsp</to-view-id>
         </navigation-case>
         <navigation-case>
-            <from-action>#{jossoInsideFaces.terminer}</from-action>
             <from-outcome>logout</from-outcome>
             <to-view-id>/login-redirect.jsp</to-view-id>
         </navigation-case>
@@ -204,5 +203,6 @@
         <managed-bean-scope>session</managed-bean-scope>
     </managed-bean>
 </faces-config>
+
 
 
