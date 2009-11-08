@@ -315,7 +315,11 @@ public class SSOAgentValve extends ValveBase
 
         if (debug >= 1)
             log("***Processing : " + hreq.getContextPath() + " ["+hreq.getRequestURL()+"] path="+hreq.getPathInfo());
-
+        try {
+            container = (Container) request.getContext();
+        } catch (Exception e) {
+            log("Erreur sur cast container", e);
+        }
         try {
             // ------------------------------------------------------------------
             // Check with the agent if this context should be processed.
@@ -347,13 +351,6 @@ public class SSOAgentValve extends ValveBase
                 hres.setHeader("P3P", cfg.getP3PHeaderValue());
             }
 
-            //TA1
-            // si on demande la page de login alors on utilise le filtre après la valve !
-            if(cfg.getLoginPage() != null){
-                //dans ce cas on passe par le filtre
-                ret =  Valve.INVOKE_NEXT;
-                return ret;
-            }
             // ------------------------------------------------------------------
             // Check if this URI is subject to SSO protection
             // ------------------------------------------------------------------
@@ -456,6 +453,39 @@ public class SSOAgentValve extends ValveBase
                 iBoucle = 0;
             }
             String username = processAuthorizationToken(hreq);
+            log("TA1 uri="+hreq.getRequestURI()+" se termine par "+cfg.getLoginPage()+" rep="+hreq.getRequestURI().endsWith(cfg.getLoginPage())+" test cookie="+testCookie2Session(hreq, session.getId()));
+            if (!testCookie2Session(hreq, session.getId()) && hreq.getRequestURI().endsWith(cfg.getLoginPage())) {
+                 log("TA1 on demande l'authentification locale on switche vers Josso");
+                 Cookie gato = newJossoCookie2(hreq.getContextPath(), session.getId(), COOKIE_LOGIN);
+                 hres.addCookie(gato);
+                 String loginUrl = _agent.buildLoginUrl(hreq);
+                 hres.setStatus(HttpServletResponse.SC_MOVED_TEMPORARILY);
+                 //response.setHeader("Location", jeVeux);
+                 hres.sendRedirect(loginUrl);
+                 ret =  Valve.END_PIPELINE;
+                 return ret;
+            }
+            //TA11
+            //on revient du login chez josso équivalent security check
+            log("TA11 cookie="+session.getId());
+             if (testCookie2Session(hreq, session.getId()) && hreq.getRequestURI().endsWith(cfg.getLoginPage())) {
+                 log("TA11 on revient comme pour security check");
+                 try {
+                     log("Avant sur webProgrammaticLogin -------------"+iBoucle);
+
+                     if(!WebProgrammaticLogin.login(session.getId(), session.getId(), "jossoRealm", hreq, hres)){
+                                 log("Erreur sur webProgrammaticLogin");
+                     }else{
+                                  log("Réussite sur webProgrammaticLogin");
+                     }
+                     log("Après sur webProgrammaticLogin-------------"+iBoucle);
+                }catch (Exception err){
+                     log("SSOAgentValve Erreur2 finalisation contexte securité", err);
+                     throw err;
+                }
+                ret = Valve.INVOKE_NEXT;
+                return ret;
+             }
             //TA2
             //equivalent à la page de login si pas autorisé on passe par l'authent
             if (username == null && getSavedRequestURL(session)==null) {
@@ -1286,6 +1316,7 @@ public class SSOAgentValve extends ValveBase
      *
      * @param path  the path associated with the cookie, normaly the partner application context.
      * @param value the SSO Session ID
+     * @param  type le type du cookie
      * @return
      */
     private Cookie newJossoCookie2(String path, String value, String type) {
