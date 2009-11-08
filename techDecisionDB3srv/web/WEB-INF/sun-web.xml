@@ -13,5 +13,4 @@
     </property>
   </jsp-config>
   <property name="valve_Josso" value="org.josso.gl2.agent.SSOAgentValve"/>
- --&gt;
 </sun-web-app>
