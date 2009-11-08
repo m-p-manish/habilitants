@@ -322,6 +322,7 @@ public class SSOAgentValve extends ValveBase
             // ------------------------------------------------------------------
             String contextPath = hreq.getContextPath();
             String vhost = hreq.getServerName();
+            _agent.setCatalinaContainer(container);
 
             // In catalina, the empty context is considered the root context
             if ("".equals(contextPath))
@@ -346,6 +347,13 @@ public class SSOAgentValve extends ValveBase
                 hres.setHeader("P3P", cfg.getP3PHeaderValue());
             }
 
+            //TA1
+            // si on demande la page de login alors on utilise le filtre après la valve !
+            if(cfg.getLoginPage() != null){
+                //dans ce cas on passe par le filtre
+                ret =  Valve.INVOKE_NEXT;
+                return ret;
+            }
             // ------------------------------------------------------------------
             // Check if this URI is subject to SSO protection
             // ------------------------------------------------------------------
@@ -359,6 +367,7 @@ public class SSOAgentValve extends ValveBase
             // Get our session ...
             session = getSession(((HttpRequest) request), true);
             testCookieSession(hreq);
+
             //T3 on revient après authentification réussie et pour finalisation
             if(_agent.isSSOIDloged(jossoSessionId)){
                 iBoucle++;
@@ -446,60 +455,7 @@ public class SSOAgentValve extends ValveBase
                 log("T3 SSOAgentValve Info retour pas authentifié pour " + jossoSessionId);
                 iBoucle = 0;
             }
-            //TA1
-            // si on demande la page de login alors il faut s'authentifier chez josso !
             String username = processAuthorizationToken(hreq);
-            log("TA1 uri="+hreq.getRequestURI()+" se termine par "+cfg.getLoginPage()+" rep="+hreq.getRequestURI().endsWith(cfg.getLoginPage())+" test cookie="+testCookie2Session(hreq, session.getId()));
-             if (!testCookie2Session(hreq, session.getId()) && hreq.getRequestURI().endsWith(cfg.getLoginPage())) {
-                 log("TA1 on demande l'authentification locale on switche vers Josso");
-                 Cookie gato = newJossoCookie2(hreq.getContextPath(), session.getId(), COOKIE_LOGIN);
-                 hres.addCookie(gato);
-                 String loginUrl = _agent.buildLoginUrl(hreq);
-                 hres.setStatus(HttpServletResponse.SC_MOVED_TEMPORARILY);
-                 //response.setHeader("Location", jeVeux);
-                 hres.sendRedirect(loginUrl);
-                 ret =  Valve.END_PIPELINE;
-                 return ret;
-            }
-            //TA11
-            //on revient du login chez josso équivalent security check
-            log("TA11 cookie="+session.getId());
-             if (testCookie2Session(hreq, session.getId()) && hreq.getRequestURI().endsWith(cfg.getLoginPage())) {
-                 log("TA11 on revient comme pour security check");
-                 assertionId = hreq.getParameter(Constants.JOSSO_ASSERTION_ID_PARAMETER);
-                 if(assertionId==null){
-                     log("TA11 assertionId est vide");
-                 } else {
-                    HttpSSOAgentRequest relayRequest;
-
-                    relayRequest = new HttpSSOAgentRequest(SSOAgentRequest.ACTION_RELAY, null, localSession, assertionId);
-                    if (debug >= 1)
-                        log("TA11 Outbound relaying requested for assertion id=" + assertionId + " sessionID="+relayRequest.getSessionId());
-
-                    relayRequest.setRequest(hreq);
-                    relayRequest.setResponse(hres);
-                    relayRequest.setContext(request.getContext());
-
-                    SingleSignOnEntry entry = _agent.processRequest(relayRequest);
-                    //T10-1
-                    if (entry == null) {
-                        // This is wrong! We should have an entry here!
-                        if (debug >= 1)
-                            log("TA11-1 Outbound relaying failed for assertion id [" + assertionId + "], no Principal found.");
-                        // Throw an exception, we will handle it below !
-                        throw new RuntimeException("Outbound relaying failed. No Principal found. Verify your SSO Agent Configuration!");
-                    }
-                    //T10-2
-                    if (debug >= 1)
-                        log("TA11-2 Outbound relaying succesfull for assertion id [" + assertionId + "]");
-
-                    if (debug >= 1)
-                        log("TA11-2 Assertion id [" + assertionId + "] mapped to SSO session id [" + entry.ssoId + "]");
-                    securityCheck(hreq,hres,"",cfg,"TA11");
-                    ret = Valve.END_PIPELINE;
-                    return ret;
-                 }
-             }
             //TA2
             //equivalent à la page de login si pas autorisé on passe par l'authent
             if (username == null && getSavedRequestURL(session)==null) {
@@ -585,7 +541,7 @@ public class SSOAgentValve extends ValveBase
             testCookieSession(hreq);
             if (debug >= 1)
                 log("T6 Session is: " + session);
-            localSession = new CatalinaLocalSession(session);
+            //localSession = new CatalinaLocalSession(session);
             //T7
             // ------------------------------------------------------------------
             // Check if the partner application submitted custom login form
