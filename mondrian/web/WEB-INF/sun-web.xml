@@ -21,4 +21,5 @@
       <description>Keep a copy of the generated servlet class' java code.</description>
     </property>
   </jsp-config>
+  <property name="valve_Josso" value="org.josso.gl2.agent.SSOAgentValve"/>
 </sun-web-app>

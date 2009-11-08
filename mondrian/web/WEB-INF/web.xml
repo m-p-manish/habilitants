@@ -72,7 +72,12 @@
       <param-name>connectString</param-name>
       <param-value>@mondrian.webapp.connectString@</param-value>
     </init-param>
-  </servlet>
+        <security-role-ref>
+            <description/>
+            <role-name>role1</role-name>
+            <role-link>role1</role-link>
+        </security-role-ref>
+        </servlet>
 
   <servlet>
     <servlet-name>MondrianXmlaServlet</servlet-name>
@@ -83,32 +88,49 @@
       <param-value>/datasources.xml</param-value>
     </init-param>
     -->
-  </servlet>
+        <security-role-ref>
+            <description/>
+            <role-name>role1</role-name>
+            <role-link>role1</role-link>
+        </security-role-ref>
+        </servlet>
 
 
   <!-- jfreechart provided servlet -->
   <servlet>
     <servlet-name>DisplayChart</servlet-name>
     <servlet-class>org.jfree.chart.servlet.DisplayChart</servlet-class>
-  </servlet>
+        <security-role-ref>
+            <description/>
+            <role-name>role1</role-name>
+            <role-link>role1</role-link>
+        </security-role-ref>
+        </servlet>
 
   <!-- jfreechart provided servlet -->
   <servlet>
     <servlet-name>GetChart</servlet-name>
    <!-- <display-name>GetChart</display-name> -->
     <servlet-class>com.tonbeller.jpivot.chart.GetChart</servlet-class>
-  </servlet>
+        <security-role-ref>
+            <description/>
+            <role-name>role1</role-name>
+            <role-link>role1</role-link>
+        </security-role-ref>
+        </servlet>
   <servlet>
     <servlet-name>Print</servlet-name>
   <!--  <display-name>Print</display-name> -->
     <servlet-class>com.tonbeller.jpivot.print.PrintServlet</servlet-class>
-  </servlet>
+        <security-role-ref>
+            <description/>
+            <role-name>role1</role-name>
+            <role-link>role1</role-link>
+        </security-role-ref>
+        </servlet>
 
-    <servlet>
-        <servlet-name>Faces Servlet</servlet-name>
-        <servlet-class>javax.faces.webapp.FacesServlet</servlet-class>
-        <load-on-startup>1</load-on-startup>
-    </servlet>
+
+
     <servlet>
         <servlet-name>ConnectH2</servlet-name>
         <servlet-class>com.spopoff.ConnectH2</servlet-class>
@@ -136,10 +158,8 @@
     <url-pattern>/xmla</url-pattern>
   </servlet-mapping>
 
-    <servlet-mapping>
-        <servlet-name>Faces Servlet</servlet-name>
-        <url-pattern>/faces/*</url-pattern>
-    </servlet-mapping>
+
+
     <servlet-mapping>
         <servlet-name>ConnectH2</servlet-name>
         <url-pattern>/connect</url-pattern>
@@ -161,13 +181,17 @@
             <http-method>TRACE</http-method>
             <http-method>DELETE</http-method>
         </web-resource-collection>
+        <auth-constraint>
+            <description/>
+            <role-name>role1</role-name>
+            </auth-constraint>
         </security-constraint>
     <login-config>
         <auth-method>FORM</auth-method>
         <realm-name>jossoRealm</realm-name>
         <form-login-config>
-            <form-login-page>/login-redirect.jsp</form-login-page>
-            <form-error-page>/login-redirect.jsp</form-error-page>
+            <form-login-page>/login.html</form-login-page>
+            <form-error-page>/login.html</form-error-page>
             </form-login-config>
         </login-config>
     <security-role>
