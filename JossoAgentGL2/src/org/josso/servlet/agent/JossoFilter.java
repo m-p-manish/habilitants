@@ -81,6 +81,9 @@ public class JossoFilter implements Filter {
     private Session session = null;
     private String assertionId = null;
     private int iBoucle = 0;
+    private int debug = 0;
+    private final String COOKIE_LOGIN = "JOSSO_SESSION_LOGIN";
+    private ServletContext ctx = null;
 
     /**
      * Logger
@@ -93,12 +96,10 @@ public class JossoFilter implements Filter {
 
     public void init(FilterConfig filterConfig) throws ServletException {
         // Validate and update our current component state
-        ServletContext ctx = filterConfig.getServletContext();
+        ctx = filterConfig.getServletContext();
         String nom = filterConfig.getInitParameter("leNom");
-        logg("Initialisation du filtre pour "+nom);
+        logg("Initialisation du filtre pour="+nom+" contextName="+ctx.getContextPath());
         ctx.setAttribute(KEY_SESSION_MAP, new HashMap());
-        container = (Container) ctx.getContext(nom);
-
         if (_agent == null) {
 
             try {
@@ -108,7 +109,7 @@ public class JossoFilter implements Filter {
 
                 // We need at least an abstract SSO Agent
                 _agent = (FacesSSOAgent) lookup.lookupSSOAgent();
-                if (log.isDebugEnabled())
+                if (debug==1)
                     _agent.setDebug(1);
                 _agent.start();
             } catch (Exception e) {
@@ -127,8 +128,8 @@ public class JossoFilter implements Filter {
 
         HttpServletResponse hres =
                 (HttpServletResponse) response;
-
-        if (log.isDebugEnabled())
+        debug = 1;
+        if (debug==1)
             log.debug("Processing : " + hreq.getContextPath());
 
         try {
@@ -137,7 +138,7 @@ public class JossoFilter implements Filter {
             // ------------------------------------------------------------------
             String contextPath = hreq.getContextPath();
             String vhost = hreq.getServerName();
-            _agent.setCatalinaContainer(container);
+            //_agent.setCatalinaContainer(container);
             // In catalina, the empty context is considered the root context
             if ("".equals(contextPath))
                 contextPath = "/";
@@ -176,7 +177,18 @@ public class JossoFilter implements Filter {
             HttpSession session = hreq.getSession(true);
             
             testCookieSession(hreq);
-
+            //TA1 pas de cookie et on trouve la page de login attendue dans la déclaration du contexte agent
+            logg("TA1 uri="+hreq.getRequestURI()+" se termine par "+cfg.getLoginPage()+" rep="+hreq.getRequestURI().endsWith(cfg.getLoginPage())+" test cookie="+testCookie2Session(hreq, session.getId()));
+            if (!testCookie2Session(hreq, session.getId()) && hreq.getRequestURI().endsWith(cfg.getLoginPage())) {
+                 logg("TA1 on demande l'authentification locale on switche vers Josso");
+                 Cookie gato = newJossoCookie2(hreq.getContextPath(), session.getId(), COOKIE_LOGIN);
+                 hres.addCookie(gato);
+                 String loginUrl = _agent.buildLoginUrl(hreq);
+                 hres.setStatus(HttpServletResponse.SC_MOVED_TEMPORARILY);
+                 //response.setHeader("Location", jeVeux);
+                 hres.sendRedirect(loginUrl);
+                 return;
+            }
             //T3 on revient après authentification réussie et pour finalisation
             if(_agent.isSSOIDloged(jossoSessionId)){
                 iBoucle++;
@@ -184,7 +196,7 @@ public class JossoFilter implements Filter {
                 SSOAgentRequest r = doMakeSSOAgentRequest(SSOAgentRequest.ACTION_ESTABLISH_SECURITY_CONTEXT, jossoSessionId, localSession, null, hreq, hres);
                 SingleSignOnEntry entry = _agent.processRequest(r);
 
-                if (log.isDebugEnabled())
+                if (debug==1)
                     log.debug("Executed agent.");
 
                 // Get session map for this servlet context.
@@ -199,11 +211,11 @@ public class JossoFilter implements Filter {
                 // ------------------------------------------------------------------
                 // Has a valid user already been authenticated?
                 // ------------------------------------------------------------------
-                if (log.isDebugEnabled())
+                if (debug==1)
                     log.debug("Process request for '" + hreq.getRequestURI() + "'");
 
                 if (entry != null) {
-                    if (log.isDebugEnabled())
+                    if (debug==1)
                         log.debug("Principal '" + entry.principal +
                             "' has already been authenticated");
                     // TODO : Not supported
@@ -221,14 +233,14 @@ public class JossoFilter implements Filter {
 
                     if (cookie != null || (getSavedRequestURL(session) == null && _agent.isAutomaticLoginRequired(hreq))) {
 
-                        if (log.isDebugEnabled())
+                        if (debug==1)
                             log.debug("SSO Session is not valid, attempting automatic login");
 
                         // Save current request, so we can co back to it later ...
                         saveRequestURL(hreq, session);
                         String loginUrl = _agent.buildLoginOptionalUrl(hreq);
 
-                        if (log.isDebugEnabled())
+                        if (debug==1)
                             log.debug("Redirecting to login url '" + loginUrl + "'");
 
                         //set non cache headers
@@ -236,7 +248,7 @@ public class JossoFilter implements Filter {
                         hres.sendRedirect(hres.encodeRedirectURL(loginUrl));
                         return;
                     } else {
-                        if (log.isDebugEnabled())
+                        if (debug==1)
                             log.debug("SSO cookie is not present, but login optional process is not required");
                     }
 
@@ -272,13 +284,13 @@ public class JossoFilter implements Filter {
             // ------------------------------------------------------------------
             // Check if the partner application required the login form
             // ------------------------------------------------------------------
-            if (log.isDebugEnabled())
+            if (debug==1)
                 log.debug("T4 Checking if its a josso_login_request for '" + hreq.getRequestURI() + "'");
 
             if (hreq.getRequestURI().endsWith(_agent.getJOSSOLoginUri()) || 
             		hreq.getRequestURI().endsWith(_agent.getJOSSOUserLoginUri())) {
 
-                if (log.isDebugEnabled())
+                if (debug==1)
                     log.debug("T4 josso_login_request received for uri '" + hreq.getRequestURI() + "'");
 
                 //save referer url in case the user clicked on Login from some public resource (page)
@@ -291,7 +303,7 @@ public class JossoFilter implements Filter {
                 
                 String loginUrl = _agent.buildLoginUrl(hreq);
 
-                if (log.isDebugEnabled())
+                if (debug==1)
                     log.debug("T4 Redirecting to login url '" + loginUrl + "'");
 
                 //set non cache headers
@@ -306,17 +318,17 @@ public class JossoFilter implements Filter {
             // ------------------------------------------------------------------
             // Check if the partner application required a logout
             // ------------------------------------------------------------------
-            if (log.isDebugEnabled())
+            if (debug==1)
                 log.debug("T5 Checking if its a josso_logout request for '" + hreq.getRequestURI() + "'");
 
             if (hreq.getRequestURI().endsWith(_agent.getJOSSOLogoutUri())) {
 
-                if (log.isDebugEnabled())
+                if (debug==1)
                     log.debug("T5 josso_logout request received for uri '" + hreq.getRequestURI() + "'");
 
                 String logoutUrl = _agent.buildLogoutUrl(hreq, cfg);
 
-                if (log.isDebugEnabled())
+                if (debug==1)
                     log.debug("T5 Redirecting to logout url '" + logoutUrl + "'");
 
                 // Clear previous COOKIE ...
@@ -341,12 +353,12 @@ public class JossoFilter implements Filter {
             // Check if the partner application submitted custom login form
             // ------------------------------------------------------------------
             
-            if (log.isDebugEnabled()){
+            if (debug==1){
                 log.debug("T7 Checking if its a josso_authentication for '" + hreq.getRequestURI() + "'");
             }
             if (hreq.getRequestURI().endsWith(_agent.getJOSSOAuthenticationUri())) {
 
-            	if (log.isDebugEnabled()){
+            	if (debug==1){
                     log.debug("T7 josso_authentication received for uri '" + hreq.getRequestURI() + "'");
             	}
             	
@@ -364,7 +376,7 @@ public class JossoFilter implements Filter {
                 // Trigger LOGIN OPTIONAL if required
                 // ------------------------------------------------------------------
 
-            	 if (log.isDebugEnabled())
+            	 if (debug==1)
             		 log.debug("T8 SSO cookie is not present, verifying optional login process ");
 
                 // We have no cookie, remember me is enabled and a security check without assertion was received ...
@@ -372,7 +384,7 @@ public class JossoFilter implements Filter {
                 if (hreq.getRequestURI().endsWith(_agent.getJOSSOSecurityCheckUri()) &&
                     hreq.getParameter("josso_assertion_id") == null) {
 
-                	 if (log.isDebugEnabled())
+                	 if (debug==1)
                 		 log.debug("T8-1 "+_agent.getJOSSOSecurityCheckUri() + " received without assertion.  Login Optional Process failed");
 
                     String requestURI = getSavedRequestURL(session);
@@ -388,14 +400,14 @@ public class JossoFilter implements Filter {
                     if (!_agent.isResourceIgnored(cfg, hreq) && 
                     		_agent.isAutomaticLoginRequired(hreq)) {
 
-                        if (log.isDebugEnabled())
+                        if (debug==1)
                         	log.debug("T8-2 SSO cookie is not present, attempting automatic login");
 
                         // Save current request, so we can co back to it later ...
                         saveRequestURL(hreq, session);
                         String loginUrl = _agent.buildLoginOptionalUrl(hreq);
 
-                        if (log.isDebugEnabled())
+                        if (debug==1)
                         	log.debug("T8-2 Redirecting to login url '" + loginUrl + "'");
                         
                         //set non cache headers
@@ -403,12 +415,12 @@ public class JossoFilter implements Filter {
                         hres.sendRedirect(hres.encodeRedirectURL(loginUrl));
                         return;
                     } else {
-                    	if (log.isDebugEnabled())
+                    	if (debug==1)
                     		log.debug("T8-2 SSO cookie is not present, but login optional process is not required");
                     }
                 }
                 
-                if (log.isDebugEnabled())
+                if (debug==1)
                 	log.debug("T8-3 SSO cookie is not present, checking for outbound relaying");
 
                 if (!(hreq.getRequestURI().endsWith(_agent.getJOSSOSecurityCheckUri()) &&
@@ -421,25 +433,25 @@ public class JossoFilter implements Filter {
             }
 
             // This URI should be protected by SSO, go on ...
-            if (log.isDebugEnabled())
+            if (debug==1)
                 log.debug("Session is: " + session);
             
             // ------------------------------------------------------------------
             // Invoke the SSO Agent
             // ------------------------------------------------------------------
-            if (log.isDebugEnabled())
+            if (debug==1)
                 log.debug("Executing agent...");
             //T10  /josso_security_check
             // ------------------------------------------------------------------
             // Check if a user has been authenitcated and should be checked by the agent.
             // ------------------------------------------------------------------
-            if (log.isDebugEnabled())
+            if (debug==1)
                 log.debug("T10 Checking if its a josso_security_check for '" + hreq.getRequestURI() + "'");
 
             if (hreq.getRequestURI().endsWith(_agent.getJOSSOSecurityCheckUri()) &&
                 hreq.getParameter("josso_assertion_id") != null) {
 
-                if (log.isDebugEnabled())
+                if (debug==1)
                     log.debug("T10 josso_security_check received for uri '" + hreq.getRequestURI() + "' assertion id '" +
                             hreq.getParameter("josso_assertion_id")
                     );
@@ -448,7 +460,7 @@ public class JossoFilter implements Filter {
 
                 GenericServletSSOAgentRequest relayRequest;
 
-                if (log.isDebugEnabled())
+                if (debug==1)
                     log.debug("T10 Outbound relaying requested for assertion id [" + assertionId + "]");
 
                 relayRequest = (GenericServletSSOAgentRequest) doMakeSSOAgentRequest( SSOAgentRequest.ACTION_RELAY, null, localSession, assertionId, hreq, hres);
@@ -461,10 +473,10 @@ public class JossoFilter implements Filter {
                     throw new ServletException("No Principal found. Verify your SSO Agent Configuration!");
                 }
 
-                if (log.isDebugEnabled())
+                if (debug==1)
                     log.debug("T10-2 Outbound relaying succesfull for assertion id [" + assertionId + "]");
 
-                if (log.isDebugEnabled())
+                if (debug==1)
                     log.debug("T10-2 Assertion id [" + assertionId + "] mapped to SSO session id [" + entry.ssoId + "]");
 
                 // The cookie is valid to for the partner application only ... in the future each partner app may
@@ -498,7 +510,7 @@ public class JossoFilter implements Filter {
 	                        }
 	                    }
 	
-	                    if (log.isDebugEnabled())
+	                    if (debug==1)
 	                        log.debug("T10 No saved request found, using : '" + requestURI + "'");
 	                }
                 }
@@ -511,11 +523,11 @@ public class JossoFilter implements Filter {
                 String postAuthURI = cfg.getPostAuthenticationResource();
                 if (postAuthURI != null) {
                     String postAuthURL = _agent.buildPostAuthUrl(hres, requestURI, postAuthURI);
-                    if (log.isDebugEnabled())
+                    if (debug==1)
                         log.debug("T10 Redirecting to post-auth-resource '" + postAuthURL  + "'");
                     hres.sendRedirect(postAuthURL);
                 } else {
-                	if (log.isDebugEnabled())
+                	if (debug==1)
                          log.debug("T10 Redirecting to original '" + requestURI + "'");
                     hres.sendRedirect(hres.encodeRedirectURL(requestURI));
                 }
@@ -525,7 +537,7 @@ public class JossoFilter implements Filter {
 
 
         } finally {
-            if (log.isDebugEnabled())
+            if (debug==1)
                 log.debug("Processed : " + hreq.getContextPath());
         }
     }
@@ -644,7 +656,7 @@ public class JossoFilter implements Filter {
 
         StringBuffer sb = new StringBuffer("JossoFilter[");
         // Sometimes the container is not present when this method is invoked ...
-        sb.append(container != null ? container.getName() : "");
+        sb.append(ctx != null ? ctx.getContextPath() : "");
         sb.append("]");
         return (sb.toString());
 
@@ -653,7 +665,7 @@ public class JossoFilter implements Filter {
         // ------------------------------------------------------------------
         // Check for the single sign on cookie
         // ------------------------------------------------------------------
-        if (log.isDebugEnabled())
+        if (debug==1)
             log.debug("Checking for SSO cookie");
         cookie = null;
         Cookie cookies[] = req.getCookies();
@@ -669,5 +681,46 @@ public class JossoFilter implements Filter {
         jossoSessionId = (cookie == null) ? null : cookie.getValue();
         localSession = new CatalinaLocalSession(session);
 
+    }
+     private Boolean testCookie2Session(HttpServletRequest req, String sessionID){
+        // ------------------------------------------------------------------
+        // Check for the single sign on cookie
+        // ------------------------------------------------------------------
+        Boolean ret = false;
+        Cookie cookies[] = req.getCookies();
+        if (cookies == null)
+            cookies = new Cookie[0];
+        for (int i = 0; i < cookies.length; i++) {
+            if (COOKIE_LOGIN.equals(cookies[i].getName()) && sessionID.equals(cookies[i].getValue())) {
+                ret = true;
+                break;
+            }
+        }
+
+        return ret;
+    }
+    /**
+     * This creates a new JOSSO Cookie for the given path and value.
+     *
+     * @param path  the path associated with the cookie, normaly the partner application context.
+     * @param value the SSO Session ID
+     * @param  type le type du cookie
+     * @return
+     */
+    private Cookie newJossoCookie2(String path, String value, String type) {
+
+        // Some browsers don't like cookies without paths. This is useful for partner applications configured in the root context
+        if (path == null || "".equals(path))
+            path = "/";
+
+        Cookie ssoCookie = new Cookie(type, value);
+        ssoCookie.setMaxAge(-1);
+        ssoCookie.setPath(path);
+
+        // TODO : Check domain / secure ?
+        //ssoCookie.setDomain(cfg.getSessionTokenScope());
+        //ssoCookie.setSecure(true);
+
+        return ssoCookie;
     }
 }

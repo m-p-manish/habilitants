@@ -205,7 +205,7 @@ public class FacesSSOAgent extends HttpSSOAgent {
      * @param container
      */
     public void setCatalinaContainer(Container container) {
-        log("****Mise à jour du container CatalinaSSOAgent !");
+        log("****Mise à jour du container CatalinaSSOAgent par="+container.getName());
         _container = container;
 
     }
