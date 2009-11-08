@@ -56,6 +56,9 @@
                     <agent:partner-app id="cube" context="/techDecisionCube"/>
                     <agent:partner-app id="test" context="/testJossoGL3"/>
                     <agent:partner-app id="ejb1" context="/techDecisionTest1"/>
+                    <agent:partner-app id="analyse" context="/mondrian">
+                        <agent:loginPage>/login.html</agent:loginPage>
+                    </agent:partner-app>
                 </agent:partner-apps>
 
             </agent:agent-configuration>

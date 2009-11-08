@@ -135,6 +135,7 @@ public class SSOAgentValve extends ValveBase
     private Session session = null;
     private String assertionId = null;
     private int iBoucle = 0;
+    private final String COOKIE_LOGIN = "JOSSO_SESSION_LOGIN";
 
     // ------------------------------------------------------------- Properties
 
@@ -240,8 +241,8 @@ public class SSOAgentValve extends ValveBase
             _agent.setDebug(debug);
             _agent.setCatalinaContainer(container);
         } catch (Exception e) {
-            System.err.println(e.getMessage());
-            e.printStackTrace(System.err);
+            log("Erreur starting ",e);
+            //e.printStackTrace(System.err);
             throw new LifecycleException("Error starting SSOAgentValve : " + e.getMessage());
         }
         _agent.start();
@@ -329,9 +330,9 @@ public class SSOAgentValve extends ValveBase
             if (!_agent.isPartnerApp(vhost, contextPath)) {
                 if (debug >= 1)
                     log("T1 Context is not a josso partner app : " + hreq.getContextPath());
-
-                ret =  Valve.INVOKE_NEXT;
-                return ret;
+                    hres.sendError(hres.SC_UNAUTHORIZED, "vérifier config agent ajouter le contexte");
+                    ret =  Valve.END_PIPELINE;
+                    return ret;
               }else{
                   log("T1 Context IS a josso partner app =" + hreq.getContextPath());
               }
@@ -445,11 +446,64 @@ public class SSOAgentValve extends ValveBase
                 log("T3 SSOAgentValve Info retour pas authentifié pour " + jossoSessionId);
                 iBoucle = 0;
             }
-            //TA
-             //equivalent à la page de login si pas autorisé on passe par l'authent
-             String username = processAuthorizationToken(hreq);
-             if (username == null && getSavedRequestURL(session)==null) {
-                 log("TA Il faut une authentification préalable (première URL)! session="+session.getId());
+            //TA1
+            // si on demande la page de login alors il faut s'authentifier chez josso !
+            String username = processAuthorizationToken(hreq);
+            log("TA1 uri="+hreq.getRequestURI()+" se termine par "+cfg.getLoginPage()+" rep="+hreq.getRequestURI().endsWith(cfg.getLoginPage())+" test cookie="+testCookie2Session(hreq, session.getId()));
+             if (!testCookie2Session(hreq, session.getId()) && hreq.getRequestURI().endsWith(cfg.getLoginPage())) {
+                 log("TA1 on demande l'authentification locale on switche vers Josso");
+                 Cookie gato = newJossoCookie2(hreq.getContextPath(), session.getId(), COOKIE_LOGIN);
+                 hres.addCookie(gato);
+                 String loginUrl = _agent.buildLoginUrl(hreq);
+                 hres.setStatus(HttpServletResponse.SC_MOVED_TEMPORARILY);
+                 //response.setHeader("Location", jeVeux);
+                 hres.sendRedirect(loginUrl);
+                 ret =  Valve.END_PIPELINE;
+                 return ret;
+            }
+            //TA11
+            //on revient du login chez josso équivalent security check
+            log("TA11 cookie="+session.getId());
+             if (testCookie2Session(hreq, session.getId()) && hreq.getRequestURI().endsWith(cfg.getLoginPage())) {
+                 log("TA11 on revient comme pour security check");
+                 assertionId = hreq.getParameter(Constants.JOSSO_ASSERTION_ID_PARAMETER);
+                 if(assertionId==null){
+                     log("TA11 assertionId est vide");
+                 } else {
+                    HttpSSOAgentRequest relayRequest;
+
+                    relayRequest = new HttpSSOAgentRequest(SSOAgentRequest.ACTION_RELAY, null, localSession, assertionId);
+                    if (debug >= 1)
+                        log("TA11 Outbound relaying requested for assertion id=" + assertionId + " sessionID="+relayRequest.getSessionId());
+
+                    relayRequest.setRequest(hreq);
+                    relayRequest.setResponse(hres);
+                    relayRequest.setContext(request.getContext());
+
+                    SingleSignOnEntry entry = _agent.processRequest(relayRequest);
+                    //T10-1
+                    if (entry == null) {
+                        // This is wrong! We should have an entry here!
+                        if (debug >= 1)
+                            log("TA11-1 Outbound relaying failed for assertion id [" + assertionId + "], no Principal found.");
+                        // Throw an exception, we will handle it below !
+                        throw new RuntimeException("Outbound relaying failed. No Principal found. Verify your SSO Agent Configuration!");
+                    }
+                    //T10-2
+                    if (debug >= 1)
+                        log("TA11-2 Outbound relaying succesfull for assertion id [" + assertionId + "]");
+
+                    if (debug >= 1)
+                        log("TA11-2 Assertion id [" + assertionId + "] mapped to SSO session id [" + entry.ssoId + "]");
+                    securityCheck(hreq,hres,"",cfg,"TA11");
+                    ret = Valve.END_PIPELINE;
+                    return ret;
+                 }
+             }
+            //TA2
+            //equivalent à la page de login si pas autorisé on passe par l'authent
+            if (username == null && getSavedRequestURL(session)==null) {
+                 log("TA2 Il faut une authentification préalable (première URL)! session="+session.getId());
                  //return sendAuthenticateChallenge(msgInfo);
                  //return sendAuthenticateChallenge2(msgInfo);
                  saveRequest((HttpRequest) request, session);
@@ -681,64 +735,65 @@ public class SSOAgentValve extends ValveBase
 
                 // The cookie is valid to for the partner application only ... in the future each partner app may
                 // store a different auth. token (SSO SESSION) value
-                try {
-                    cookie = _agent.newJossoCookie(hreq.getContextPath(), entry.ssoId);
-                    hres.addCookie(cookie);
+                securityCheck(hreq, hres, entry.ssoId, cfg, "T10");
+                /*try {
+                cookie = _agent.newJossoCookie(hreq.getContextPath(), entry.ssoId);
+                hres.addCookie(cookie);
                 } catch (Exception e) {
-                    log("Pas de bras pas de chocolat !", e);
+                log("Pas de bras pas de chocolat !", e);
                 }
                 jossoSessionId = entry.ssoId;
                 //T10-3
                 //Redirect user to the saved splash resource (in case of auth request) or to request URI otherwise
                 String requestURI = getSavedSplashResource(session.getSession());
-                if(requestURI == null) {                
-                	requestURI = getSavedRequestURL(session);
-	                if (requestURI == null) {
+                if(requestURI == null) {
+                requestURI = getSavedRequestURL(session);
+                if (requestURI == null) {
 
-	                	if (cfg.getDefaultResource() != null) {
-                            requestURI = cfg.getDefaultResource();
-                        } else {
-    		                // If no saved request is found, redirect to the partner app root :
-	    	                requestURI = hreq.getRequestURI().substring(
-		                        0, (hreq.getRequestURI().length() - _agent.getJOSSOSecurityCheckUri().length()));
-                        }
-	                	
-	                    // If we're behind a reverse proxy, we have to alter the URL ... this was not necessary on tomcat 5.0 ?!
-	                    String singlePointOfAccess = _agent.getSinglePointOfAccess();
-	                    if (singlePointOfAccess != null) {
-	                        requestURI = singlePointOfAccess + requestURI;
-	                    } else {
-	                        String reverseProxyHost = hreq.getHeader(org.josso.gateway.Constants.JOSSO_REVERSE_PROXY_HEADER);
-	                        if (reverseProxyHost != null) {
-	                            requestURI = reverseProxyHost + requestURI;
-	                        }
-	                    }
-	
-	                    if (debug >= 1)
-	                        log("T10-3 No saved request found, using : '" + requestURI + "'");
-	                }
-	            }
-                
+                if (cfg.getDefaultResource() != null) {
+                requestURI = cfg.getDefaultResource();
+                } else {
+                // If no saved request is found, redirect to the partner app root :
+                requestURI = hreq.getRequestURI().substring(
+                0, (hreq.getRequestURI().length() - _agent.getJOSSOSecurityCheckUri().length()));
+                }
+
+                // If we're behind a reverse proxy, we have to alter the URL ... this was not necessary on tomcat 5.0 ?!
+                String singlePointOfAccess = _agent.getSinglePointOfAccess();
+                if (singlePointOfAccess != null) {
+                requestURI = singlePointOfAccess + requestURI;
+                } else {
+                String reverseProxyHost = hreq.getHeader(org.josso.gateway.Constants.JOSSO_REVERSE_PROXY_HEADER);
+                if (reverseProxyHost != null) {
+                requestURI = reverseProxyHost + requestURI;
+                }
+                }
+
+                if (debug >= 1)
+                log("T10-3 No saved request found, using : '" + requestURI + "'");
+                }
+                }
+
                 clearSavedRequestURLs(session);
-               	_agent.clearAutomaticLoginReferer(hreq);
+                _agent.clearAutomaticLoginReferer(hreq);
                 _agent.prepareNonCacheResponse(hres);
                 //T10-4
                 // Check if we have a post login resource :
                 String postAuthURI = cfg.getPostAuthenticationResource();
                 if (postAuthURI != null) {
-                    String postAuthURL = _agent.buildPostAuthUrl(hres, requestURI, postAuthURI);
-                    if (debug >= 1)
-                        log("T10-4 Redirecting to post-auth-resource '" + postAuthURL  + "'");
-                    hres.sendRedirect(postAuthURL);
+                String postAuthURL = _agent.buildPostAuthUrl(hres, requestURI, postAuthURI);
+                if (debug >= 1)
+                log("T10-4 Redirecting to post-auth-resource '" + postAuthURL  + "'");
+                hres.sendRedirect(postAuthURL);
                 } else {
-                    if (debug >= 1)
-                        log("T10-4 Redirecting to original '" + requestURI + "'");
-                    hres.sendRedirect(hres.encodeRedirectURL(requestURI));
-                    //on garde des fois que ...
-                    theOriginal = hres.encodeRedirectURL(requestURI);
+                if (debug >= 1)
+                log("T10-4 Redirecting to original '" + requestURI + "'");
+                hres.sendRedirect(hres.encodeRedirectURL(requestURI));
+                //on garde des fois que ...
+                theOriginal = hres.encodeRedirectURL(requestURI);
                 }
                 _agent.addEntrySSOIDsuccessed(entry.ssoId);
-                log("T10 Fin josso_check jossoSessionId="+jossoSessionId);
+                log("T10 Fin josso_check jossoSessionId="+jossoSessionId);*/
                 //c'est pas fini et pas en erreur pourtant ...
                 ret = Valve.END_PIPELINE;
                 return ret;
@@ -1155,7 +1210,24 @@ public class SSOAgentValve extends ValveBase
         localSession = new CatalinaLocalSession(session);
 
     }
-      private String processAuthorizationToken(HttpServletRequest request) {
+     private Boolean testCookie2Session(HttpServletRequest req, String sessionID){
+        // ------------------------------------------------------------------
+        // Check for the single sign on cookie
+        // ------------------------------------------------------------------
+        Boolean ret = false;
+        Cookie cookies[] = req.getCookies();
+        if (cookies == null)
+            cookies = new Cookie[0];
+        for (int i = 0; i < cookies.length; i++) {
+            if (COOKIE_LOGIN.equals(cookies[i].getName()) && sessionID.equals(cookies[i].getValue())) {
+                ret = true;
+                break;
+            }
+        }
+
+        return ret;
+    }
+     private String processAuthorizationToken(HttpServletRequest request) {
 
           String token = request.getHeader(AUTHORIZATION_HEADER);
           log("Analyse du message en vue d'authentification sur token="+token);
@@ -1183,6 +1255,98 @@ public class SSOAgentValve extends ValveBase
    public void postInvoke(Request request, Response response) {
       System.out.println("Ne sert à rien dans cette logique mais fait plaisir");
   }
+  private void securityCheck(HttpServletRequest hreq, HttpServletResponse hres, String ssoId, SSOPartnerAppConfig cfg, String phase){
+        try {
+            cookie = _agent.newJossoCookie(hreq.getContextPath(), ssoId);
+            hres.addCookie(cookie);
+        } catch (Exception e) {
+            log(phase+" Pas de bras pas de chocolat !", e);
+        }
+        jossoSessionId = ssoId;
+        //T10-3
+        //Redirect user to the saved splash resource (in case of auth request) or to request URI otherwise
+        String requestURI = getSavedSplashResource(session.getSession());
+        if(requestURI == null) {
+                requestURI = getSavedRequestURL(session);
+                if (requestURI == null) {
 
+                        if (cfg.getDefaultResource() != null) {
+                    requestURI = cfg.getDefaultResource();
+                } else {
+                        // If no saved request is found, redirect to the partner app root :
+                        requestURI = hreq.getRequestURI().substring(
+                                0, (hreq.getRequestURI().length() - _agent.getJOSSOSecurityCheckUri().length()));
+                }
+
+                    // If we're behind a reverse proxy, we have to alter the URL ... this was not necessary on tomcat 5.0 ?!
+                    String singlePointOfAccess = _agent.getSinglePointOfAccess();
+                    if (singlePointOfAccess != null) {
+                        requestURI = singlePointOfAccess + requestURI;
+                    } else {
+                        String reverseProxyHost = hreq.getHeader(org.josso.gateway.Constants.JOSSO_REVERSE_PROXY_HEADER);
+                        if (reverseProxyHost != null) {
+                            requestURI = reverseProxyHost + requestURI;
+                        }
+                    }
+
+                    if (debug >= 1)
+                        log(phase+"-3 No saved request found, using : '" + requestURI + "'");
+                }
+            }
+
+        clearSavedRequestURLs(session);
+        _agent.clearAutomaticLoginReferer(hreq);
+        _agent.prepareNonCacheResponse(hres);
+        //T10-4
+        // Check if we have a post login resource :
+        String postAuthURI = cfg.getPostAuthenticationResource();
+        try {
+          if (postAuthURI != null) {
+              String postAuthURL = _agent.buildPostAuthUrl(hres, requestURI, postAuthURI);
+              if (debug >= 1) {
+                  log(phase+"-4 Redirecting to post-auth-resource '" + postAuthURL + "'");
+
+              }
+              hres.sendRedirect(postAuthURL);
+          } else {
+              if (debug >= 1) {
+                  log(phase+"-4 Redirecting to original '" + requestURI + "'");
+
+              }
+              hres.sendRedirect(hres.encodeRedirectURL(requestURI));
+              //on garde des fois que ...
+              theOriginal = hres.encodeRedirectURL(requestURI);
+          }
+        } catch (IOException iOException) {
+            log(phase+" Erreur redirection",iOException);
+        }
+        _agent.addEntrySSOIDsuccessed(ssoId);
+        log(phase+" Fin josso_check jossoSessionId="+jossoSessionId);
+        //c'est pas fini et pas en erreur pourtant ...
+
+  }
+    /**
+     * This creates a new JOSSO Cookie for the given path and value.
+     *
+     * @param path  the path associated with the cookie, normaly the partner application context.
+     * @param value the SSO Session ID
+     * @return
+     */
+    private Cookie newJossoCookie2(String path, String value, String type) {
+
+        // Some browsers don't like cookies without paths. This is useful for partner applications configured in the root context
+        if (path == null || "".equals(path))
+            path = "/";
+
+        Cookie ssoCookie = new Cookie(type, value);
+        ssoCookie.setMaxAge(-1);
+        ssoCookie.setPath(path);
+
+        // TODO : Check domain / secure ?
+        //ssoCookie.setDomain(cfg.getSessionTokenScope());
+        //ssoCookie.setSecure(true);
+
+        return ssoCookie;
+    }
 
 }

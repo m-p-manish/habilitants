@@ -57,6 +57,15 @@ public class SSOPartnerAppConfig implements Serializable {
 
     private SecurityContextPropagationConfig _securityContextPropagationConfig;
 
+    private String _loginPage;
+
+    public String getLoginPage() {
+        return _loginPage;
+    }
+
+    public void setLoginPage(String _loginPage) {
+        this._loginPage = _loginPage;
+    }
     /**
      * Stores the received context as part of this Partner App. configuration.
      * The context may have a starting slash : "/partnerapp" or "partnerapp".
@@ -221,6 +230,7 @@ public class SSOPartnerAppConfig implements Serializable {
         return _securityContextPropagationConfig;
     }
 
+    @Override
     public String toString() {
         String r = "";
         String r2 = "";
