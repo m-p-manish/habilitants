@@ -488,7 +488,8 @@ public class SSOAgentValve extends ValveBase
              }
             //TA2
             //equivalent à la page de login si pas autorisé on passe par l'authent
-            if (username == null && getSavedRequestURL(session)==null) {
+            if (username == null && getSavedRequestURL(session)==null && !hreq.getRequestURI().endsWith(_agent.getJOSSOLoginUri()) &&
+                !hreq.getRequestURI().endsWith(_agent.getJOSSOUserLoginUri())) {
                  log("TA2 Il faut une authentification préalable (première URL)! session="+session.getId());
                  //return sendAuthenticateChallenge(msgInfo);
                  //return sendAuthenticateChallenge2(msgInfo);
