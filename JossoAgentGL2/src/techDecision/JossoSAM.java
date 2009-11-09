@@ -1,5 +1,5 @@
 /*
-Copyright Stéphane Georges Popoff, (octobre 2009)
+Copyright Stéphane Georges Popoff, (octobre - novembre 2009)
 
 spopoff@rocketmail.com
 
@@ -79,7 +79,7 @@ import org.josso.servlet.agent.GenericServletLocalSession;
    //import org.apache.catalina.util.Base64;
 
 /**
- * Module de sécurité basé sur JSR 196
+ * Module de sécurité basé sur JSR 196 pour application Faces
  * @author spopoff@rocketmail.com
  * @version 0.1
  */
@@ -274,7 +274,8 @@ public class JossoSAM implements ServerAuthModule {
             //TA
              //equivalent à la page de login si pas autorisé on passe par l'authent
              String username = processAuthorizationToken(msgInfo, client);
-             if (username == null && requestPolicy.isMandatory()) {
+             if (username == null && requestPolicy.isMandatory() && !request.getRequestURI().endsWith(_agent.getJOSSOLoginUri()) &&
+                !request.getRequestURI().endsWith(_agent.getJOSSOUserLoginUri())) {
                  log("TA Il faut une authentification préalable (première URL)! session="+session.getId());
                  //return sendAuthenticateChallenge(msgInfo);
                  //return sendAuthenticateChallenge2(msgInfo);
@@ -282,7 +283,7 @@ public class JossoSAM implements ServerAuthModule {
                  theOriginal = getSavedRequestURL(session);
                  HttpServletResponse response = (HttpServletResponse) msgInfo.getResponseMessage();
                  response.setStatus(HttpServletResponse.SC_MOVED_TEMPORARILY);
-                 //response.setHeader("Location", jeVeux);
+                 log("TA on se redirige vers une authentification via /josso_login");
                  response.sendRedirect(request.getContextPath() + "/josso_login/");
                  return AuthStatus.SEND_CONTINUE;
              }
