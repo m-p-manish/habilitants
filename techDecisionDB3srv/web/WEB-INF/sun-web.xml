@@ -6,6 +6,14 @@
     <role-name>role1</role-name>
     <group-name>role1</group-name>
   </security-role-mapping>
+  <resource-ref>
+    <res-ref-name>ldaptechDecision</res-ref-name>
+    <jndi-name>ldap/techDecision</jndi-name>
+    <default-resource-principal>
+      <name>cn=admin,dc=nodomain</name>
+      <password>0penld@p</password>
+    </default-resource-principal>
+  </resource-ref>
   <class-loader delegate="true"/>
   <jsp-config>
     <property name="keepgenerated" value="true">
