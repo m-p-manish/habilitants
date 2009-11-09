@@ -14,6 +14,10 @@
         <level value="info"/>
         <appender-ref ref="console" />
     </logger>
+   <logger name="org.josso.servlet.agent.JossoFilter">
+        <level value="debug"/>
+        <appender-ref ref="console" />
+    </logger>
    <logger name="org.josso.gl2.agent">
         <level value="debug"/>
         <appender-ref ref="console" />
