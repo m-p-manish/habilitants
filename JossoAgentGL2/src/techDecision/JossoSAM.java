@@ -275,7 +275,7 @@ public class JossoSAM implements ServerAuthModule {
              //equivalent à la page de login si pas autorisé on passe par l'authent
              String username = processAuthorizationToken(msgInfo, client);
              if (username == null && requestPolicy.isMandatory() && !request.getRequestURI().endsWith(_agent.getJOSSOLoginUri()) &&
-                !request.getRequestURI().endsWith(_agent.getJOSSOUserLoginUri())) {
+                !request.getRequestURI().endsWith(_agent.getJOSSOUserLoginUri()) && !request.getRequestURI().endsWith(_agent.getJOSSOSecurityCheckUri())) {
                  log("TA Il faut une authentification préalable (première URL)! session="+session.getId());
                  //return sendAuthenticateChallenge(msgInfo);
                  //return sendAuthenticateChallenge2(msgInfo);
