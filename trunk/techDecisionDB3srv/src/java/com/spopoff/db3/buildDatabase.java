@@ -148,7 +148,7 @@ public class buildDatabase extends HttpServlet {
             //test de la base ldap
             try {
                 javax.naming.InitialContext initCtx = new javax.naming.InitialContext();
-                javax.naming.directory.DirContext ctx = (javax.naming.directory.DirContext) initCtx.lookup("ldap/techDecision");
+                javax.naming.directory.DirContext ctx = (javax.naming.directory.DirContext) initCtx.lookup("ldaptechDecision");
 
                 SearchControls ctls = new SearchControls();
                 ctls.setSearchScope(SearchControls.SUBTREE_SCOPE);
