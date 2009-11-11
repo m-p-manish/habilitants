@@ -51,12 +51,16 @@
     -->
   </filter>
 
-  <filter-mapping>
+
+
+    <filter-mapping>
     <filter-name>JPivotController</filter-name>
     <url-pattern>/testpage.jsp</url-pattern>
   </filter-mapping>
 
-  <listener>
+
+
+    <listener>
     <listener-class>mondrian.web.taglib.Listener</listener-class>
   </listener>
 
@@ -187,12 +191,8 @@
             </auth-constraint>
         </security-constraint>
     <login-config>
-        <auth-method>FORM</auth-method>
-        <realm-name>jossoRealm</realm-name>
-        <form-login-config>
-            <form-login-page>/login.html</form-login-page>
-            <form-error-page>/login.html</form-error-page>
-            </form-login-config>
+        <auth-method>BASIC</auth-method>
+        <realm-name>techDecision</realm-name>
         </login-config>
     <security-role>
         <description>le rôle</description>

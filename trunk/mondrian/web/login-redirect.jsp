@@ -24,12 +24,4 @@
 <!--
 Redirects the user to the proper login page.  Configured as the login url the web.xml for this application.
 -->
-<%
-    String ssoSessionId;
-    ssoSessionId = (String) request.getAttribute("org.josso.agent.ssoSessionid");
-    if(ssoSessionId==null){
-        response.sendRedirect(request.getContextPath() + "/josso_login/");
-    }else {
-        %><%= "Zut!" %><%
-    }
-%>
+<%= "Zut!" %>
