@@ -104,10 +104,4 @@
         <description>un rôle</description>
         <role-name>role1</role-name>
     </security-role>
-    <resource-ref>
-        <res-ref-name>ldaptechDecision</res-ref-name>
-        <res-type>javax.naming.directory.Directory</res-type>
-        <res-auth>Container</res-auth>
-        <res-sharing-scope>Shareable</res-sharing-scope>
-    </resource-ref>
     </web-app>

@@ -35,17 +35,27 @@ termes.
 package com.spopoff.db3;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintWriter;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.sql.Connection;
+import java.util.Properties;
+import javax.annotation.Resource;
 import javax.naming.NamingEnumeration;
-import javax.naming.directory.Attribute;
+//import javax.naming.directory.;
 import javax.naming.directory.Attributes;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+import javax.naming.NameAlreadyBoundException;
+import javax.naming.directory.DirContext;
+import javax.naming.directory.InitialDirContext;
+
 
 /**
  * Cette classe permet la création des tables dans DB3 ou le vidage.
@@ -54,6 +64,8 @@ import javax.naming.directory.SearchResult;
  */
 public class buildDatabase extends HttpServlet {
     private Connection connn = null;
+    //@Resource(name="ldap/techDecision" type="javax.naming.directory.Directory")
+    //private Directory dir;
     /** 
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code> methods.
      * @param request servlet request
@@ -147,23 +159,30 @@ public class buildDatabase extends HttpServlet {
             out.println(message+"<br/>");
             //test de la base ldap
             try {
-                javax.naming.InitialContext initCtx = new javax.naming.InitialContext();
-                javax.naming.directory.DirContext ctx = (javax.naming.directory.DirContext) initCtx.lookup("ldaptechDecision");
+                //javax.naming.InitialContext initCtx = new javax.naming.InitialContext();
+                //javax.naming.directory.DirContext ctx = (javax.naming.directory.DirContext) initCtx.lookup("ldap/techDecision");
+                InputStream in = getClass().getResourceAsStream("ldap.properties");
+                System.out.print(in.toString());
+                BuildDirCtx bd = new BuildDirCtx(in);
+                javax.naming.directory.DirContext ctx = bd.getCtx();
+                if(ctx!=null){
+                    SearchControls ctls = new SearchControls();
+                    ctls.setSearchScope(SearchControls.SUBTREE_SCOPE);
 
-                SearchControls ctls = new SearchControls();
-                ctls.setSearchScope(SearchControls.SUBTREE_SCOPE);
+                    String searchfilter = bd.getSearch();
+                    NamingEnumeration answer = ctx.search("", searchfilter, ctls);
 
-                String searchfilter = "(cn=spo)";
-                NamingEnumeration answer = ctx.search("", searchfilter, ctls);
-
-                if(answer.hasMore()){
-                    SearchResult entry = (SearchResult) answer.next();
-                    Attributes attrs = entry.getAttributes();
-                    message = "Ouverture / fermeture de la ressource ldap/techDecision description="+attrs.get("description").get().toString();
-                } else {
-                    message="Erreur Ouverture / fermeture de la ressource ldap/techDecision pas trouvé cn=spo";
+                    if(answer.hasMore()){
+                        SearchResult entry = (SearchResult) answer.next();
+                        Attributes attrs = entry.getAttributes();
+                        message = "Ouverture / fermeture de la ressource ldap/techDecision description="+attrs.get("description").get().toString();
+                    } else {
+                        message="Erreur Ouverture / fermeture de la ressource ldap/techDecision pas trouvé cn=spo";
+                    }
+                }else{
+                    message="n'arrive pas a construire le contexte ldap! vérifier ladp.properties";
                 }
-                initCtx.close();
+                //initCtx.close();
             } catch (javax.naming.NamingException e) {
                     message=e.toString();
             }
@@ -212,4 +231,48 @@ public class buildDatabase extends HttpServlet {
         return "Short description";
     }// </editor-fold>
 
+    public class BuildDirCtx {
+        final static String url = "ldap://localhost:389/ou=users,dc=nodomain";
+        final static String rootdn = "cn=admin,dc=nodomain";
+        final static String rootpass = "0penld@p";
+        final static String rootContext = "ou=users,dc=nodomain";
+        private DirContext ctx = null;
+        private InputStream in = null;
+        private Properties env = null;
+
+        public DirContext getCtx() {
+            return ctx;
+        }
+
+        public BuildDirCtx(InputStream inn) {
+            // set up environment to access the server
+            in = inn;
+            env = new Properties();
+            try {
+                env.load(in);
+            } catch (IOException ex) {
+                System.err.println( ex );
+            }
+
+            env.put( Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory" );
+            //env.put( Context.PROVIDER_URL, url );
+            //env.put( Context.SECURITY_PRINCIPAL, rootdn );
+            //env.put( Context.SECURITY_CREDENTIALS, rootpass );
+            if(env.getProperty(Context.PROVIDER_URL)==null) System.err.println( "url vide" );
+            if(env.getProperty(Context.SECURITY_PRINCIPAL)==null) System.err.println( "compte vide" );
+            if(env.getProperty(Context.SECURITY_CREDENTIALS)==null) System.err.println( "password vide" );
+            try {
+                // obtain initial directory context using the environment
+                ctx = new InitialDirContext( env );
+
+            } catch ( NameAlreadyBoundException nabe ) {
+                System.err.println( rootContext + " has already been bound!" );
+            } catch ( Exception e ) {
+                System.err.println( e );
+            }
+        }
+        public String getSearch(){
+            return env.getProperty("search");
+        }
+    }
 }
