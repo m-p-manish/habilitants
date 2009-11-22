@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schema xmlns="http://www.w3.org/2001/XMLSchema"
+    targetNamespace="http://an.com/chopsticks/provider/JDBCAuthenticator"
+    xmlns:provider="http://an.com/chopsticks/provider/JDBCAuthenticator"
+    xmlns:cs="http://an.com/chopsticks/configuration">
+    <import namespace="http://an.com/chopsticks/configuration" schemaLocation="chopsticks.xsd"/>
+    <element name="JDBCAuthenticator" type="provider:JDBCAuthenticatorType" substitutionGroup="cs:Authenticator"/>
+    <complexType name="JDBCAuthenticatorType">
+        <complexContent>
+            <extension base="cs:AuthenticatorType">
+                <sequence>
+                    <element ref="provider:JDBCConnection"/>
+                    <element ref="provider:Authentication"/>
+                    <element ref="provider:ConnectionPool"/>
+                </sequence>
+            </extension>
+        </complexContent>
+    </complexType>
+
+    <element name="JDBCConnection" type="provider:JDBCConnectionType"/>
+    <complexType name="JDBCConnectionType">
+        <attribute name="JDBCDriver" type="string" use="required"/>
+        <attribute name="connectionURL" type="string" use="required"/>
+        <attribute name="dbUser" type="string" use="required"/>
+        <!-- The database password is an encrypted value. Even though, customer who  -->
+        <!-- make use this authenticator should provide a read-only user/password    -->
+        <!-- for database. Because the password could be stolen while we fill it to  -->
+        <!-- JDBC's connection URL.                                                  -->
+        <attribute name="dbPassword" type="cs:encryption" use="required"/>
+    </complexType>
+
+    <element name="Authentication" type="provider:AuthenticationType"/>
+    <complexType name="AuthenticationType">
+        <!-- The sql is used to identity the user with password. For example, the sql-->
+        <!-- may be "select * from users where name = ? and password = ?", the "?"   -->
+        <!-- will be replaced by programatical parameters.                           -->
+        <attribute name="authenticationSQL" type="string" use="required"/>
+        <!-- The digest algorithm for password saved in database. We support only    -->
+        <!-- SHA-256 and SHA-512.                                                    -->
+        <attribute name="digestAlg" type="string" default="SHA-256"/>
+    </complexType>
+
+    <element name="ConnectionPool" type="provider:ConnectionPoolType"/>
+    <complexType name="ConnectionPoolType">
+        <!-- The pool's size. We will initialize all connections at startup.         -->
+        <attribute name="size" type="int" default="10"/>
+        <!-- A timeout that we are trying to get an available connection. The time   -->
+        <!-- unit is millisecond. If we can't get a connection within timeout, an    -->
+        <!-- exception will be thrown.                                               -->
+        <attribute name="timeout" type="int" default="100"/>
+    </complexType>
+</schema>

@@ -1,0 +1,243 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schema xmlns="http://www.w3.org/2001/XMLSchema"
+        targetNamespace="http://an.com/chopsticks/configuration"
+        xmlns:cs="http://an.com/chopsticks/configuration"
+        xmlns:provider="http://an.com/chopsticks/provider">
+    <element name="SecurityPlugin" type="cs:SecurityPluginType"/>
+    <complexType name="SecurityPluginType">
+        <sequence>
+            <element ref="cs:Log"/>
+            <element ref="cs:Admin" minOccurs="0"/>
+            <element ref="cs:SessionManager" minOccurs="0"/>
+            <element ref="cs:Services" minOccurs="0"/>
+        </sequence>
+    </complexType>
+
+    <!-- The logger configuration. We provided 2 types of logger, one is an internal logger, the     -->
+    <!-- other is a log4j logger. To provide such a log system is intend to avoid libraries conflict -->
+    <!-- in employer system. Users may provide their custom implementation of interface Logger, they -->
+    <!-- should provide the implementation's class name(an.log.Logger's value) with such a           -->
+    <!-- constructor: CustomLogger(ConfigElement config, String tag).                                -->
+    <element name="Log" type="cs:LogType" abstract="true"/>
+    <complexType name="LogType" abstract="true">
+        <!-- The actual Logger implementation class.                                                 -->
+        <attribute name="an.log.Logger" type="string" use="required"/>
+    </complexType>
+
+    <element name="DefaultLog" type="cs:DefaultLogType" substitutionGroup="cs:Log"/>
+    <complexType name="DefaultLogType">
+        <complexContent>
+            <extension base="cs:LogType">
+                <sequence>
+                    <!-- Class name filter defines one or more class names pattern as filter. The    -->
+                    <!-- defined class will use the configured specific log level instead.           -->
+                    <element ref="cs:ClassNameFilter" minOccurs="0" maxOccurs="unbounded"/>
+                </sequence>
+                <attribute name="path" type="string" use="required"/>
+                <!-- Determine if this logger support roll over. If this attribute is absent or the  -->
+                <!-- value less than 0, then the logger doesn't roll over. Otherwize, it roll over   -->
+                <!-- at the defined size(in KB).                                                     -->
+                <attribute name="rolloverSize" type="int" use="optional" default="-1"/>
+                <!-- Available log levels are: all, trace, debug, info, warn, error, fatal, none.    -->
+                <attribute name="level" type="string" use="optional" default="warn"/>
+                <!-- If singleLevelMode is enabled, only configured level logs will be logged. By    --> 
+                <!-- default, this value is false, all higher level and current configured level     -->
+                <!-- logs will be logged.                                                            -->
+                <attribute name="singleLevelMode" type="boolean" use="optional" default="false"/>
+            </extension>
+        </complexContent>
+    </complexType>
+    
+    <element name="ClassNameFilter" type="cs:ClassNameFilterType"/>
+    <complexType name="ClassNameFilterType">
+        <!-- The pattern supports Java Regular Expression.                                           -->
+        <attribute name="pattern" type="string" use="required"/>
+        <attribute name="level" type="string" use="required"/>
+    </complexType>
+    
+    <!-- The Log4j logger has no more attribute to configure, once this type of logger is            -->
+    <!-- configured, the Log4jLogger will find log4j.properties in classpath to configure log4j. You -->
+    <!-- need to add log4j.properties and log4j.jar to your classpath, or configure any of Log4j     -->
+    <!-- configurations to use it as you use it directly.                                            -->
+    <element name="Log4j" type="cs:Log4jType" substitutionGroup="cs:Log"/>
+    <complexType name="Log4jType">
+        <complexContent>
+            <extension base="cs:LogType"/>
+        </complexContent>
+    </complexType>
+
+    <element name="Admin" type="cs:AdminType"/>
+    <complexType name="AdminType">
+        <!-- The secondary admin's address, if the primary can't be connected, plugin should try     -->
+        <!-- using this secondary address. If it is not configured, we should only use primary.      -->
+        <attribute name="secondaryURL" type="string" use="optional"/>
+        <!-- TODO: other attributes                                                                  -->
+    </complexType>
+
+    <!-- A session manager that manage all the access to the application. Session is created for each-->
+    <!-- incoming request, request can save any thing to the session. While the session is           -->
+    <!-- invalidated, all the saved objects will be lost.                                            -->
+    <!-- The session manager support save/load sessions to/from a underlying data store, this feature-->
+    <!-- make the system can work in a distribute environment.                                       -->
+    <element name="SessionManager" type="cs:SessionManagerType"/>
+    <complexType name="SessionManagerType">
+        <attribute name="persistentable" type="boolean" use="optional" default="false"/>
+        <attribute name="size" type="int" use="optional" default="10000"/>
+        <attribute name="timeout" type="long" use="optional" default="600000"/>
+        <!-- We support 2 types of timeout, one is "access", means from the last access, if time     -->
+        <!-- elapses more than "timeout", the session becomes invalidate. The other is "creation",   -->
+        <!-- while means from the session creation, if time elapses more than "timeout", the session -->
+        <!-- becomes invalidate.                                                                     -->
+        <attribute name="timeoutType" type="string" use="optional" default="access"/>
+    </complexType>
+
+    <element name="Services" type="cs:ServicesType"/>
+    <complexType name="ServicesType">
+        <sequence>
+            <element ref="cs:Service" minOccurs="0" maxOccurs="unbounded"/>
+        </sequence>
+        <!-- While this attribute set to false, all services will be loaded while service manager is -->
+        <!-- initialized. If it is set to ture, the service will only be loaded while it's  required.-->
+        <attribute name="lazyLoadServices" type="boolean" default="false"/>
+    </complexType>
+
+    <element name="Service" type="cs:ServiceType" abstract="true"/>
+    <complexType name="ServiceType" abstract="true">
+        <attribute name="ServiceName" type="string" use="required"/>
+        <!-- Used to construct corresponding service.                                                -->
+        <attribute name="ServiceInterface" type="string" use="required"/>
+        <attribute name="Description" type="string" use="optional"/>
+    </complexType>
+
+    <element name="AuthenticationService" type="cs:AuthenticationServiceType" substitutionGroup="cs:Service"/>
+    <complexType name="AuthenticationServiceType">
+        <complexContent>
+            <extension base="cs:ServiceType">
+                <sequence>
+                    <element ref="cs:Authenticator" minOccurs="0" maxOccurs="unbounded"/>
+                </sequence>
+            </extension>
+        </complexContent>
+    </complexType>
+
+    <element name="CredentialService" type="cs:CredentialServiceType" substitutionGroup="cs:Service"/>
+    <complexType name="CredentialServiceType">
+        <complexContent>
+            <extension base="cs:ServiceType">
+                <sequence>
+                    <element ref="cs:CredentialConverter" minOccurs="0" maxOccurs="unbounded"/>
+                </sequence>
+            </extension>
+        </complexContent>
+    </complexType>
+
+    <element name="AuthorizationService" type="cs:AuthorizationServiceType" substitutionGroup="cs:Service"/>
+    <complexType name="AuthorizationServiceType">
+        <complexContent>
+            <extension base="cs:ServiceType">
+                <sequence>
+                    <element ref="cs:Authorizer" minOccurs="0" maxOccurs="unbounded"/>
+                </sequence>
+                <!-- While configured multiple authorizers in a service, we need determine which     -->
+                <!-- authorizer's decision should be used. Following attribute specified an          -->
+                <!-- algorithm name that to determine the final decision. If there is only one       -->
+                <!-- authorizer in a service, this attribute can be absent.                          -->
+                <attribute name="adjudicationAlgorithm" type="string" use="optional"/>
+            </extension>
+        </complexContent>
+    </complexType>
+
+    <element name="AuditingService" type="cs:AuditingServiceType" substitutionGroup="cs:Service"/>
+    <complexType name="AuditingServiceType">
+        <complexContent>
+            <extension base="cs:ServiceType">
+                <sequence>
+                    <element ref="cs:Auditor" minOccurs="0" maxOccurs="unbounded"/>
+                </sequence>
+                <!-- An option that can allow all audit processes run in other threads, this can     -->
+                <!-- improve the runtime performance. The default value is "false" means we don't run-->
+                <!-- auditing in other threads, we run it in current thread.                         -->
+                <attribute name="fork" type="boolean" default="false"/>
+                <!-- We can set a global severity that overwrite all audit providers' settings.      -->
+                <!-- The value can be ALL, INFO, SUCCESS, FAILURE, ERROR, AUDITERROR, NONE or        --> 
+                <!-- 'notset' which means we don't set the value, let providers use their own        -->
+                <!-- settings.                                                                       -->
+                <attribute name="globalSeverity" type="string" default="notset"/>
+                <!-- We can set a global category filter that overwrite all audit provider's         -->
+                <!-- settings. The value supports Java regular expression. Its default value is ".*" -->
+                <!-- which means we allow all categories to be written in audit log.                 -->
+                <attribute name="globalCategoryFilter" type="string"/>
+                <!-- We can set a global option which enable or disable context auditing on all audit-->
+                <!-- providers. The value can be true, false and 'notset' which means let providers  -->
+                <!-- use their own settings.                                                         -->
+                <attribute name="globalWithContext" type="string" default="notset"/>
+            </extension>
+        </complexContent>
+    </complexType>
+
+    <!-- A common based type that all providers will derived from it.                                -->
+    <element name="Provider" type="cs:ProviderType" abstract="true"/>
+    <complexType name="ProviderType" abstract="true">
+        <attribute name="ProviderName" type="string" use="required"/>
+        <!-- Used to construct corresponding provide.                                                -->
+        <attribute name="ProviderInterface" type="string" use="required"/>
+        <attribute name="Description" type="string" use="optional"/>
+    </complexType>
+
+    <element name="Authenticator" type="cs:AuthenticatorType" abstract="true"/>
+    <complexType name="AuthenticatorType" abstract="true">
+        <complexContent>
+            <extension base="cs:ProviderType">
+                <!-- This flag is came from JAAS, the valid value should be "Required", "Requisite", -->
+                <!-- "Sufficient" and "Optional".                                                    -->
+                <attribute name="authenticationFlag" type="string" use="required"/>
+            </extension>
+        </complexContent>
+    </complexType>
+
+    <!-- The credential converter is to convert a type of credential to another type of credential.  -->
+    <element name="CredentialConverter" type="cs:CredentialConverterType" abstract="true"/>
+    <complexType name="CredentialConverterType" abstract="true">
+        <complexContent>
+            <extension base="cs:ProviderType"/>
+            <!-- TODO: add attributes -->
+        </complexContent>
+    </complexType>
+
+    <element name="Authorizer" type="cs:AuthorizerType" abstract="true"/>
+    <complexType name="AuthorizerType" abstract="true">
+        <complexContent>
+            <extension base="cs:ProviderType">
+                <!-- TODO: add attributes -->
+            </extension>
+        </complexContent>
+    </complexType>
+
+    <element name="Auditor" type="cs:AuditorType" abstract="true"/>
+    <complexType name="AuditorType" abstract="true">
+        <complexContent>
+            <extension base="cs:ProviderType">
+                <!-- We support following 4 severities,                                              -->
+                <!--     NONE        - Record none event                                             -->
+                <!--     AUDITERROR  - There are errors occur while writing audit information        -->
+                <!--     ERROR       - There are errors occur while perform the audited event        -->
+                <!--     FAILURE     - The audited event failed                                      -->
+                <!--     SUCCESS     - The audited event succeeded                                   -->
+                <!--     INFO        - For information                                               -->
+                <!--     ALL         - Record all events                                             -->
+                <attribute name="severity" type="string" default="ERROR"/>
+                <!-- The value supports Java regular expression. Its default value is ".*" which     -->
+                <!-- means we allow all categories to be written in audit log.                       -->
+                <attribute name="categoryFilter" type="string" default=".*"/>
+                <!-- Determine if this provider log audit event include context information.         -->
+                <attribute name="withContext" type="boolean" default="true"/> 
+            </extension>
+        </complexContent>
+    </complexType>
+
+    <!-- This type identified the target attribute is encrypted. The encryption & decryption         -->
+    <!-- algorithms are defined in program.                                                          -->
+    <simpleType name="encryption">
+        <restriction base="base64Binary"/>
+    </simpleType>
+</schema>
