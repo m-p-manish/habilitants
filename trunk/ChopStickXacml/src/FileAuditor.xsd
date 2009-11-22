@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schema xmlns="http://www.w3.org/2001/XMLSchema"
+    targetNamespace="http://an.com/chopsticks/provider/FileAuditor"
+    xmlns:provider="http://an.com/chopsticks/provider/FileAuditor"
+    xmlns:cs="http://an.com/chopsticks/configuration">
+    <import namespace="http://an.com/chopsticks/configuration" schemaLocation="chopsticks.xsd"/>
+    <element name="FileAuditor" type="provider:FileAuditorType" substitutionGroup="cs:Auditor"/>
+    <complexType name="FileAuditorType">
+        <complexContent>
+            <extension base="cs:AuditorType">
+                <sequence>
+                    <element ref="provider:ElementFormatter" minOccurs="0" maxOccurs="unbounded"/>
+                </sequence>
+                <attribute name="path" type="string" use="required"/>
+                <!-- Determine if this logger support roll over. If this attribute is absent or the  -->
+                <!-- value less than 0, then the logger doesn't roll over. Otherwize, it roll over   -->
+                <!-- at the defined size(in KB).                                                     -->
+                <attribute name="rolloverSize" type="int" use="optional" default="-1"/>
+                <!-- If singleLevelMode is enabled, only configured level logs will be logged. By    --> 
+                <!-- default, this value is false, all higher level and current configured level     -->
+                <!-- logs will be logged.                                                            -->
+                <attribute name="singleLevelMode" type="boolean" use="optional" default="false"/>
+                <attribute name="overallFormat" type="string" default="[%time] &lt;%host&gt; &lt;%thread&gt; &lt;%codeline&gt; &lt;%severity&gt; &lt;%category&gt; - %message - &lt;%context&gt; %exception"/>
+            </extension>
+        </complexContent>
+    </complexType>
+
+    <element name="ElementFormatter" abstract="true"/>
+    <complexType name="ElementFormatterType" abstract="true">
+        <attribute name="interface" type="string" use="required"/>
+        <!-- Splitted by "," -->
+        <attribute name="targetElementList" type="string" use="required"/>
+    </complexType>
+
+    <element name="StringElementFormatter" type="provider:StringElementFormatterType" substitutionGroup="provider:ElementFormatter"/>
+    <complexType name="StringElementFormatterType">
+        <complexContent>
+            <extension base="provider:ElementFormatterType">
+                <attribute name="format" type="string" default="%s"/>
+            </extension>
+        </complexContent>
+    </complexType>
+
+    <element name="DatetimeElementFormatter" type="provider:DatetimeElementFormatterType" substitutionGroup="provider:ElementFormatter"/>
+    <complexType name="DatetimeElementFormatterType">
+        <complexContent>
+            <extension base="provider:ElementFormatterType">
+                <attribute name="format" type="string" default="%s"/>
+            </extension>
+        </complexContent>
+    </complexType>
+
+    <element name="ContextElementFormatter" type="provider:ContextElementFormatterType" substitutionGroup="provider:ElementFormatter"/>
+    <complexType name="ContextElementFormatterType">
+        <complexContent>
+            <extension base="provider:ElementFormatterType"/>
+        </complexContent>
+    </complexType>
+
+    <element name="ExceptionElementFormatter" type="provider:ExceptionElementFormatterType" substitutionGroup="provider:ElementFormatter"/>
+    <complexType name="ExceptionElementFormatterType">
+        <complexContent>
+            <extension base="provider:ElementFormatterType"/>
+        </complexContent>
+    </complexType>
+</schema>

@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SecurityPlugin xmlns="http://an.com/chopsticks/configuration"
+    xmlns:xacml="http://an.com/chopsticks/provider/XACMLAuthorizer"
+    xmlns:fileadt="http://an.com/chopsticks/provider/FileAuditor"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://an.com/chopsticks/configuration chopsticks.xsd
+                        http://an.com/chopsticks/provider/XACMLAuthorizer XACMLAuthorizer.xsd
+                        http://an.com/chopsticks/provider/FileAuditor FileAuditor.xsd">
+    <DefaultLog
+        path="/home/spopoff/logTechDecisionXacml.txt"
+        an.log.Logger="an.log.DefaultLogger"
+        level="all"/>
+    <Admin secondaryURL="https://localhost:9000/admin"/>
+    <SessionManager size="20000"/>
+    <Services>
+        <AuditingService
+            ServiceName="AuditService"
+            ServiceInterface="an.chopsticks.service.AuditService">
+            <fileadt:FileAuditor
+                path="/home/spopoff/auditTechDecisionXacml.txt"
+                ProviderName="FileAuditor"
+                ProviderInterface="an.chopsticks.provider.impl.FileAuditor"
+                severity="ALL"
+                overallFormat="[%time] &lt;%host> &lt;%severity> &lt;%category> - %message - &lt;%context>">
+                <fileadt:DatetimeElementFormatter
+                    interface="an.chopsticks.provider.impl.DatetimeAuditElementFormatter"
+                    targetElementList="time"
+                    format="%1$tY-%1$tm-%1$td %1$tH:%1$tM:%1$tS:%1$tL"/>
+                <fileadt:ContextElementFormatter
+                    interface="an.chopsticks.provider.impl.ContextAuditElementFormatter"
+                    targetElementList="context"/>
+                <fileadt:ExceptionElementFormatter
+                    interface="an.chopsticks.provider.impl.ExceptionAuditElementFormatter"
+                    targetElementList="exception"/>
+            </fileadt:FileAuditor>
+        </AuditingService>
+
+        <AuthorizationService
+            ServiceName="AuthorizationService"
+            ServiceInterface="an.chopsticks.service.AuthorizationService">
+            <xacml:XACMLAuthorizer
+                domainName="XACML2Authorizer"
+                multiPoliciesCombineAlg="an:multiple-policies-deny-overrides"
+                ProviderName="XACML2Authorizer"
+                ProviderInterface="an.chopsticks.provider.impl.XACML2Authorizer">
+                <xacml:FileDataStore
+                    path="/home/spopoff/xacmlPolicies"
+                    pattern="IIB048Policy.xml"
+                    an.xacml.engine.DataStore="an.xacml.adapter.file.XMLFileDataStore"/>
+                <xacml:DefaultContextFactory/>
+                <xacml:CacheManager>
+                    <xacml:PolicyCache/>
+                    <xacml:EvaluationResultCache/>
+                </xacml:CacheManager>
+                <xacml:PolicyResolverRegistry>
+                    <xacml:DefaultDataStorePolicyResolver
+                        an.xacml.engine.PolicyResolver="an.xacml.engine.DefaultDataStorePolicyResolver"/>
+                </xacml:PolicyResolverRegistry>
+            </xacml:XACMLAuthorizer>
+        </AuthorizationService>
+    </Services>
+</SecurityPlugin>
