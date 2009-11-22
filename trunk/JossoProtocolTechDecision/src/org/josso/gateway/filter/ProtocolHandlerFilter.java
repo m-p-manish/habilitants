@@ -105,7 +105,11 @@ public class ProtocolHandlerFilter implements Filter {
                 SpringComponentKeeperImpl cks = (SpringComponentKeeperImpl) Lookup.getInstance().getComponentKeeper();
                 ApplicationContext appCtx = cks.getSpringContext();
                 XaclmlAutorise xacml = (XaclmlAutorise) appCtx.getBean("chopSticksXacml");
-                System.out.println("retrouvé le bean chopSticksXacml");
+                if(xacml!=null){
+                    System.out.println("retrouvé le bean chopSticksXacml");
+                }else{
+                    System.err.println("Le bean chopSticksXacml est vide !");
+                }
             } catch (Exception exception) {
                 System.err.println("Erreur récupération bean chopSticksXacml"+exception.toString());
             }
