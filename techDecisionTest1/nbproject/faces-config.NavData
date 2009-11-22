@@ -13,17 +13,17 @@
         <Node id="objsAttrs/Detail.jsp" x="150" y="600" zoom="true"/>
         <Node id="habilitant/List.jsp" x="1150" y="150" zoom="true"/>
         <Node id="cpteHblt/Detail.jsp" x="650" y="750" zoom="true"/>
-        <Node id="compte/Edit.jsp" x="900" y="150" zoom="true"/>
         <Node id="idntCpte/Detail.jsp" x="650" y="300" zoom="true"/>
+        <Node id="compte/Edit.jsp" x="900" y="150" zoom="true"/>
         <Node id="cpteAttrs/List.jsp" x="1900" y="300" zoom="true"/>
-        <Node id="idntAttrs/Edit.jsp" x="400" y="300" zoom="true"/>
         <Node id="objsCpte/Detail.jsp" x="1150" y="750" zoom="true"/>
-        <Node id="idntCpte/List.jsp" x="1650" y="450" zoom="true"/>
-        <Node id="objsecu/Detail.jsp" x="1400" y="300" zoom="true"/>
+        <Node id="idntAttrs/Edit.jsp" x="400" y="300" zoom="true"/>
         <Node id="cpteAttrs/Detail.jsp" x="900" y="600" zoom="true"/>
-        <Node id="objsCpte/List.jsp" x="400" y="1050" zoom="true"/>
-        <Node id="identite/Edit.jsp" x="400" y="150" zoom="true"/>
+        <Node id="objsecu/Detail.jsp" x="1400" y="300" zoom="true"/>
+        <Node id="idntCpte/List.jsp" x="1650" y="450" zoom="true"/>
         <Node id="compte/New.jsp" x="650" y="600" zoom="true"/>
+        <Node id="identite/Edit.jsp" x="400" y="150" zoom="true"/>
+        <Node id="objsCpte/List.jsp" x="400" y="1050" zoom="true"/>
         <Node id="idntCpte/Edit.jsp" x="1400" y="600" zoom="true"/>
         <Node id="objsecu/New.jsp" x="900" y="750" zoom="true"/>
         <Node id="identite/Detail.jsp" x="150" y="1050" zoom="true"/>
@@ -61,17 +61,17 @@
         <Node id="objsAttrs/Detail.jsp" x="-532" y="390" zoom="true"/>
         <Node id="habilitant/List.jsp" x="-131" y="838" zoom="true"/>
         <Node id="cpteHblt/Detail.jsp" x="298" y="763" zoom="true"/>
-        <Node id="idntCpte/Detail.jsp" x="516" y="320" zoom="true"/>
         <Node id="compte/Edit.jsp" x="686" y="600" zoom="true"/>
+        <Node id="idntCpte/Detail.jsp" x="516" y="320" zoom="true"/>
         <Node id="cpteAttrs/List.jsp" x="947" y="782" zoom="true"/>
-        <Node id="objsCpte/Detail.jsp" x="395" y="580" zoom="true"/>
         <Node id="idntAttrs/Edit.jsp" x="-25" y="54" zoom="true"/>
-        <Node id="objsecu/Detail.jsp" x="-357" y="321" zoom="true"/>
-        <Node id="cpteAttrs/Detail.jsp" x="1053" y="731" zoom="true"/>
+        <Node id="objsCpte/Detail.jsp" x="395" y="580" zoom="true"/>
         <Node id="idntCpte/List.jsp" x="606" y="481" zoom="true"/>
-        <Node id="objsCpte/List.jsp" x="410" y="526" zoom="true"/>
-        <Node id="identite/Edit.jsp" x="237" y="337" zoom="true"/>
+        <Node id="cpteAttrs/Detail.jsp" x="1053" y="731" zoom="true"/>
+        <Node id="objsecu/Detail.jsp" x="-357" y="321" zoom="true"/>
         <Node id="compte/New.jsp" x="601" y="769" zoom="true"/>
+        <Node id="identite/Edit.jsp" x="237" y="337" zoom="true"/>
+        <Node id="objsCpte/List.jsp" x="410" y="526" zoom="true"/>
         <Node id="idntCpte/Edit.jsp" x="570" y="373" zoom="true"/>
         <Node id="objsecu/New.jsp" x="-311" y="532" zoom="true"/>
         <Node id="identite/Detail.jsp" x="-31" y="163" zoom="true"/>
@@ -102,33 +102,33 @@
         <Node id="objsAttrs/List.jsp" x="150" y="150" zoom="true"/>
         <Node id="compte2/Detail.jsp" x="2400" y="150" zoom="true"/>
         <Node id="identite/List.jsp" x="1900" y="300" zoom="true"/>
-        <Node id="compte/Detail.jsp" x="2150" y="150" zoom="true"/>
         <Node id="objsHblt/Detail.jsp" x="650" y="600" zoom="true"/>
+        <Node id="compte/Detail.jsp" x="2150" y="150" zoom="true"/>
         <Node id="cpteAttrs/Edit.jsp" x="400" y="150" zoom="true"/>
         <Node id="objsHblt/New.jsp" x="150" y="750" zoom="true"/>
         <Node id="objsAttrs/Edit.jsp" x="1150" y="300" zoom="true"/>
-        <Node id="objsAttrs/Detail.jsp" x="650" y="900" zoom="true"/>
         <Node id="habilitant/List.jsp" x="1400" y="150" zoom="true"/>
+        <Node id="objsAttrs/Detail.jsp" x="650" y="900" zoom="true"/>
         <Node id="cpteHblt/Detail.jsp" x="900" y="750" zoom="true"/>
         <Node id="compte/Edit.jsp" x="1650" y="450" zoom="true"/>
         <Node id="idntCpte/Detail.jsp" x="150" y="450" zoom="true"/>
         <Node id="cpteAttrs/List.jsp" x="1150" y="450" zoom="true"/>
-        <Node id="objsCpte/Detail.jsp" x="150" y="1050" zoom="true"/>
         <Node id="idntAttrs/Edit.jsp" x="1650" y="300" zoom="true"/>
+        <Node id="objsCpte/Detail.jsp" x="150" y="1050" zoom="true"/>
+        <Node id="idntCpte/List.jsp" x="650" y="150" zoom="true"/>
         <Node id="cpteAttrs/Detail.jsp" x="400" y="300" zoom="true"/>
         <Node id="objsecu/Detail.jsp" x="1150" y="150" zoom="true"/>
-        <Node id="idntCpte/List.jsp" x="650" y="150" zoom="true"/>
-        <Node id="identite/Edit.jsp" x="150" y="1200" zoom="true"/>
         <Node id="objsCpte/List.jsp" x="900" y="600" zoom="true"/>
         <Node id="compte/New.jsp" x="900" y="300" zoom="true"/>
+        <Node id="identite/Edit.jsp" x="150" y="1200" zoom="true"/>
         <Node id="idntCpte/Edit.jsp" x="400" y="900" zoom="true"/>
         <Node id="objsecu/New.jsp" x="1400" y="600" zoom="true"/>
         <Node id="identite/Detail.jsp" x="150" y="300" zoom="true"/>
         <Node id="objsHblt/List.jsp" x="650" y="450" zoom="true"/>
         <Node id="habilitant/Detail.jsp" x="900" y="900" zoom="true"/>
         <Node id="objsecu/List.jsp" x="1400" y="300" zoom="true"/>
-        <Node id="idntAttrs/New.jsp" x="650" y="750" zoom="true"/>
         <Node id="objsCpte/New.jsp" x="900" y="150" zoom="true"/>
+        <Node id="idntAttrs/New.jsp" x="650" y="750" zoom="true"/>
         <Node id="objsHblt/Edit.jsp" x="400" y="450" zoom="true"/>
         <Node id="idntAttrs/List.jsp" x="1650" y="150" zoom="true"/>
         <Node id="cpteAttrs/New.jsp" x="1400" y="450" zoom="true"/>
