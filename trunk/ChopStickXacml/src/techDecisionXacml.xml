@@ -45,7 +45,7 @@
                 ProviderInterface="an.chopsticks.provider.impl.XACML2Authorizer">
                 <xacml:FileDataStore
                     path="/home/spopoff/xacmlPolicies"
-                    pattern="IIB048Policy.xml"
+                    pattern=".*Policy.xml"
                     an.xacml.engine.DataStore="an.xacml.adapter.file.XMLFileDataStore"/>
                 <xacml:DefaultContextFactory/>
                 <xacml:CacheManager>
