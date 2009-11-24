@@ -37,6 +37,8 @@ package techDecision.xacmlPDPurl;
 import techDecision.xacmlPdp.*;
 import an.chopsticks.service.Attribute;
 import an.chopsticks.service.AttributeType;
+import an.chopsticks.service.AuditService;
+import an.chopsticks.service.AuditSeverity;
 import an.chopsticks.service.AuthorizationResult;
 import an.chopsticks.service.Context;
 import an.chopsticks.service.Decision;
@@ -45,6 +47,7 @@ import an.chopsticks.service.Resource;
 import an.chopsticks.service.Subject;
 import an.chopsticks.service.AuthorizationFailedException;
 import java.io.IOException;
+import java.lang.String;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -62,7 +65,10 @@ import org.apache.struts.action.ActionMapping;
 import org.josso.Lookup;
 import org.josso.SecurityDomain;
 import org.josso.gateway.Constants;
+import org.josso.gateway.SSOContext;
 import org.josso.gateway.SSOGateway;
+import org.josso.gateway.SSONameValuePair;
+import org.josso.gateway.identity.SSOUser;
 import org.josso.gateway.identity.exceptions.NoSuchDomainException;
 import org.josso.gateway.session.SSOSession;
 import org.josso.gateway.session.exceptions.NoSuchSessionException;
@@ -87,17 +93,23 @@ import org.springframework.context.ApplicationContext;
                                      HttpServletResponse response) {
 
        System.out.println("Traite l'uri XACML_URI !");
-       ActionForward ret = null;
             //on test les requêtes XACML
        XaclmlAutorise xacml = null;
-       SSOGateway g = getSSOGateway();
+       SSOGateway g = null;
+       SSOContext s = null;
        SecurityDomain sd;
         try {
-            sd = g.getSecurityDomain("josso");
-        } catch (NoSuchDomainException ex) {
+            g = getSSOGateway();
+            s = g.prepareDefaultSSOContext();
+            sd = s.getSecurityDomain();
+        } catch (Exception ex) {
             System.err.println("trouve pas le domaine josso "+ex.toString());
             return mapping.findForward("xacml.erreur");
         }
+       if (sd==null){
+            System.err.println("Le domaine josso est vide");
+            return mapping.findForward("xacml.erreur");
+       }
         try {
             SpringComponentKeeperImpl cks = (SpringComponentKeeperImpl) Lookup.getInstance().getComponentKeeper();
             ApplicationContext appCtx = cks.getSpringContext();
@@ -110,27 +122,43 @@ import org.springframework.context.ApplicationContext;
         } catch (Exception exception) {
             System.err.println("Erreur récupération bean chopSticksXacml"+exception.toString());
         }
+
+
         if(xacml!=null){
             //on peut faire un contrôle de la requête pour savoir si elle contient du xacml
+            AuditService adtSvc = xacml.getAdtSvc();
+            if(adtSvc == null){
+                System.err.println("Erreur récupération service audit");
+            }
             String ress = request.getParameter("ress");
             String acte = request.getParameter("acte");
             System.out.println("Resource=" + ress +";Action=" + acte);
             Resource[] resources = new Resource[]{new Resource(ress)};
             //alors on valide
-            try {
+            Subject subject = new Subject();
+            Context ctxe = null;
+           try {
+                System.out.println("new action=" + acte);
                 an.chopsticks.service.Action action = new an.chopsticks.service.Action(acte);
-                Context ctxe = createContextFromRequest(request);
+                System.out.println("new contexte=" + request.getQueryString());
+                ctxe = createContextFromRequest(request);
                 if(ctxe==null){
                     System.err.println("Erreur contexte Vide");
                     return mapping.findForward("xacml.erreur");
                 }
+                System.out.println("get JossoSession=" + sd.getName());
                 SSOSession sess = getJossoSession(request, sd);
-                if(ctxe==null){
+                if(sess==null){
                     System.err.println("Erreur josso session Vide");
                     return mapping.findForward("xacml.erreur");
                 }
-                Subject subject = new Subject();
                 subject.setSubjecName(sess.getUsername());
+                SSOUser user = g.findUserInSession(sess.getId());
+                System.err.println("attributs utilisateur="+user.getProperties().length);
+                for(SSONameValuePair a : user.getProperties()){
+                    subject.setAttribute(new Attribute(a.getName(), AttributeType.String, a.getValue()));
+                    System.out.println("attribut nom=" + a.getName()+" valeur="+a.getValue());
+                }
                 Subject[] subjects = new Subject[]{subject};
                 System.out.println("Subject=" + subject.getSubjectName() + ";Resource=" + ress +
                         ";Action=" + action.getActionName());
@@ -167,17 +195,26 @@ import org.springframework.context.ApplicationContext;
 
                 if (decision == Decision.Permit) {
                     System.out.println("Resources '" + ress + "' was permit to be access.");
+                    //response.sendError(response.SC_FORBIDDEN);
+                    adtSvc.audit(subject, AuditSeverity.SUCCESS, AuditService.CATEGORY_AUTHORIZATION, "Resources '" + ress + "' was permit to be access.", ctxe);
                     return mapping.findForward("xacml.autorise");
                 }
                 else {
                     String atzFailMsg = "Resources '" + ress + "' was not permit to be access.";
                     System.out.println(atzFailMsg);
                     request.setAttribute(PARAM_MESSAGE, atzFailMsg);
-                    return mapping.findForward("xacml.interdit");
+                    response.sendError(response.SC_UNAUTHORIZED);
+                    adtSvc.audit(subject, AuditSeverity.FAILURE, AuditService.CATEGORY_AUTHORIZATION, "Resources '" + ress + "' was not permit to be access.", ctxe);
+                    return null;//mapping.findForward("xacml.interdit");
                 }
             } catch (Exception ex) {
                 System.err.println("Erreur dans test XACML "+ex.toString());
-                return mapping.findForward("xacml.erreur");
+                try {
+                    response.sendError(response.SC_UNAUTHORIZED);
+                } catch (IOException ex1) {
+                }
+                adtSvc.audit(subject, AuditSeverity.FAILURE, AuditService.CATEGORY_AUTHORIZATION, "Erreur dans traitement autorisation"+ex.toString(), ctxe);
+                return null;//mapping.findForward("xacml.erreur");
             }
         }
        return mapping.findForward("xacml.autorise");
@@ -199,7 +236,7 @@ import org.springframework.context.ApplicationContext;
         return g;
     }
     protected boolean existJossoSession(HttpServletRequest request, SecurityDomain sd) throws Exception {
-        String jossoSessionId = getJossoSessionId(request);
+        String jossoSessionId = getJossoSessionId(request, sd.getName());
 
         if (jossoSessionId == null)
             return false;
@@ -226,7 +263,7 @@ import org.springframework.context.ApplicationContext;
         return false;
     }
     protected SSOSession getJossoSession(HttpServletRequest request, SecurityDomain sd) throws Exception {
-        String jossoSessionId = getJossoSessionId(request);
+        String jossoSessionId = getJossoSessionId(request, sd.getName());
 
         if (jossoSessionId == null)
             return null;
@@ -239,6 +276,7 @@ import org.springframework.context.ApplicationContext;
                 return s;
 
         } catch (NoSuchSessionException nsse) {
+            System.err.println("Erreur getJossoSession getSession "+nsse.toString());
 
         }
 
@@ -246,22 +284,23 @@ import org.springframework.context.ApplicationContext;
     }
 
     // ----------------------------------------------------- methods
-    protected String getJossoSessionId(HttpServletRequest request) {
-        Cookie c = getJossoCookie(request);
+    protected String getJossoSessionId(HttpServletRequest request, String sdName) {
+        Cookie c = getJossoCookie(request, sdName);
         if (c != null)
             return c.getValue();
 
         return null;
     }
 
-    protected Cookie getJossoCookie(HttpServletRequest request) {
+    protected Cookie getJossoCookie(HttpServletRequest request, String sdName) {
         Cookie[] cookies = request.getCookies();
         if (cookies == null)
             return null;
 
         for (int i = 0; i < cookies.length; i++) {
             Cookie cookie = cookies[i];
-            if (cookie.getName().equals(Constants.JOSSO_SINGLE_SIGN_ON_COOKIE)) {
+            System.out.println("Cookie="+i+" nom="+cookie.getName()+" ="+Constants.JOSSO_SINGLE_SIGN_ON_COOKIE+"_"+sdName);
+            if (cookie.getName().equals(Constants.JOSSO_SINGLE_SIGN_ON_COOKIE+"_"+sdName)) {
                 return cookie;
             }
         }
