@@ -35,6 +35,7 @@ termes.
 
 package techDecision.xacmlPdp;
 
+import an.chopsticks.service.AuditService;
 import an.chopsticks.service.AuthorizationService;
 import an.chopsticks.service.ServiceManager;
 import an.log.LogFactory;
@@ -57,6 +58,11 @@ public class XaclmlAutorise implements ApplicationContextAware {
     private String configFile;
     private SSOIdentityManagerImpl identityManager;
     private ApplicationContext ctxSpring = null;
+    AuditService adtSvc;
+
+    public AuditService getAdtSvc() {
+        return adtSvc;
+    }
 
     public SSOIdentityManagerImpl getIdentityManager() {
         if(identityManager==null) identityManager = (SSOIdentityManagerImpl) ctxSpring.getBean("josso-identity-manager");
@@ -91,6 +97,7 @@ public class XaclmlAutorise implements ApplicationContextAware {
             //logger = LogFactory.getLogger();
             System.out.println("authorize !");
             atzSvc = (AuthorizationService)mgr.getService(AuthorizationService.class);
+            adtSvc = (AuditService)mgr.getService(AuditService.class);
             //atnSvc = (AuthenticationService)mgr.getService(AuthenticationService.class);
             /*System.out.println("session !");
             sessionMgr = SessionManager.getInstance(mgr);*/
