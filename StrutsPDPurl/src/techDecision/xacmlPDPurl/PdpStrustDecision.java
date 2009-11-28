@@ -68,6 +68,7 @@ import org.josso.gateway.Constants;
 import org.josso.gateway.SSOContext;
 import org.josso.gateway.SSOGateway;
 import org.josso.gateway.SSONameValuePair;
+import org.josso.gateway.identity.SSORole;
 import org.josso.gateway.identity.SSOUser;
 import org.josso.gateway.identity.exceptions.NoSuchDomainException;
 import org.josso.gateway.session.SSOSession;
@@ -92,7 +93,7 @@ import org.springframework.context.ApplicationContext;
                                      HttpServletRequest request,
                                      HttpServletResponse response) {
 
-       System.out.println("Traite l'uri XACML_URI !");
+       System.out.println("Traite l'uri XACML_URI autorise !");
             //on test les requêtes XACML
        XaclmlAutorise xacml = null;
        SSOGateway g = null;
@@ -154,10 +155,11 @@ import org.springframework.context.ApplicationContext;
                 }
                 subject.setSubjecName(sess.getUsername());
                 SSOUser user = g.findUserInSession(sess.getId());
-                System.err.println("attributs utilisateur="+user.getProperties().length);
-                for(SSONameValuePair a : user.getProperties()){
-                    subject.setAttribute(new Attribute(a.getName(), AttributeType.String, a.getValue()));
-                    System.out.println("attribut nom=" + a.getName()+" valeur="+a.getValue());
+                SSORole[] roles = g.findRolesByUsername(user.getName());
+                System.err.println("roles utilisateur="+roles.length);
+                for(SSORole r : roles){
+                    subject.setAttribute(new Attribute("member", AttributeType.String, r.getName()));
+                    System.out.println("attribut member=" + r.getName());
                 }
                 Subject[] subjects = new Subject[]{subject};
                 System.out.println("Subject=" + subject.getSubjectName() + ";Resource=" + ress +
