@@ -28,6 +28,7 @@ public class DefaultContextHandler implements ContextHandler {
             CacheManager cacheMgr = CacheManager.getInstance(pdp);
             ctxFactory = ContextFactoryHelper.getContextFactory(pdp);
             Request req = ctxFactory.createRequestFromCtx(reqCtx);
+            System.out.println("la requête en clair="+req.toString());
 
             // Get cached evaluation result.
             evalResult = cacheMgr.getEvalResultByRequest(req);
