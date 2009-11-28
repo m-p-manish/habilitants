@@ -176,17 +176,21 @@ public class PDP extends AbstractMonitorableAndControllable {
     throws IndeterminateException {
         if (policies == null || policies.length == 0) {
             // NotApplicable
+            System.out.println("pas de policy evaluée");
             return Result.NOTAPPLICABLE;
         }
         else if (policies.length == 1) {
             // evaluate the policy
+            System.out.println("une seule policy evaluée");
             return policies[0].evaluate(ctx);
         }
         else {
             // retrieve the function, and then evaluate the policies in the function.
             try {
                 BuiltInFunction func = funcReg.lookup(multiPoliciesCombineAlg);
-                return (Result)func.invoke(ctx, new Object[] {policies});
+                Result ret =  (Result)func.invoke(ctx, new Object[] {policies});
+                System.out.println("retour evaluation policies nb="+policies.length+" rer="+ret.toString());
+                return ret;
             } catch (Exception e) {
                 IndeterminateException intEx;
                 // The IndeterminateException throws from evaluation of policies.

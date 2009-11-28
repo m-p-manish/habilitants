@@ -38,15 +38,17 @@ package techDecision.xacmlPdp;
 import an.chopsticks.service.AuditService;
 import an.chopsticks.service.AuthorizationService;
 import an.chopsticks.service.ServiceManager;
-import an.log.LogFactory;
+import an.control.OperationFailedException;
+//import an.log.LogFactory;
 import an.log.Logger;
 import java.io.InputStream;
+//import java.util.logging.Level;
 import org.josso.gateway.identity.service.SSOIdentityManagerImpl;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import static java.lang.Thread.sleep;
 /**
- * @org.apache.xbean.XBean element="protocol-handler"
  * Beans qui charge la gestion des autorisations xacml
  * @author spopoff@rocketmail.com
  * @version 0.1
@@ -58,7 +60,16 @@ public class XaclmlAutorise implements ApplicationContextAware {
     private String configFile;
     private SSOIdentityManagerImpl identityManager;
     private ApplicationContext ctxSpring = null;
-    AuditService adtSvc;
+    private AuditService adtSvc;
+    private AuthorizationService athzSvc;
+
+    public AuthorizationService getAthzSvc() {
+        return athzSvc;
+    }
+
+    public void setAthzSvc(AuthorizationService athzSvc) {
+        this.athzSvc = athzSvc;
+    }
 
     public AuditService getAdtSvc() {
         return adtSvc;
@@ -118,7 +129,27 @@ public class XaclmlAutorise implements ApplicationContextAware {
 
     }
 
-    public void setApplicationContext(ApplicationContext arg0) throws BeansException {
+    public void RestartAuthorizeService(){
+        try {
+            athzSvc.shutdownForce();
+        } catch (OperationFailedException ex) {
+            System.err.println("Erreur sur shutdown "+ex.toString());
+        }
+        System.out.println("autorisation stoppé !");
+        try {
+            sleep(200);
+        } catch (InterruptedException ex) {
+            System.err.println("Erreur sur sommeil "+ex.toString());
+        }
+        try {
+            athzSvc.start();
+        } catch (OperationFailedException ex) {
+            System.err.println("Erreur sur start "+ex.toString());
+        }
+        System.out.println("autorisation relancé !");
+   }
+
+   public void setApplicationContext(ApplicationContext arg0) throws BeansException {
         ctxSpring = arg0;
     }
 }
