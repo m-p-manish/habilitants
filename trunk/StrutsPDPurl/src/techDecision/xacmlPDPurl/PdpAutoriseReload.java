@@ -54,7 +54,7 @@ import techDecision.xacmlPdp.XaclmlAutorise;
  * @author spopoff@rocketmail.com
  * @version 0.1
  */
-public class PdpAutoriseRestart extends org.apache.struts.action.Action implements org.josso.gateway.signon.Constants {
+public class PdpAutoriseReload extends org.apache.struts.action.Action implements org.josso.gateway.signon.Constants {
 
     @Override
     public ActionForward execute(ActionMapping mapping,
@@ -97,16 +97,16 @@ public class PdpAutoriseRestart extends org.apache.struts.action.Action implemen
 
 
         if(xacml!=null){
-            System.out.println("redemarre autorisation !");
-            String ret = null;
+            System.out.println("recharge les policies !");
+            //String ret = null;
             try {
-                ret = xacml.getRestart();
+                xacml.reloadPolicies();
             } catch (Exception e) {
-                System.err.println("Erreur redémarrer "+e.toString());
+                System.err.println("Erreur sur rechargement "+e.toString());
             }
-            System.out.println("Autorisation redémarrée "+ret);
+            System.out.println("Policies rechargées");
         }
-       return mapping.findForward("xacml.restart");
+       return mapping.findForward("xacml.reload");
     }
     protected SSOGateway getSSOGateway() {
 
