@@ -43,6 +43,7 @@ import an.control.OperationFailedException;
 import an.log.Logger;
 import java.io.InputStream;
 //import java.util.logging.Level;
+import java.util.logging.Level;
 import org.josso.gateway.identity.service.SSOIdentityManagerImpl;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
@@ -61,14 +62,22 @@ public class XaclmlAutorise implements ApplicationContextAware {
     private SSOIdentityManagerImpl identityManager;
     private ApplicationContext ctxSpring = null;
     private AuditService adtSvc;
-    private AuthorizationService athzSvc;
+    private String restart;
+
+    public void setRestart(String restart) {
+        this.restart = restart;
+    }
+
+    public String getRestart() {
+        return RestartAuthorizeService();
+    }
 
     public AuthorizationService getAthzSvc() {
-        return athzSvc;
+        return atzSvc;
     }
 
     public void setAthzSvc(AuthorizationService athzSvc) {
-        this.athzSvc = athzSvc;
+        this.atzSvc = athzSvc;
     }
 
     public AuditService getAdtSvc() {
@@ -128,25 +137,34 @@ public class XaclmlAutorise implements ApplicationContextAware {
 
 
     }
-
-    public void RestartAuthorizeService(){
+    public void reloadPolicies(){
         try {
-            athzSvc.shutdownForce();
+            atzSvc.relaodPolicies();
+        } catch (OperationFailedException ex) {
+            System.err.println("Erreur sur relaod Policies "+ex.toString());
+        }
+    }
+
+    private String RestartAuthorizeService(){
+        try {
+            atzSvc.shutdownForce();
         } catch (OperationFailedException ex) {
             System.err.println("Erreur sur shutdown "+ex.toString());
+            return "Erreur sur shutdown "+ex.toString();
         }
-        System.out.println("autorisation stoppé !");
+        System.out.println("autorisation stoppé ! sleep="+restart);
         try {
-            sleep(200);
+            sleep(new Integer(restart));
         } catch (InterruptedException ex) {
             System.err.println("Erreur sur sommeil "+ex.toString());
         }
         try {
-            athzSvc.start();
+            atzSvc.start();
         } catch (OperationFailedException ex) {
             System.err.println("Erreur sur start "+ex.toString());
+            return "Erreur sur start "+ex.toString();
         }
-        System.out.println("autorisation relancé !");
+        return "autorisation relancé !";
    }
 
    public void setApplicationContext(ApplicationContext arg0) throws BeansException {

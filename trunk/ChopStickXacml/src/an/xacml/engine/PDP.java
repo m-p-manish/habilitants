@@ -28,6 +28,7 @@ import an.xacml.context.Result;
 import an.xacml.policy.AbstractPolicy;
 import an.xacml.policy.function.BuiltInFunction;
 import an.xml.XMLGeneralException;
+import java.util.logging.Level;
 
 /**
  * This class creates a PDP, which will load and cache all XACML policies. There may have more than one PDP in a JVM.
@@ -305,6 +306,20 @@ public class PDP extends AbstractMonitorableAndControllable {
 
         Object current = status.getProperty(KEY_RUN_STATUS);
         if (current.equals(STATUS_RUN_INITIALIZED)) {
+            try {
+                startPDP();
+                System.out.println("PDP '" + getDomain() + "' has been started. Version <" + version.getVersion() + ">");
+            } catch (Exception e) {
+                throw new OperationFailedException("Start PDP failed.", e);
+            }
+        }else if(current.equals(STATUS_RUN_NOTRUN)){
+            try {
+                initialize();
+            } catch (ConfigurationException ex) {
+                throw new OperationFailedException("Reinitialize PDP failed.", ex);
+            } catch (XMLGeneralException ex) {
+                throw new OperationFailedException("Reinitialize PDP failed.", ex);
+            }
             try {
                 startPDP();
                 System.out.println("PDP '" + getDomain() + "' has been started. Version <" + version.getVersion() + ">");

@@ -1,5 +1,9 @@
 package an.chopsticks.provider.impl;
 
+import an.xacml.PolicySyntaxException;
+import an.xacml.adapter.DataAdapterException;
+import an.xacml.engine.BuiltInFunctionNotFoundException;
+import an.xacml.engine.CacheSizeExceedCapacityException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collection;
@@ -37,6 +41,8 @@ import an.xacml.policy.AttributeAssignment;
 import an.xacml.policy.Obligation;
 import an.xacml.policy.Obligations;
 import an.xml.XMLDataTypeMappingException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class XACML2Authorizer implements Authorizer {
     /**
@@ -263,5 +269,20 @@ public class XACML2Authorizer implements Authorizer {
         System.out.println("Starting XACML authorization provider '" + providerName + "' ...");
         pdp.start();
         System.out.println("XACML authorization provider '" + providerName + "' started.");
+    }
+    public void reloadPolicies() {
+        System.out.println("Reloading XACML polocies authorization provider '" + providerName + "' ...");
+        try {
+            pdp.reloadPolicies();
+        } catch (DataAdapterException ex) {
+            System.out.println("Erreur1 reloadPolicies "+ex.toString());
+        } catch (CacheSizeExceedCapacityException ex) {
+            System.out.println("Erreur2 reloadPolicies "+ex.toString());
+        } catch (PolicySyntaxException ex) {
+            System.out.println("Erreur3 reloadPolicies "+ex.toString());
+        } catch (BuiltInFunctionNotFoundException ex) {
+            System.out.println("Erreur4 reloadPolicies "+ex.toString());
+        }
+        System.out.println("XACML authorization provider '" + providerName + "' policies reloaded.");
     }
 }

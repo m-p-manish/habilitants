@@ -25,4 +25,6 @@ public interface Authorizer extends Provider {
      */
     public AuthorizationResult[] authorize(Subject[] subjects, Resource[] resources, Action action, Context context)
     throws AuthorizationFailedException;
+
+    public void reloadPolicies();
 }

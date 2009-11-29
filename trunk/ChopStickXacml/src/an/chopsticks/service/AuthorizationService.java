@@ -264,6 +264,18 @@ public final class AuthorizationService implements Service {
         System.out.println(msg);
     }
 
+    public void relaodPolicies() throws OperationFailedException {
+        System.out.println("Reloading authorization service '" + serviceName + "' ...");
+        if (authorizers != null && authorizers.length > 0) {
+            for (Authorizer each : authorizers) {
+                each.reloadPolicies();
+            }
+        }
+        String msg = "Authorization service '" + serviceName + "' reloaded.";
+        adtSvc.audit(Subject.SYSTEM, AuditSeverity.INFO, AuditConstants.ATTR_SERVICE, msg, null, null);
+        System.out.println(msg);
+    }
+
     private static void loadAdjudicationAlgorithms()
     throws IOException, ClassNotFoundException, ServiceInitializationException {
         if (algReg != null) {
