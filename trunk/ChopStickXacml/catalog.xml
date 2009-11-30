@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog" prefer="system">
+    <system systemId="file:/home/spopoff/techDecisionProjects/trunk/ChopStickXacml/src/techDecision/xacmlPdp/xacml.wsdl" uri="xml-resources/axis2/META-INF/xacml.wsdl"/>
+</catalog>

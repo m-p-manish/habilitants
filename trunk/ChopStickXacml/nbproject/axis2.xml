@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<axis2 xmlns="http://www.netbeans.org/ns/axis2/1">
+    <service name="PdpService">
+        <service-class>techDecision.xacmlPdp.WSxacmlPDP</service-class>
+        <wsdl-url>file:/home/spopoff/techDecisionProjects/trunk/ChopStickXacml/src/techDecision/xacmlPdp/xacml.wsdl</wsdl-url>
+        <java-generator databindingName="xmlbeans" serviceName="PdpService" portName="PdpOperations" packageName="techDecision.xacmlPdp" sei="true" options="-s"/>
+    </service>
+</axis2>
+
+
+
