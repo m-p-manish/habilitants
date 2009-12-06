@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions name="XacmlEngineDefinition" targetNamespace="http://gryb.info/schemas/xacml/wsdl" xmlns:w="http://gryb.info/schemas/xacml/wsdl" xmlns="http://schemas.xmlsoap.org/wsdl/" xmlns:c="http://gryb.info/schemas/xacml/common" xmlns:pdp="urn:oasis:names:tc:xacml:2.0:context:schema:os" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
+  <types>
+    <xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="urn:oasis:names:tc:xacml:2.0:context:schema:os" xmlns:xacml-context="urn:oasis:names:tc:xacml:2.0:context:schema:os" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+   <xs:element name="Request" type="xacml-context:RequestType"/>
+   <xs:complexType name="RequestType">
+      <xs:sequence>
+         <xs:element maxOccurs="unbounded" ref="xacml-context:Subject"/>
+         <xs:element maxOccurs="unbounded" ref="xacml-context:Resource"/>
+         <xs:element ref="xacml-context:Action"/>
+         <xs:element ref="xacml-context:Environment"/>
+      </xs:sequence>
+   </xs:complexType>
+   <!-- -->
+   <xs:element name="Response" type="xacml-context:ResponseType"/>
+   <xs:complexType name="ResponseType">
+      <xs:sequence>
+         <xs:element maxOccurs="unbounded" ref="xacml-context:Result"/>
+      </xs:sequence>
+   </xs:complexType>
+   <!-- -->
+   <xs:element name="Subject" type="xacml-context:SubjectType"/>
+   <xs:complexType name="SubjectType">
+      <xs:sequence>
+         <xs:element maxOccurs="unbounded" minOccurs="0" ref="xacml-context:Attribute"/>
+      </xs:sequence>
+      <xs:attribute default="urn:oasis:names:tc:xacml:1.0:subject-category:access-subject" name="SubjectCategory" type="xs:anyURI"/>
+   </xs:complexType>
+   <!-- -->
+   <xs:element name="Resource" type="xacml-context:ResourceType"/>
+   <xs:complexType name="ResourceType">
+      <xs:sequence>
+         <xs:element minOccurs="0" ref="xacml-context:ResourceContent"/>
+         <xs:element maxOccurs="unbounded" minOccurs="0" ref="xacml-context:Attribute"/>
+      </xs:sequence>
+   </xs:complexType>
+   <!-- -->
+   <xs:element name="ResourceContent" type="xacml-context:ResourceContentType"/>
+   <xs:complexType mixed="true" name="ResourceContentType">
+      <xs:sequence>
+         <xs:any maxOccurs="unbounded" minOccurs="0" namespace="##any" processContents="lax"/>
+      </xs:sequence>
+      <xs:anyAttribute namespace="##any" processContents="lax"/>
+   </xs:complexType>
+   <!-- -->
+   <xs:element name="Action" type="xacml-context:ActionType"/>
+   <xs:complexType name="ActionType">
+      <xs:sequence>
+         <xs:element maxOccurs="unbounded" minOccurs="0" ref="xacml-context:Attribute"/>
+      </xs:sequence>
+   </xs:complexType>
+   <!-- -->
+   <xs:element name="Environment" type="xacml-context:EnvironmentType"/>
+   <xs:complexType name="EnvironmentType">
+      <xs:sequence>
+         <xs:element maxOccurs="unbounded" minOccurs="0" ref="xacml-context:Attribute"/>
+      </xs:sequence>
+   </xs:complexType>
+   <!-- -->
+   <xs:element name="Attribute" type="xacml-context:AttributeType"/>
+   <xs:complexType name="AttributeType">
+      <xs:sequence>
+         <xs:element maxOccurs="unbounded" ref="xacml-context:AttributeValue"/>
+      </xs:sequence>
+      <xs:attribute name="AttributeId" type="xs:anyURI" use="required"/>
+      <xs:attribute name="DataType" type="xs:anyURI" use="required"/>
+      <xs:attribute name="Issuer" type="xs:string" use="optional"/>
+   </xs:complexType>
+   <!-- -->
+   <xs:element name="AttributeValue" type="xacml-context:AttributeValueType"/>
+   <xs:complexType mixed="true" name="AttributeValueType">
+      <xs:sequence>
+         <xs:any maxOccurs="unbounded" minOccurs="0" namespace="##any" processContents="lax"/>
+      </xs:sequence>
+      <xs:anyAttribute namespace="##any" processContents="lax"/>
+   </xs:complexType>
+   <!-- -->
+   <xs:element name="Result" type="xacml-context:ResultType"/>
+   <xs:complexType name="ResultType">
+      <xs:sequence>
+         <xs:element ref="xacml-context:Decision"/>
+         <xs:element minOccurs="0" ref="xacml-context:Status"/>
+      </xs:sequence>
+      <xs:attribute name="ResourceId" type="xs:string" use="optional"/>
+   </xs:complexType>
+   <!-- -->
+   <xs:element name="Decision" type="xacml-context:DecisionType"/>
+   <xs:simpleType name="DecisionType">
+      <xs:restriction base="xs:string">
+         <xs:enumeration value="Permit"/>
+         <xs:enumeration value="Deny"/>
+         <xs:enumeration value="Indeterminate"/>
+         <xs:enumeration value="NotApplicable"/>
+      </xs:restriction>
+   </xs:simpleType>
+   <!-- -->
+   <xs:element name="Status" type="xacml-context:StatusType"/>
+   <xs:complexType name="StatusType">
+      <xs:sequence>
+         <xs:element ref="xacml-context:StatusCode"/>
+         <xs:element minOccurs="0" ref="xacml-context:StatusMessage"/>
+         <xs:element minOccurs="0" ref="xacml-context:StatusDetail"/>
+      </xs:sequence>
+   </xs:complexType>
+   <!-- -->
+   <xs:element name="StatusCode" type="xacml-context:StatusCodeType"/>
+   <xs:complexType name="StatusCodeType">
+      <xs:sequence>
+         <xs:element minOccurs="0" ref="xacml-context:StatusCode"/>
+      </xs:sequence>
+      <xs:attribute name="Value" type="xs:anyURI" use="required"/>
+   </xs:complexType>
+   <!-- -->
+   <xs:element name="StatusMessage" type="xs:string"/>
+   <!-- -->
+   <xs:element name="StatusDetail" type="xacml-context:StatusDetailType"/>
+   <xs:complexType name="StatusDetailType">
+      <xs:sequence>
+         <xs:any maxOccurs="unbounded" minOccurs="0" namespace="##any" processContents="lax"/>
+      </xs:sequence>
+   </xs:complexType>
+   <!-- -->
+   <xs:element name="MissingAttributeDetail" type="xacml-context:MissingAttributeDetailType"/>
+   <xs:complexType name="MissingAttributeDetailType">
+      <xs:sequence>
+         <xs:element maxOccurs="unbounded" minOccurs="0" ref="xacml-context:AttributeValue"/>
+      </xs:sequence>
+      <xs:attribute name="AttributeId" type="xs:anyURI" use="required"/>
+      <xs:attribute name="DataType" type="xs:anyURI" use="required"/>
+      <xs:attribute name="Issuer" type="xs:string" use="optional"/>
+   </xs:complexType>
+   <!-- -->
+</xs:schema>
+  </types>
+  <message name="pdp_in">
+    <part name="body" element="pdp:Request">
+    </part>
+  </message>
+  <message name="pdp_out">
+    <part name="body" element="pdp:Response">
+    </part>
+  </message>
+  <portType name="PdpOperations">
+    <operation name="getDecision">
+      <input message="w:pdp_in">
+    </input>
+      <output message="w:pdp_out">
+    </output>
+    </operation>
+  </portType>
+  <binding name="PdpBinding" type="w:PdpOperations">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <operation name="getDecision">
+      <soap:operation soapAction="http://www.spopoff.com/getDecision"/>
+      <input>
+        <soap:body use="literal"/>
+      </input>
+      <output>
+        <soap:body use="literal"/>
+      </output>
+    </operation>
+  </binding>
+  <service name="PdpService">
+    <port name="PdpOperations" binding="w:PdpBinding">
+      <soap:address location="http://localhost/PdpService"/>
+    </port>
+  </service>
+</definitions>
