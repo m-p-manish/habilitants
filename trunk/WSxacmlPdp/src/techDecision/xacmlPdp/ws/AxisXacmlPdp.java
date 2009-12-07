@@ -43,7 +43,6 @@ import an.chopsticks.service.Context;
 import an.chopsticks.service.Decision;
 import an.chopsticks.service.Resource;
 import an.chopsticks.service.Subject;
-import org.apache.axis2.AxisFault;
 import org.apache.xmlbeans.XmlBeans;
 import org.josso.Lookup;
 import org.josso.spring.SpringComponentKeeperImpl;
@@ -85,99 +84,107 @@ public class AxisXacmlPdp implements PdpServiceSkeletonInterface {
                 System.out.println("retrouvé le bean chopSticksXacml");
             }else{
                 System.err.println("Le bean chopSticksXacml est vide !");
+                return;
             }
         } catch (Exception exception) {
             System.err.println("Erreur récupération bean chopSticksXacml "+exception.toString());
+            return;
         }
         if(xacml!=null){
             atzSvc=xacml.getAthzSvc();
             init = true;
         }
     }
-        public void setAtzSvc(AuthorizationService atzSvc) {
+    public void setAtzSvc(AuthorizationService atzSvc) {
             this.atzSvc = atzSvc;
-        }
-        public ResponseDocument getDecision(RequestDocument request) {
-            if(!init){
-                Exception e = new Exception("Erreur initialisation service ");
-                try {
-                    throw org.apache.axis2.AxisFault.makeFault(e);
-                } catch (AxisFault ex) {
-                    System.err.println("Erreur récupération bean chopSticksXacml "+ex.toString());
-                }
-            }
-            ResponseDocument ret = null;
-            RequestType req = request.getRequest();
-            ActionType acte = req.getAction();
-            /*<Action>
-                <Attribute
-                      AttributeId="urn:oasis:names:tc:xacml:1.0:action:action-id"
-                      DataType="http://www.w3.org/2001/XMLSchema#string">
-                    <AttributeValue>read</AttributeValue>
-            */
-            action = new Action(acte.getAttributeArray(0).getAttributeValueArray(0).toString());
-            ResourceType[] ress = req.getResourceArray();
-            /*<Resource>
-                <Attribute
-                AttributeId="urn:oasis:names:tc:xacml:1.0:resource:resource-id"
-                DataType="http://www.w3.org/2001/XMLSchema#anyURI">
-                    <AttributeValue>http://medico.com/record/patient/BartSimpson</AttributeValue>*/
-            resources = new Resource[ress.length];
-            int i = 0;
-            for(ResourceType res : ress){
-                resources[i] = new Resource(res.getAttributeArray(0).getAttributeValueArray(0).toString());
-                i++;
-            }
-            /*<Subject>
-                <Attribute
-                AttributeId="urn:oasis:names:tc:xacml:1.0:subject:subject-id"
-                DataType="http://www.w3.org/2001/XMLSchema#string">
-                    <AttributeValue>Julius Hibbert</AttributeValue>
-             */
-            SubjectType[] sbjs = req.getSubjectArray();
-            subjects = new Subject[sbjs.length];
-            i = 0;
-            for(SubjectType sbj : sbjs){
-                Subject s = new Subject();
-                s.setSubjecName(sbj.getAttributeArray(0).getAttributeValueArray(0).toString());
-                subjects[i] = s;
-                i++;
-            }
-            /*<Response
-                xmlns="urn:oasis:names:tc:xacml:1.0:context"
-                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                xsi:schemaLocation="urn:oasis:names:tc:xacml:1.0:context
-                cs-xacml-schema-context-01.xsd">
-                <Result>
-                    <Decision>Permit</Decision>
-                    <Status>
-                        <StatusCode
-                        Value="urn:oasis:names:tc:xacml:1.0:status:ok"/>
-                    </Status>*/
-            AuthorizationResult[] aresss = null;
-            ResponseType rep = ret.addNewResponse();
+    }
+    public ResponseDocument getDecision(RequestDocument request) {
+        ResponseDocument ret = null;
+        if(!init){
+            System.err.println("Erreur getDecision initialisation service échouée");
             try {
-                aresss = atzSvc.authorize(subjects, resources, action, context);
-                Decision dec = aresss[0].getDecision();
+                //throw org.apache.axis2.AxisFault.makeFault(e);
+                ret = ResponseDocument.Factory.newInstance();
+                ResponseType rep = ret.addNewResponse();
                 ResultType rest = rep.addNewResult();
-                if(dec==Decision.Permit) rest.setDecision(DecisionType.PERMIT);
-                if(dec==Decision.Deny) rest.setDecision(DecisionType.DENY);
-                if(dec==Decision.Indeterminate) rest.setDecision(DecisionType.INDETERMINATE);
-                if(dec==Decision.NotApplicable) rest.setDecision(DecisionType.NOT_APPLICABLE);
-                rest.addNewStatus();
-                StatusCodeTypeImpl ssc = new StatusCodeTypeImpl(XmlBeans.NO_TYPE);
-                ssc.setValue(Constants.STATUS_OK);
-                rest.getStatus().setStatusCode(ssc);
-            } catch (AuthorizationFailedException ex) {
-                System.err.println("Erreur sur décision "+ex.toString());
-                ResultType rest = rep.addNewResult();
-                rest.setDecision(DecisionType.INDETERMINATE);
-                rest.addNewStatus();
-                StatusCodeTypeImpl ssc = new StatusCodeTypeImpl(XmlBeans.NO_TYPE);
-                ssc.setValue(Constants.STATUS_PROCESSING_ERROR);
-                rest.getStatus().setStatusCode(ssc);
+                rest.setDecision(DecisionType.NOT_APPLICABLE);
+                System.out.println("Réponse sur erreur="+ret.toString());
+                return ret;
+            } catch (Exception ex) {
+                System.err.println("Erreur getDecision fabrication réponse erreur init "+ex.toString());
             }
-            return ret;
         }
+        RequestType req = request.getRequest();
+        ActionType acte = req.getAction();
+        /*<Action>
+            <Attribute
+                  AttributeId="urn:oasis:names:tc:xacml:1.0:action:action-id"
+                  DataType="http://www.w3.org/2001/XMLSchema#string">
+                <AttributeValue>read</AttributeValue>
+        */
+        action = new Action(acte.getAttributeArray(0).getAttributeValueArray(0).toString());
+        ResourceType[] ress = req.getResourceArray();
+        /*<Resource>
+            <Attribute
+            AttributeId="urn:oasis:names:tc:xacml:1.0:resource:resource-id"
+            DataType="http://www.w3.org/2001/XMLSchema#anyURI">
+                <AttributeValue>http://medico.com/record/patient/BartSimpson</AttributeValue>*/
+        resources = new Resource[ress.length];
+        int i = 0;
+        for(ResourceType res : ress){
+            resources[i] = new Resource(res.getAttributeArray(0).getAttributeValueArray(0).toString());
+            i++;
+        }
+        /*<Subject>
+            <Attribute
+            AttributeId="urn:oasis:names:tc:xacml:1.0:subject:subject-id"
+            DataType="http://www.w3.org/2001/XMLSchema#string">
+                <AttributeValue>Julius Hibbert</AttributeValue>
+         */
+        SubjectType[] sbjs = req.getSubjectArray();
+        subjects = new Subject[sbjs.length];
+        i = 0;
+        for(SubjectType sbj : sbjs){
+            Subject s = new Subject();
+            s.setSubjecName(sbj.getAttributeArray(0).getAttributeValueArray(0).toString());
+            subjects[i] = s;
+            i++;
+        }
+        /*<Response
+            xmlns="urn:oasis:names:tc:xacml:1.0:context"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:schemaLocation="urn:oasis:names:tc:xacml:1.0:context
+            cs-xacml-schema-context-01.xsd">
+            <Result>
+                <Decision>Permit</Decision>
+                <Status>
+                    <StatusCode
+                    Value="urn:oasis:names:tc:xacml:1.0:status:ok"/>
+                </Status>*/
+        AuthorizationResult[] aresss = null;
+        ResponseType rep = ret.addNewResponse();
+        try {
+            aresss = atzSvc.authorize(subjects, resources, action, context);
+            Decision dec = aresss[0].getDecision();
+            ResultType rest = rep.addNewResult();
+            if(dec==Decision.Permit) rest.setDecision(DecisionType.PERMIT);
+            if(dec==Decision.Deny) rest.setDecision(DecisionType.DENY);
+            if(dec==Decision.Indeterminate) rest.setDecision(DecisionType.INDETERMINATE);
+            if(dec==Decision.NotApplicable) rest.setDecision(DecisionType.NOT_APPLICABLE);
+            rest.addNewStatus();
+            StatusCodeTypeImpl ssc = new StatusCodeTypeImpl(XmlBeans.NO_TYPE);
+            ssc.setValue(Constants.STATUS_OK);
+            rest.getStatus().setStatusCode(ssc);
+        } catch (AuthorizationFailedException ex) {
+            System.err.println("Erreur sur décision "+ex.toString());
+            ResultType rest = rep.addNewResult();
+            rest.setDecision(DecisionType.INDETERMINATE);
+            rest.addNewStatus();
+            StatusCodeTypeImpl ssc = new StatusCodeTypeImpl(XmlBeans.NO_TYPE);
+            ssc.setValue(Constants.STATUS_PROCESSING_ERROR);
+            rest.getStatus().setStatusCode(ssc);
+        }
+        return ret;
+    }
 
 }
