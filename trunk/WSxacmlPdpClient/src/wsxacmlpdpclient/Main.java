@@ -13,6 +13,7 @@ import os.schema.context._0._2.xacml.tc.names.oasis.AttributeValueType;
 import os.schema.context._0._2.xacml.tc.names.oasis.RequestDocument;
 import os.schema.context._0._2.xacml.tc.names.oasis.RequestType;
 import os.schema.context._0._2.xacml.tc.names.oasis.ResourceType;
+import os.schema.context._0._2.xacml.tc.names.oasis.ResponseDocument;
 import os.schema.context._0._2.xacml.tc.names.oasis.ResponseType;
 import os.schema.context._0._2.xacml.tc.names.oasis.SubjectType;
 import techDecision.ws.client.PdpServiceStub;
@@ -30,7 +31,7 @@ public class Main {
         System.out.println("test");
         PdpServiceStub stub = null;
         try {
-            stub = new PdpServiceStub("http://localhost:8082/axis2/services/PdpService");
+            stub = new PdpServiceStub("http://localhost:8082/josso/services/PdpService");
             RequestDocument req = RequestDocument.Factory.newInstance();
             RequestType rt = req.addNewRequest();
             SubjectType s = rt.addNewSubject();
@@ -72,8 +73,13 @@ public class Main {
             xml = "<AttributeValue>entrer</AttributeValue>";
             x = XmlObject.Factory.parse(xml);
             acteV.set(x);
-            ResponseType rep = (ResponseType) stub.getDecision(req);
-            System.out.println("résultat ="+rep.toString());
+            ResponseDocument rep = stub.getDecision(req);
+            if(rep==null){
+                System.err.println("réponse vide "+rep.getClass().toString());
+            }else {
+                System.out.println("résultat ="+rep.toString());
+            }
+            
         }catch(Exception e){
             System.err.println("Erreur = "+e.toString());
         }
