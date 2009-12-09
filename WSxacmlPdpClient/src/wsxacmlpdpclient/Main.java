@@ -31,7 +31,7 @@ public class Main {
         System.out.println("test");
         PdpServiceStub stub = null;
         try {
-            stub = new PdpServiceStub("http://localhost:8082/josso/services/PdpService");
+            stub = new PdpServiceStub("http://localhost:8082/josso/services/xacmlWSpdp");
             RequestDocument req = RequestDocument.Factory.newInstance();
             RequestType rt = req.addNewRequest();
             SubjectType s = rt.addNewSubject();
