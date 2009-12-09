@@ -70,5 +70,28 @@
             <protocol:ws-service-locator endpoint="localhost:8082" />
         </gll:gatewayServiceLocator>
     </gll:FacesSSOAgent>
+    <s:bean id="jaxRpcProxy" class="org.springframework.remoting.jaxrpc.JaxRpcPortProxyFactoryBean">
+      <s:property name="serviceFactoryClass">
+        <s:value>org.apache.axis.client.ServiceFactory</s:value>
+      </s:property>
+      <s:property name="wsdlDocumentUrl">
+        <s:value>http://localhost:8082/josso/services/xacmlWSpdp?wsdl</s:value>
+      </s:property>
+      <s:property name="namespaceUri">
+        <s:value>http://localhost:8082/josso/services/xacmlWSpdp</s:value>
+      </s:property>
+      <s:property name="serviceName">
+        <s:value>SpringWSxacmlPdpService</s:value>
+      </s:property>
+      <s:property name="portName">
+        <s:value>xacmlWSpdp</s:value>
+      </s:property>
+      <s:property name="serviceInterface">
+        <s:value>techDecision.xacmlPep.PdpServiceSkeletonInterface</s:value>
+      </s:property>
 
+    </s:bean>
+    <s:bean id="xacmlWSpep" class="techDecision.xacmlPep.WSclient">
+     <s:property name="xacmlWSpdp" ref="jaxRpcProxy" />
+    </s:bean>
 </s:beans>
