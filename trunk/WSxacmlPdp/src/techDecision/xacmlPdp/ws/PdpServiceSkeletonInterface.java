@@ -6,6 +6,9 @@
  * by the Apache Axis2 version: 1.3  Built on : Aug 10, 2007 (04:45:47 LKT)
  */
     package techDecision.xacmlPdp.ws;
+
+    import an.chopsticks.service.AuthorizationService;
+
     /**
      *  PdpServiceSkeletonInterface java skeleton interface for the axisService
      */
@@ -24,6 +27,5 @@
                   os.schema.context._0._2.xacml.tc.names.oasis.RequestDocument request
                  )
             ;
-        
          }
     

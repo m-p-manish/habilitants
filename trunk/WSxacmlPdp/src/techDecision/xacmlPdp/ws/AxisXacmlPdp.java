@@ -95,9 +95,9 @@ public class AxisXacmlPdp implements PdpServiceSkeletonInterface {
             init = true;
         }
     }
-    public void setAtzSvc(AuthorizationService atzSvc) {
-            this.atzSvc = atzSvc;
-    }
+    /*public void setAtzSvc(AuthorizationService atzSvc) {
+    this.atzSvc = atzSvc;
+    }*/
     public ResponseDocument getDecision(RequestDocument request) {
         ResponseDocument ret = null;
         if(!init){
