@@ -215,6 +215,10 @@ public class FacesSSOAgent extends HttpSSOAgent {
     public String urlLogout(){
         return super.urlLogout1();
     }
+    public String simpleAuthorize(String user, String rezz, String akte){
+        String reponse = "Pas de réponse";
+        return reponse;
+    }
 
     protected void log2(String message) {
         if(_container != null){
