@@ -1,5 +1,5 @@
 /*
-Copyright Stéphane Georges Popoff, (novembre 2009)
+Copyright Stéphane Georges Popoff, (novembre - décembre 2009)
 
 spopoff@rocketmail.com
 
@@ -38,7 +38,7 @@ package theCube.josso;
 import java.io.IOException;
 import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
-import javax.servlet.http.HttpServletResponse;
+//import javax.servlet.http.HttpServletResponse;
 import org.josso.gl2.agent.FacesSSOAgent;
 import org.apache.log4j.Logger;
 import org.josso.agent.Lookup;
@@ -52,6 +52,43 @@ public class JossoInsideFaces {
     private static org.apache.log4j.Logger logg = Logger.getLogger(JossoInsideFaces.class);
     private String etatAgent = null;
     private String logoutUrl = null;
+    private String userLogin = null;
+    private String resource = null;
+    private String action = null;
+    private FacesSSOAgent _agent = null;
+    private String isAutorise = null;
+
+    public String getIsAutorise() {
+        return isAutorise;
+    }
+
+    public void setIsAutorise(String isAutorise) {
+        this.isAutorise = isAutorise;
+    }
+
+    public String getAction() {
+        return action;
+    }
+
+    public void setAction(String action) {
+        this.action = action;
+    }
+
+    public String getResource() {
+        return resource;
+    }
+
+    public void setResource(String resource) {
+        this.resource = resource;
+    }
+
+    public String getUserLogin() {
+        return userLogin;
+    }
+
+    public void setUserLogin(String userLogin) {
+        this.userLogin = userLogin;
+    }
 
     public String getLogoutUrl() {
         return logoutUrl;
@@ -71,7 +108,6 @@ public class JossoInsideFaces {
 
     /** Creates a new instance of JossoInsideFaces */
     public JossoInsideFaces() {
-        FacesSSOAgent _agent = null;
         FacesContext facesContext = null;
         ExternalContext externalContext = null;
         //ce serait le bon endroit pour valider la présence de l'agent
@@ -96,9 +132,8 @@ public class JossoInsideFaces {
             } catch (Exception e) {
                 logg.error("** JossoInsideFaces Erreur Initialisation du (debut) context=",e);
                 etatAgent = "erreur";
-            } finally{
-                _agent = null;
             }
+            userLogin = facesContext.getExternalContext().getUserPrincipal().getName();
         }
 
         logg.info("** JossoInsideFaces Fin Initialisation du context="+externalContext.toString());
@@ -113,6 +148,28 @@ public class JossoInsideFaces {
             logg.error(JossoInsideFaces.class.getName(), ex);
             return "logout";
         }
+        return null;
+    }
+    public String autoriser(){
+        if(_agent==null){
+            isAutorise = "Erreur agent vide";
+            return null;
+        }
+        if(userLogin==null) {
+            isAutorise = "userLogin vide";
+            return null;
+        }
+        if(resource==null) {
+            isAutorise = "resource vide";
+            return null;
+        }
+        if(action==null) {
+            isAutorise = "action vide";
+            return null;
+        }
+        FacesContext context = FacesContext.getCurrentInstance();
+        userLogin = context.getExternalContext().getRemoteUser();
+        isAutorise =  _agent.simpleAuthorize(userLogin, resource, action);
         return null;
     }
 }
