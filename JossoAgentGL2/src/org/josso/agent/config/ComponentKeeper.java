@@ -24,6 +24,7 @@ package org.josso.agent.config;
 
 import org.josso.agent.reverseproxy.ReverseProxyConfiguration;
 import org.josso.agent.SSOAgent;
+import techDecision.xacmlPep.WSclientInterface;
 
 /**
  * @author <a href="mailto:sgonzalez@atricore.org">Sebastian Gonzalez Oyuela</a>
@@ -35,6 +36,7 @@ public interface ComponentKeeper {
     SSOAgent fetchSSOAgent(String nom) throws Exception;
 
     ReverseProxyConfiguration fetchReverseProxyConfiguration() throws Exception;
+    WSclientInterface fetchPdpService();
 
 
 }

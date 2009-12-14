@@ -531,7 +531,7 @@ public class JossoFilter implements Filter {
                          log.debug("T10 Redirecting to original '" + requestURI + "'");
                     hres.sendRedirect(hres.encodeRedirectURL(requestURI));
                 }
-               	_agent.addEntrySSOIDsuccessed(entry.ssoId);
+               	_agent.addEntrySSOIDsuccessed(entry.ssoId, entry.getPrincipal().getName());
                 return;
             }
 

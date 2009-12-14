@@ -53,15 +53,17 @@ import os.schema.context._0._2.xacml.tc.names.oasis.SubjectType;
  * @author spopoff@rocketmail.com
  * @version 0.1
  */
-public class WSclient {
+public class WSclient implements WSclientInterface {
     PdpServiceSkeletonInterface xacmlWSpdp;
+    String nom;
 
-    public PdpServiceSkeletonInterface getXacmlWSpdp() {
-        return xacmlWSpdp;
+    public WSclient(){
+        System.out.println("Initialisation WSclient pep autorise");
     }
 
     public void setXacmlWSpdp(PdpServiceSkeletonInterface xacmlWSpdp) {
         this.xacmlWSpdp = xacmlWSpdp;
+        System.out.println("Récupère référence sur web service xacmlWSpdp");
     }
 
     public String simpleQuestionService(String user, String ress, String akte){
@@ -127,5 +129,13 @@ public class WSclient {
         }
 
         return reponse;
+    }
+
+    public String getNomPdp() {
+        return nom;
+    }
+
+    public void setNomPdp(String nom) {
+        this.nom = nom;
     }
 }

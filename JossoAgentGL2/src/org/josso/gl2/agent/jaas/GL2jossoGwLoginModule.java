@@ -77,6 +77,7 @@ public class GL2jossoGwLoginModule extends AppservPasswordLoginModule {
     protected String _currentSSOSessionId;
     protected SSOUser _ssoUserPrincipal;
     protected SSORole[] _ssoRolePrincipals;
+    private String userName = null;
     private static final Log logg = LogFactory.getLog(GL2jossoGwLoginModule.class);
     /*
      * Initialize this  LoginModule
@@ -118,8 +119,8 @@ public class GL2jossoGwLoginModule extends AppservPasswordLoginModule {
                 if (!_subject.getPrincipals().contains(_ssoUserPrincipal)) {
                     _subject.getPrincipals().add(_ssoUserPrincipal);
                 }
-
-                log("Added SSOUser Principal to the Subject : " + _ssoUserPrincipal);
+                userName = _ssoUserPrincipal.getName();
+                log("Added SSOUser Principal to the Subject : " + userName);
 
                 _ssoRolePrincipals = getRoleSets();
 
@@ -187,6 +188,7 @@ public class GL2jossoGwLoginModule extends AppservPasswordLoginModule {
             log("Erreur GL2jossoGwLoginModule trouve pas FacesSSOAgent "+ex.toString());
         }
         ag.setInfoUserGroups(retAgent);
+        ag.addEntrySSOIDsuccessed(_username, userName);
         commitUserAuthentication(groupListToForward);
         //super.commit();
         log("***terminé authenticateUser");
