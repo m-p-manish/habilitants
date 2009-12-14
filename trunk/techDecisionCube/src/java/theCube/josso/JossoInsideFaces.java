@@ -42,6 +42,7 @@ import javax.faces.context.FacesContext;
 import org.josso.gl2.agent.FacesSSOAgent;
 import org.apache.log4j.Logger;
 import org.josso.agent.Lookup;
+import techDecision.xacmlPep.WSclientInterface;
 
 /**
  * Bean pour faces qui cause avec l'agent Josso
@@ -52,18 +53,15 @@ public class JossoInsideFaces {
     private static org.apache.log4j.Logger logg = Logger.getLogger(JossoInsideFaces.class);
     private String etatAgent = null;
     private String logoutUrl = null;
-    private String userLogin = null;
+    private String userLogin = "Pas connu";
     private String resource = null;
     private String action = null;
     private FacesSSOAgent _agent = null;
-    private String isAutorise = null;
+    private String isAutorise = "pas de demande";
+    private WSclientInterface xacmlPdp = null;
 
     public String getIsAutorise() {
         return isAutorise;
-    }
-
-    public void setIsAutorise(String isAutorise) {
-        this.isAutorise = isAutorise;
     }
 
     public String getAction() {
@@ -112,6 +110,7 @@ public class JossoInsideFaces {
         ExternalContext externalContext = null;
         //ce serait le bon endroit pour valider la présence de l'agent
         logg.info("** JossoInsideFaces Initialisation ...");
+        System.out.println("** JossoInsideFaces Initialisation ...");
         etatAgent = "on cherche ...";
         if (_agent == null) {
 
@@ -122,6 +121,7 @@ public class JossoInsideFaces {
                 lookup.init("josso-agent2-config.xml", externalContext.toString());
                 _agent = (FacesSSOAgent) lookup.lookupSSOAgent();
                 //_agent.setsCtx(externalContext);
+                xacmlPdp = (WSclientInterface) lookup.lookupPdpService();
                 etatAgent = "démarré";
                 logoutUrl = _agent.urlLogout();
                 if(logoutUrl==null){
@@ -133,7 +133,8 @@ public class JossoInsideFaces {
                 logg.error("** JossoInsideFaces Erreur Initialisation du (debut) context=",e);
                 etatAgent = "erreur";
             }
-            userLogin = facesContext.getExternalContext().getUserPrincipal().getName();
+            userLogin = _agent.getUserName(facesContext.getExternalContext().getUserPrincipal().getName());
+            System.out.println("** JossoInsideFaces Initialisation userLogin="+userLogin);
         }
 
         logg.info("** JossoInsideFaces Fin Initialisation du context="+externalContext.toString());
@@ -167,9 +168,9 @@ public class JossoInsideFaces {
             isAutorise = "action vide";
             return null;
         }
-        FacesContext context = FacesContext.getCurrentInstance();
-        userLogin = context.getExternalContext().getRemoteUser();
-        isAutorise =  _agent.simpleAuthorize(userLogin, resource, action);
+        //FacesContext context = FacesContext.getCurrentInstance();
+        //userLogin = context.getExternalContext().getRemoteUser();
+        isAutorise =  xacmlPdp.simpleQuestionService(userLogin, resource, action);
         return null;
     }
 }
