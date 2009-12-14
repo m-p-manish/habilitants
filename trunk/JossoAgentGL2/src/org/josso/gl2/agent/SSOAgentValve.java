@@ -689,7 +689,7 @@ public class SSOAgentValve extends ValveBase
 
                 // The cookie is valid to for the partner application only ... in the future each partner app may
                 // store a different auth. token (SSO SESSION) value
-                securityCheck(hreq, hres, entry.ssoId, cfg, "T10");
+                securityCheck(hreq, hres, entry, cfg, "T10");
                 /*try {
                 cookie = _agent.newJossoCookie(hreq.getContextPath(), entry.ssoId);
                 hres.addCookie(cookie);
@@ -1209,8 +1209,9 @@ public class SSOAgentValve extends ValveBase
    public void postInvoke(Request request, Response response) {
       System.out.println("Ne sert à rien dans cette logique mais fait plaisir");
   }
-  private void securityCheck(HttpServletRequest hreq, HttpServletResponse hres, String ssoId, SSOPartnerAppConfig cfg, String phase){
-        try {
+  private void securityCheck(HttpServletRequest hreq, HttpServletResponse hres, SingleSignOnEntry entry, SSOPartnerAppConfig cfg, String phase){
+      String ssoId = entry.ssoId;
+      try {
             cookie = _agent.newJossoCookie(hreq.getContextPath(), ssoId);
             hres.addCookie(cookie);
         } catch (Exception e) {
@@ -1274,7 +1275,7 @@ public class SSOAgentValve extends ValveBase
         } catch (IOException iOException) {
             log(phase+" Erreur redirection",iOException);
         }
-        _agent.addEntrySSOIDsuccessed(ssoId);
+        _agent.addEntrySSOIDsuccessed(ssoId, entry.getPrincipal().getName());
         log(phase+" Fin josso_check jossoSessionId="+jossoSessionId);
         //c'est pas fini et pas en erreur pourtant ...
 

@@ -91,7 +91,8 @@
       </s:property>
 
     </s:bean>
-    <s:bean id="xacmlWSpep" class="techDecision.xacmlPep.WSclient">
+    <s:bean id="xacmlWSpep" class="techDecision.xacmlPep.WSclient" >
      <s:property name="xacmlWSpdp" ref="jaxRpcProxy" />
+     <s:property name="nomPdp" value="xacmlWSpdp1"/>
     </s:bean>
 </s:beans>

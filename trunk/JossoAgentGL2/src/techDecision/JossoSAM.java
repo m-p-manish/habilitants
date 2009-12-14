@@ -553,7 +553,8 @@ public class JossoSAM implements ServerAuthModule {
                 } else {
                     if (debug==1) log("T10-4 Redirecting to original '" + requestURI + "' on SEND_SUCCESS!");
                     hres.sendRedirect(hres.encodeRedirectURL(requestURI));
-                    _agent.addEntrySSOIDsuccessed(entry.ssoId);
+                    _agent.addEntrySSOIDsuccessed(entry.ssoId,entry.getPrincipal().getName());
+                    
                 }
                 log("T10 Fin josso_check jossoSessionId="+jossoSessionId);
                 return AuthStatus.SEND_SUCCESS;

@@ -57,6 +57,10 @@ import org.apache.catalina.Context;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.josso.Lookup;
+import org.josso.agent.config.SpringComponentKeeperImpl;
+import org.springframework.context.ApplicationContext;
+import techDecision.xacmlPep.WSclient;
 
 
 /**
@@ -67,10 +71,11 @@ import org.apache.commons.logging.LogFactory;
 public class FacesSSOAgent extends HttpSSOAgent {
     private static final String AUTH_TYPE_INFO_KEY = "javax.servlet.http.authType";
     private JAASHelper jaasHelper;
-    private List<String> ssoId = null;
+    private List<String[]> ssoId = null;
     private List<String[]> groups = null;
     private Container _container;
     private Boolean bStarted = false;
+    private WSclient xacmlPep = null;
     //private int debug = 1;
     private static final Log logg = LogFactory.getLog(FacesSSOAgent.class);
 
@@ -98,7 +103,7 @@ public class FacesSSOAgent extends HttpSSOAgent {
             return;
         }
         super.start();
-        ssoId = new ArrayList<String>();
+        ssoId = new ArrayList<String[]>();
         groups = new ArrayList<String[]>();
          if (_container instanceof Context) {
             Context context = (Context) _container;
@@ -183,13 +188,46 @@ public class FacesSSOAgent extends HttpSSOAgent {
     }
     public void addEntrySSOIDsuccessed(String ssoid){
         log("Info FacesSSOAgent ajoute ssoid="+ssoid);
-        ssoId.add(ssoid);
+        String[] sss = new String[2];
+        sss[0] = ssoid;
+        sss[1] = "inconnu";
+        ssoId.add(sss);
+    }
+    /**
+     * Ajoute une seesion Josso avec le login utilisé pour s'authentifier
+     * @param ssoid
+     * @param userName
+     */
+    public void addEntrySSOIDsuccessed(String ssoid, String userName){
+        log("Info FacesSSOAgent ajoute ssoid="+ssoid+" et user="+userName);
+        String[] sss = new String[2];
+        sss[0] = ssoid;
+        sss[1] = userName;
+        if(!isSSOIDloged(ssoid)) ssoId.add(sss);
+    }
+    /**
+     * retrouve le login utilisé par un utilisateur associé à une session Josso
+     * @param ssoid
+     * @return
+     */
+    public String getUserName(String ssoid){
+        String un = null;
+        if(ssoid!=null){
+            for(String[] s : ssoId){
+                if(s[0].equals(ssoid)){
+                    un = s[1];
+                    log("Info FacesSSOAgent trouvé ssoid="+ssoid+" et user="+s[1]);
+                    break;
+                }
+            }
+        }
+        return un;
     }
     public Boolean isSSOIDloged(String ssoid){
         Boolean ret = false;
         if(ssoid!=null){
-            for(String s : ssoId){
-                if(s.equals(ssoid)){
+            for(String[] s : ssoId){
+                if(s[0].equals(ssoid)){
                     ret = true;
                     log("Info FacesSSOAgent trouvé ssoid="+ssoid);
                     break;
@@ -214,10 +252,6 @@ public class FacesSSOAgent extends HttpSSOAgent {
     }
     public String urlLogout(){
         return super.urlLogout1();
-    }
-    public String simpleAuthorize(String user, String rezz, String akte){
-        String reponse = "Pas de réponse";
-        return reponse;
     }
 
     protected void log2(String message) {

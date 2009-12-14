@@ -29,6 +29,7 @@ import org.apache.commons.logging.LogFactory;
 import org.josso.agent.config.ComponentKeeperFactory;
 import org.josso.agent.config.ComponentKeeper;
 import org.josso.agent.reverseproxy.ReverseProxyConfiguration;
+import techDecision.xacmlPep.WSclientInterface;
 
 /**
  * This class provides a singleton interface to the SSO components
@@ -70,6 +71,7 @@ public class Lookup {
     // Used only by Reverse Proxy instances
     // ======================================================
     private ReverseProxyConfiguration reverseProxyConfiguration;
+    private WSclientInterface _pdpService;
 
     /**
      * Private constructor so that this class can only be instantiated by the singleton.
@@ -121,6 +123,17 @@ public class Lookup {
             listCK.add(_componentKeeper);
             logger.info("Using ComponentKeeper : " + this._componentKeeper.getClass().getName()+" nom="+configResourceName);
         }
+    }
+    /**
+     * Fetches the Single Sign-On agent component.
+     *
+     * @return a reference to the agent component.
+     */
+    public synchronized WSclientInterface lookupPdpService() throws Exception {
+        if (_pdpService == null)
+            _pdpService = getComponentKeeper().fetchPdpService();
+
+        return _pdpService;
     }
     /**
      * Fetches the Single Sign-On agent component.

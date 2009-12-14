@@ -30,6 +30,7 @@ import org.springframework.context.ApplicationContext;
 import org.apache.xbean.spring.context.ClassPathXmlApplicationContext;
 
 import java.util.Map;
+import techDecision.xacmlPep.WSclientInterface;
 
 /**
  * Date: Sep 5, 2007
@@ -84,6 +85,27 @@ public class SpringComponentKeeperImpl implements org.josso.agent.config.Compone
 
     public ApplicationContext getSpringContext() {
         return context;
+    }
+
+    public WSclientInterface fetchPdpService() {
+        WSclientInterface ag = null;
+        if(context.containsBeanDefinition("xacmlWSpep")){
+            Map agents = context.getBeansOfType(WSclientInterface.class);
+            if (agents.values().size() < 1) {
+                System.err.println("No PdpService defined. Verify JOSSO Configuration");
+                return null;
+            } else if (agents.values().size() > 1){
+                System.err.println("Multiple PdpService definitions are not supported! Found : " + agents.values().size());
+                return null;
+            }
+            for(Iterator it = agents.values().iterator(); it.hasNext();){
+                ag = (WSclientInterface) it.next();
+                if(ag.getNomPdp().equals("xacmlWSpdp1")) break;
+            }
+        }else{
+            System.err.println("Pas trouvé le bean xacmlWSpep vérifié conf josso-agent2-config.xml dans JossoAgentGL2.jar");
+        }
+        return ag;
     }
 
 

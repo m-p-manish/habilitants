@@ -43,6 +43,10 @@ public class SingleSignOnEntry {
         return sujet;
     }
 
+    public Principal getPrincipal() {
+        return principal;
+    }
+
     public void setSujet(Subject sujet) {
         this.sujet = sujet;
     }
