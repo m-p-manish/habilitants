@@ -75,7 +75,7 @@
               <h:outputText value="userLogin: " /><h:outputText value="#{jossoInsideFaces.userLogin}   " /><br/>
                 <h:outputText value="Ressource demandée: " /><h:inputText id="resourceXacml" value="#{jossoInsideFaces.resource}" required="false" size="10"/><br/>
                 <h:outputText value="Action demandée: " /><h:inputText id="actionXacml" value="#{jossoInsideFaces.action}" required="false" size="10"/><br/>
-                <h:commandButton value=" autoriser !" action="#{jossoInsideFaces.autoriser}" />
+                <h:commandButton value=" autoriser !" action="#{jossoInsideFaces.autoriser}" /><h:outputText value="  réponse: " /><h:outputText value="#{jossoInsideFaces.isAutorise}" /><br/>
             </h:form><br/>
          <br/>
          <a href="../../techDecisionDB3srv/console/">Lien vers la console H2</a><br/>
