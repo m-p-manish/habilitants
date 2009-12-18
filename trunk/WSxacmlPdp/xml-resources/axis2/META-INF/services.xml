@@ -1,16 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <serviceGroup>
-    <service name="PdpService">
+    <service name="SimplePdpInterface" scope="application">
+        <description>SimplePdpInterface service</description>
         <messageReceivers>
-            <messageReceiver mep="http://www.w3.org/ns/wsdl/in-out" class="techDecision.xacmlPdp.ws.PdpServiceMessageReceiverInOut"/>
+            <messageReceiver mep="http://www.w3.org/2004/08/wsdl/in-only" class="org.apache.axis2.rpc.receivers.RPCInOnlyMessageReceiver"/>
+            <messageReceiver mep="http://www.w3.org/2004/08/wsdl/in-out" class="org.apache.axis2.rpc.receivers.RPCMessageReceiver"/>
         </messageReceivers>
-        <parameter name="ServiceClass">techDecision.xacmlPdp.ws.AxisXacmlPdp</parameter>
-        <parameter name="useOriginalwsdl">true</parameter>
-        <parameter name="modifyUserWSDLPortAddress">true</parameter>
-        <operation name="getDecision" mep="http://www.w3.org/ns/wsdl/in-out">
-            <actionMapping>http://gryb.info/schemas/xacml/wsdl/getDecision</actionMapping>
-            <outputActionMapping>http://gryb.info/schemas/xacml/wsdl/PdpOperations/getDecisionResponse</outputActionMapping>
-        </operation>
+        <parameter name="ServiceClass">techDecision.xacmlPdp.ws.SimplePdpInterface</parameter>
     </service>
 </serviceGroup>
+
+
+
 
