@@ -5,72 +5,29 @@
                 JAX-WS WSIMPORT SECTION
                 ===================
             -->
-    <target name="wsdl2java-PdpService" depends="init">
-        <delete dir="${build.dir}/axis2"/>
-        <java classname="org.apache.axis2.wsdl.WSDL2Java" fork="true">
-            <arg line="-uri file:/home/spopoff/WSxacmlPdp/xacml.wsdl"/>
-            <arg line="-ss -sd"/>
-            <arg line="-s"/>
-            <arg line="-ssi"/>
-            <arg line="-sn PdpService"/>
-            <arg line="-pn PdpOperations"/>
-            <arg line="-p techDecision.xacmlPdp.ws"/>
-            <arg line="-d xmlbeans"/>
-            <arg line="-o ${build.dir}/axis2"/>
-            <classpath path="${javac.classpath}"/>
-        </java>
-        <copy toDir="${src.dir}" overwrite="true">
-            <fileset dir="${build.dir}/axis2/src">
-                <include name="**/*.java"/>
-            </fileset>
-        </copy>
+    <target name="java2wsdl-init" depends="init">
         <mkdir dir="${basedir}/xml-resources/axis2/META-INF"/>
-        <copy toDir="${basedir}/xml-resources/axis2/META-INF/" overwrite="true">
-            <fileset dir="${build.dir}/axis2/resources">
-                <include name="**/*.wsdl"/>
-                <include name="**/*.xsd"/>
-            </fileset>
-        </copy>
-        <mkdir dir="${basedir}/xml-resources/axis2/xmlbeans/lib"/>
-        <jar destfile="${basedir}/xml-resources/axis2/xmlbeans/lib/PdpService-XBeans-packaged.jar">
-            <fileset dir="${build.dir}/axis2/resources">
-                <exclude name="**/*.wsdl"/>
-                <exclude name="**/*.xsd"/>
-            </fileset>
-        </jar>
+        <taskdef name="java2wsdl" classname="org.apache.ws.java2wsdl.Java2WSDLTask">
+            <classpath path="${libs.axis2.classpath}"/>
+        </taskdef>
     </target>
-    <target name="wsdl2java-refresh-PdpService" depends="init">
-        <delete dir="${build.dir}/axis2"/>
-        <java classname="org.apache.axis2.wsdl.WSDL2Java" fork="true">
-            <arg line="-uri ${basedir}/xml-resources/axis2/META-INF/PdpService.wsdl"/>
-            <arg line="-ss -sd"/>
-            <arg line="-s"/>
-            <arg line="-ssi"/>
-            <arg line="-sn PdpService"/>
-            <arg line="-pn PdpOperations"/>
-            <arg line="-p techDecision.xacmlPdp.ws"/>
-            <arg line="-d xmlbeans"/>
-            <arg line="-o ${build.dir}/axis2"/>
-            <classpath path="${javac.classpath}"/>
-        </java>
-        <copy toDir="${src.dir}" overwrite="true">
-            <fileset dir="${build.dir}/axis2/src">
-                <include name="**/*.java"/>
-            </fileset>
-        </copy>
-        <mkdir dir="${basedir}/xml-resources/axis2/xmlbeans/lib"/>
-        <jar destfile="${basedir}/xml-resources/axis2/xmlbeans/lib/PdpService-XBeans-packaged.jar">
-            <fileset dir="${build.dir}/axis2/resources">
-                <exclude name="**/*.wsdl"/>
-                <exclude name="**/*.xsd"/>
-            </fileset>
-        </jar>
+    <target name="java2wsdl-check-SimplePdpInterface" depends="java2wsdl-init">
+        <condition property="java2wsdl-check-SimplePdpInterface.notRequired">
+            <available file="${basedir}/xml-resources/axis2/META-INF/SimplePdpInterface.wsdl" type="file"/>
+        </condition>
     </target>
-    <target name="wsdl2java-clean-PdpService" depends="init">
-        <delete file="${basedir}/xml-resources/axis2/META-INF/PdpService.wsdl"/>
-        <delete file="${basedir}/xml-resources/axis2/xmlbeans/lib/PdpService-XBeans-packaged.jar"/>
+    <target name="java2wsdl-SimplePdpInterface" depends="java2wsdl-check-SimplePdpInterface, compile" unless="java2wsdl-check-SimplePdpInterface.notRequired">
+        <java2wsdl className="techDecision.xacmlPdp.ws.SimplePdpInterface" serviceName="SimplePdpInterface" outputLocation="${basedir}/xml-resources/axis2/META-INF" outputFileName="SimplePdpInterface.wsdl" targetNamespace="http://ws/xacmlPdp/techDecision/" schemaTargetNamespace="http://ws/xacmlPdp/techDecision/xsd">
+            <classpath>
+                <pathelement location="${build.dir}/classes"/>
+                <pathelement location="${javac.classpath}"/>
+            </classpath>
+        </java2wsdl>
     </target>
-    <target name="axis2-aar" depends="compile">
+    <target name="java2wsdl-clean-SimplePdpInterface" depends="init">
+        <delete file="${basedir}/xml-resources/axis2/META-INF/SimplePdpInterface.wsdl"/>
+    </target>
+    <target name="axis2-aar" depends="compile, java2wsdl-SimplePdpInterface">
         <mkdir dir="${build.dir}/axis2/WEB-INF/services"/>
         <jar destfile="${build.dir}/axis2/WEB-INF/services/${ant.project.name}.aar">
             <fileset excludes="**/Test.class" dir="${build.dir}/classes"/>
@@ -78,9 +35,6 @@
                 <include name="**/*.wsdl"/>
                 <include name="**/*.xsd"/>
                 <include name="**/*.xml"/>
-                <include name="**/*.jar"/>
-            </fileset>
-            <fileset dir="${basedir}/xml-resources/axis2/xmlbeans">
                 <include name="**/*.jar"/>
             </fileset>
         </jar>

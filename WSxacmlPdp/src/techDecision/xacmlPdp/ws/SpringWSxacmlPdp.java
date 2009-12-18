@@ -34,25 +34,23 @@ termes.
  */
 
 package techDecision.xacmlPdp.ws;
-
 import org.springframework.remoting.jaxrpc.ServletEndpointSupport;
-import os.schema.context._0._2.xacml.tc.names.oasis.RequestDocument;
-import os.schema.context._0._2.xacml.tc.names.oasis.ResponseDocument;
+
 /**
  * classe qui porte le service PDP Decision pour Spring et répond à getDecision (opération soap)
+ * en fait encapsule dans Spring un service axis SimplePdpService
  * @author spopoff@rocketmail.com
  * @version 0.1
  */
-public class SpringWSxacmlPdp extends ServletEndpointSupport implements PdpServiceSkeletonInterface {
-
-    private PdpServiceSkeletonInterface springWS;
-
+public class SpringWSxacmlPdp extends ServletEndpointSupport implements SimplePdpInterface {
+    private SimplePdpInterface springWS;
     @Override
     protected void onInit() {
-        this.springWS = (PdpServiceSkeletonInterface) getWebApplicationContext().getBean("xacmlWSpdp");
+        this.springWS = (SimplePdpInterface) getWebApplicationContext().getBean("xacmlWSpdp");
+        System.out.println("Init du servlet Spring encapsulant webservice Axis");
     }
-    public ResponseDocument getDecision(RequestDocument request) {
-        return springWS.getDecision(request);
+    public String getSimpleDecision(String login, String ressource, String acte) {
+        return springWS.getSimpleDecision(login, ressource, acte);
     }
 
 }
