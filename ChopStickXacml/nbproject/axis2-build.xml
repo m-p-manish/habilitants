@@ -5,4 +5,65 @@
                 JAX-WS WSIMPORT SECTION
                 ===================
             -->
+    <target name="java2wsdl-init" depends="init">
+        <mkdir dir="${basedir}/xml-resources/axis2/META-INF"/>
+        <taskdef name="java2wsdl" classname="org.apache.ws.java2wsdl.Java2WSDLTask">
+            <classpath path="${libs.axis2.classpath}"/>
+        </taskdef>
+    </target>
+    <target name="java2wsdl-check-SimplePdpService" depends="java2wsdl-init">
+        <condition property="java2wsdl-check-SimplePdpService.notRequired">
+            <available file="${basedir}/xml-resources/axis2/META-INF/SimplePdpService.wsdl" type="file"/>
+        </condition>
+    </target>
+    <target name="java2wsdl-SimplePdpService" depends="java2wsdl-check-SimplePdpService, compile" unless="java2wsdl-check-SimplePdpService.notRequired">
+        <java2wsdl className="techDecision.xacmlPdp.ws.SimplePdpService" serviceName="SimplePdpService" outputLocation="${basedir}/xml-resources/axis2/META-INF" outputFileName="SimplePdpService.wsdl" targetNamespace="http://ws/xacmlPdp/techDecision/" schemaTargetNamespace="http://ws/xacmlPdp/techDecision/xsd">
+            <classpath>
+                <pathelement location="${build.dir}/classes"/>
+                <pathelement location="${javac.classpath}"/>
+                <pathelement location="/home/spopoff/spring-framework-2.5.6.SEC01/dist/spring.jar"/>
+                <pathelement location="/home/spopoff/josso-1.8.1/lib/josso-core-1.8.1.jar"/>
+            </classpath>
+        </java2wsdl>
+    </target>
+    <target name="java2wsdl-clean-SimplePdpService" depends="init">
+        <delete file="${basedir}/xml-resources/axis2/META-INF/SimplePdpService.wsdl"/>
+    </target>
+    <target name="axis2-aar" depends="compile, java2wsdl-SimplePdpService">
+        <mkdir dir="${build.dir}/axis2/WEB-INF/services"/>
+        <jar destfile="${build.dir}/axis2/WEB-INF/services/${ant.project.name}.aar">
+            <fileset excludes="**/Test.class" dir="${build.dir}/classes"/>
+            <fileset dir="${basedir}/xml-resources/axis2">
+                <include name="**/*.wsdl"/>
+                <include name="**/*.xsd"/>
+                <include name="**/*.xml"/>
+                <include name="**/*.jar"/>
+            </fileset>
+        </jar>
+    </target>
+    <target name="axis2-deploy-dir-check" depends="axis2-aar">
+        <condition property="axis2-deploy-dir-required">
+            <isset property="axis2.deploy.dir"/>
+        </condition>
+    </target>
+    <target name="axis2-deploy-dir" depends="axis2-deploy-dir-check" if="axis2-deploy-dir-required">
+        <copy toDir="${axis2.deploy.dir}/WEB-INF/services">
+            <fileset dir="${build.dir}/axis2/WEB-INF/services">
+                <include name="*.aar"/>
+            </fileset>
+        </copy>
+    </target>
+    <target name="axis2-deploy-war-check" depends="axis2-aar">
+        <condition property="axis2-deploy-war-required">
+            <isset property="axis2.deploy.war"/>
+        </condition>
+    </target>
+    <target name="axis2-deploy-war" depends="axis2-deploy-war-check" if="axis2-deploy-war-required">
+        <jar destfile="${axis2.deploy.war}" update="true">
+            <fileset dir="${build.dir}/axis2">
+                <include name="**/*.aar"/>
+            </fileset>
+        </jar>
+    </target>
+    <target name="axis2-deploy" depends="axis2-deploy-dir, axis2-deploy-war"/>
 </project>

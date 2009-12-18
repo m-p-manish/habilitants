@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<axis2 xmlns="http://www.netbeans.org/ns/axis2/1"></axis2>
+<axis2 xmlns="http://www.netbeans.org/ns/axis2/1">
+    <service name="SimplePdpService">
+        <service-class>techDecision.xacmlPdp.ws.SimplePdpService</service-class>
+        <generate-wsdl targetNamespace="http://ws/xacmlPdp/techDecision/" schemaNamespace="http://ws/xacmlPdp/techDecision/xsd"/>
+    </service>
+</axis2>
+
 
 
 
