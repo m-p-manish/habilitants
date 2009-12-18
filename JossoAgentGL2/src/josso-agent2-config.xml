@@ -70,7 +70,7 @@
             <protocol:ws-service-locator endpoint="localhost:8082" />
         </gll:gatewayServiceLocator>
     </gll:FacesSSOAgent>
-    <s:bean id="jaxRpcProxy" class="org.springframework.remoting.jaxrpc.JaxRpcPortProxyFactoryBean">
+    <s:bean id="jaxRpcProxy" class="org.josso.agent.config.AxisPortProxyFactoryBean">
       <s:property name="serviceFactoryClass">
         <s:value>org.apache.axis.client.ServiceFactory</s:value>
       </s:property>
