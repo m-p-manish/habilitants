@@ -1,5 +1,5 @@
 /*
-Copyright Stéphane Georges Popoff, (avril - juin 2009)
+Copyright Stéphane Georges Popoff, (avril 2009 - mars 2010)
 
 spopoff@rocketmail.com
 
@@ -47,7 +47,7 @@ import javax.ejb.TransactionAttributeType;
 /**
  *
  * @author spopoff@rocketmail.com
- * @version 0.2
+ * @version 0.3
  */
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class IdntAttrsJpaSimple {
@@ -149,5 +149,21 @@ public class IdntAttrsJpaSimple {
         }
         return ret;
     }
-
+    /**
+     * trouve un attribut d'identité, son hash, donc son identitfiant unique
+     * @param hashIdnt
+     * @return
+     */
+    public IdntAttrs getId4IdntHash(String hashIdnt){
+        IdntAttrs ret = null;
+         try {
+            Query qHbltVal = em.createNativeQuery("SELECT * FROM IDNT_ATTRS WHERE ATTR = 'HASHIDNT' AND VAL = ?hashIdnt", IdntAttrs.class);
+            qHbltVal.setParameter("hashIdnt", hashIdnt);
+            ret = (IdntAttrs) qHbltVal.getSingleResult();
+        } catch(Exception err) {
+            String s = err.toString();
+            System.err.println(s);
+        }
+       return ret;
+    }
 }

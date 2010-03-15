@@ -1,5 +1,5 @@
 /*
-Copyright Stéphane Georges Popoff, (février - juin 2009)
+Copyright Stéphane Georges Popoff, (février 2009 - mars 2010)
 
 spopoff@rocketmail.com
 
@@ -51,7 +51,7 @@ import javax.persistence.NonUniqueResultException;
 /**
  *
  * @author spopoff@rocketmail.com
- * @version 0.2
+ * @version 0.3
  */
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class IdntCpteJpaController {
@@ -239,4 +239,13 @@ public class IdntCpteJpaController {
             System.err.println("Erreur delDoublonAddOne "+err.toString());
         }
     }
+    public void truncate(){
+        try {
+            Query q = em.createNativeQuery("truncate IDNT_CPTE");
+            IdntCpte o = (IdntCpte) q.getSingleResult();
+        } catch (Exception e) {
+            System.err.println("On s'en fout de l'erreur truncate IDNT_CPTE");
+        }
+    }
+
 }

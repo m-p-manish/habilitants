@@ -1,5 +1,5 @@
 /*
-Copyright Stéphane Georges Popoff, (avril 2009)
+Copyright Stéphane Georges Popoff, (avril 2009 - mars 2010)
 
 spopoff@rocketmail.com
 
@@ -46,7 +46,7 @@ import techDecision.entites.ObjsHblt;
 /**
  *
  * @author spopoff@rocketmail.com
- * @version 0.2
+ * @version 0.3
  */
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class ObjsHbltJpaSimple {
@@ -152,4 +152,13 @@ public class ObjsHbltJpaSimple {
         }
         return ret;
     }
+    public void truncate(){
+        try {
+            Query q = em.createNativeQuery("truncate OBJS_HBLT");
+            ObjsHblt o = (ObjsHblt) q.getSingleResult();
+        } catch (Exception e) {
+            System.err.println("On s'en fout de l'erreur truncate OBJS_HBLT");
+        }
+    }
+
 }

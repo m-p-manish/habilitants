@@ -1,5 +1,5 @@
 /*
-Copyright Stéphane Georges Popoff, (avril - juin 2009)
+Copyright Stéphane Georges Popoff, (avril 209 - marss 2010)
 
 spopoff@rocketmail.com
 
@@ -40,7 +40,7 @@ import java.util.List;
 /**
  *
  * @author spopoff@rocketmail.com
- * @version 0.2
+ * @version 0.3
  */
 @Remote
 public interface IIdntattrDaoRemote extends IIdntattrDao {
@@ -61,4 +61,6 @@ public interface IIdntattrDaoRemote extends IIdntattrDao {
     void init();
 
     List<IdntAttrs> relatedAttrs(int idntId);
+
+    IdntAttrs getId4IdntHash(String hashIdnt);
 }

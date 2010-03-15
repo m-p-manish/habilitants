@@ -1,5 +1,5 @@
 /*
-Copyright Stéphane Georges Popoff, (avril - juin 2009)
+Copyright Stéphane Georges Popoff, (avril 2009 - mars 2010)
 
 spopoff@rocketmail.com
 
@@ -43,7 +43,7 @@ import javax.persistence.Query;
 /**
  *
  * @author spopoff@rocketmail.com
- * @version 0.2
+ * @version 0.3
  */
 @Stateless(mappedName="ejbIdntAttrs")
 public class IdntattrDao implements IIdntattrDaoLocal, IIdntattrDaoRemote {
@@ -84,6 +84,10 @@ public class IdntattrDao implements IIdntattrDaoLocal, IIdntattrDaoRemote {
 
     public List<IdntAttrs> relatedAttrs(int idntId) {
         return objIdnt.relatedAttrs(idntId);
+    }
+
+    public IdntAttrs getId4IdntHash(String hashIdnt) {
+        return objIdnt.getId4IdntHash(hashIdnt);
     }
 
 }

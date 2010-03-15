@@ -1,5 +1,5 @@
 /*
-Copyright Stéphane Georges Popoff, (avril 2009)
+Copyright Stéphane Georges Popoff, (avril 2009 - mars 2010)
 
 spopoff@rocketmail.com
 
@@ -48,7 +48,7 @@ import javax.ejb.TransactionAttributeType;
 /**
  *
  * @author spopoff@rocketmail.com
- * @version 0.2
+ * @version 0.3
  */
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class CpteAttrsJpaSimple {
@@ -149,6 +149,14 @@ public class CpteAttrsJpaSimple {
             System.err.println(s);
         }
         return ret;
+    }
+    public void truncate(){
+        try {
+            Query q = em.createNativeQuery("truncate CPTE_ATTRS");
+            CpteAttrs o = (CpteAttrs) q.getSingleResult();
+        } catch (Exception e) {
+            System.err.println("On s'en fout de l'erreur truncate CPTE_ATTRS");
+        }
     }
 
 }

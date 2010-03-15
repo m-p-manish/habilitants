@@ -93,4 +93,16 @@ public interface ITechDecisionDaoRemote extends ITechDecisionDao {
     void corrigeCpteIdnt(int idnt, int cpte);
 
     void ajouteCpteHblt(String cpte, String hblt);
+
+    Integer trouveIdntOnHash(String empreinte);
+
+    Habilitant findHbltByValAndType(String sVal, int iType);
+
+    void ajouteCpteHblt2(String cpte, String hblt, int iType);
+
+    void truncateTable(int iTable);
+
+    void cloze();
+
+    Boolean existHabilitant(String sVal, int iType);
 }
