@@ -1,5 +1,5 @@
 /*
-Copyright Stéphane Georges Popoff, (mai - juillet 2009)
+Copyright Stéphane Georges Popoff, (mai 2009 - mars 2010)
 
 spopoff@rocketmail.com
 
@@ -37,6 +37,7 @@ termes.
  * les comptes, les identités, les rôles, les habilitants
  */
 package techdecisionloader;
+import chm.util.Md5;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import techDecision.dao.*;
@@ -45,12 +46,13 @@ import techDecision.dao.exceptions.TechDecisionErreurs;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
+import javax.ejb.EJBException;
 
 /**
  * Classe qui assure la communication avec le monde amont (Talend Studio)
  * et l'EJB numéro 1 qui est branché sur le repository du sytème de sécurité de l'entreprise.
  * @author spopoff@rocketmail.com
- * @version 0.5
+ * @version 0.6
  */
 public class ETLlike {
     //public static Logger logg = null;
@@ -63,8 +65,26 @@ public class ETLlike {
     private MessageDigest empreinte = null;
     private String appKch = "";
     private int pkappKch = 0;
+
+    public int getPkappKch() {
+        return pkappKch;
+    }
     private String idntKch = "";
     private int pkidntKch = 0;
+    private String hashKash = "";
+    private int iDidnt = 0;
+
+    public String getiDidntS() {
+        return ""+iDidnt;
+    }
+    private String cpteName = "";
+    private int cpteId;
+    private Boolean newIdnt = false;
+    private int habilitant = 0;
+
+    public String getHabilitantS() {
+        return ""+habilitant;
+    }
 
     public void init(String sHost, String sPort) {
         //logg = Logger.getLogger("techdecisionloader.ETLlike");
@@ -113,6 +133,18 @@ public class ETLlike {
         } catch (NoSuchAlgorithmException ex) {
             System.err.println(ex.toString());
         }
+    }
+
+    public void cloze(){
+        dao.cloze();
+    }
+
+    public Identite getIdnt() {
+        return idnt;
+    }
+
+    public Compte getCpte() {
+        return cpte;
     }
     /**
      *
@@ -170,11 +202,12 @@ public class ETLlike {
         }
     }
     /**
-     * Ajoute une application dans un objet de sécurité
+     * Ajoute une application dans un objet de sécurité si pas déjà fait
      * @param nom nom de l'appli
      * @param type de l'appli
      */
     public void ajouteAppli(String nom, int type){
+         if(nom.equals(appKch)) return;
          int a = aleat();
          int l = nom.length();
          if(l>150) l=150;
@@ -183,6 +216,8 @@ public class ETLlike {
          byte[] hash = empreinte.digest();
          try{
             if(dao.existAppli(hashToString(hash).substring(0,10))) return;
+            appKch = nom;
+            pkappKch = a;
             Objsecu objs = new Objsecu(a);
             dao.createObjetSecu(objs);
             System.out.println("nom appli="+nom.substring(0, l));
@@ -272,20 +307,39 @@ public class ETLlike {
      */
     public void ajouteHabilitant(String sHblt, String appli, int type){
        Integer a1 = 0;
-       int a = aleat();
-       Habilitant hh = null;
+       habilitant = aleat();
+       //Habilitant hh = null;
        empreinte.reset();
        empreinte.update(appli.getBytes());
        byte[] hash = empreinte.digest();
+       Boolean exist = false;
        try{
-           hh = dao.findHabilitantByVal(sHblt);
-           if(hh==null){
-                System.out.println("new habilitant="+a);
-                hblt = new Habilitant(a, sHblt, type);
+           //hh = dao.findHbltByValAndType(sHblt, type);
+           exist = dao.existHabilitant(sHblt, type);
+           //if(hh.getPkhblt()==0 && hh.getType()==0){
+           //    System.err.println("habilitant en doubles Hblt=" + sHblt  +" et type=" + type);
+           //    return;
+           //}
+       }catch(EJBException ejb){
+           System.err.println("Erreur EJB sur findHbltByValAndType sHblt=" + sHblt  +" et type=" + type+" "+ejb.toString());
+           return;
+       }catch(NullPointerException ee){
+           //c'est pas une erreur
+           System.out.println("pas trouvé habilitant Hblt=" + sHblt  +" et type=" + type);
+       }catch(Exception err){
+           System.err.println("Erreur générale sur findHbltByValAndType sHblt=" + sHblt  +" et type=" + type+" "+err.toString());
+       }
+       try {
+           if(!exist){
+                System.out.println("new habilitant="+habilitant);
+                hblt = new Habilitant(habilitant, sHblt, type);
                 dao.createHabilitant(hblt);
            }else{
-               a = hh.getPkhblt();
-                System.out.println("old habilitant="+a);
+               //habilitant = hh.getPkhblt();
+               habilitant = -1;
+               System.out.println("old habilitant="+habilitant);
+               //si c'est un ancien il doit être déjà lié
+               return;
            }
            if(appli.equals(appKch)){
                a1 = pkappKch;
@@ -294,10 +348,10 @@ public class ETLlike {
                appKch = appli;
                pkappKch = a1;
            }
-           if(!dao.existHblt4Objs(a, a1)){
-               dao.createObjsHblt(aleat(), a1, a);
+           if(!dao.existHblt4Objs(habilitant, pkappKch)){
+               dao.createObjsHblt(aleat(), pkappKch, habilitant);
            }
-        }catch(TechDecisionErreurs err){
+       }catch(TechDecisionErreurs err){
             System.err.println("Erreur sur createObjsHblt pour=" + sHblt  +" " + err.toString());
        }catch(Exception err){
            System.err.println("Erreur sur ajout habilitant pour=" + sHblt  +" " + err.toString());
@@ -518,6 +572,95 @@ public class ETLlike {
         System.out.println("lié compte / habilitants");
     }
     /**
+     * Ajoute un compte et l'associe à l'identité
+     * @param nom
+     * @param userId
+     * @param appli
+     */
+    public void ajouteCompte(String nom, int userId){
+        int i = 0;
+        int iD = 0;
+        String sErr = "";
+        //ajoute le compte
+        try {
+            iD = aleat();
+            cpte = new Compte(iD, userId);
+            dao.createCompte(cpte);
+            System.out.println("ajouté compte " + userId);
+        } catch (Exception ex) {
+            sErr = ex.toString();
+            //logg.log(Level.ERROR, sErr);
+            System.err.println(sErr);
+            return;
+        }
+        //trouve identité et fait la liaison
+        try {
+            int iDi = dao.getIdIdnt(nom);
+            cpte = new Compte(iD, userId);
+            dao.lierIdntCpte(iDi, iD);
+            //logg.log(Level.INFO, "lié compte / identite (" + iD+ "/" + iDi+")");
+            System.out.println("lié compte / identite (" + iD+ "/" + iDi+")");
+        } catch (Exception ex) {
+            sErr = ex.toString();
+            //logg.log(Level.ERROR, sErr);
+            System.err.println(sErr);
+            return;
+        }
+    }
+
+    public void ajouteCompte2(String login){
+        Boolean newCpte = false;
+        int iD = 0;
+        String sErr = "";
+        if(login.equals(cpteName)&&!newIdnt) return;
+        if(!login.equals(cpteName)){
+            //cherche le compte au cas ou
+            try{
+                iD = dao.getIdCpteUid(login);
+            } catch (Exception ex) {
+                sErr = ex.toString();
+                //logg.log(Level.ERROR, sErr);
+                //System.err.println(sErr);
+            }
+            if(iD==0){
+                //ajoute le compte
+                try {
+                    iD = aleat();
+                    cpte = new Compte(iD, iDidnt);
+                    dao.createCompte(cpte);
+                    System.out.println("ajouté compte pour " + iDidnt);
+                    cpteName = login;
+                    cpteId = iD;
+                    newCpte = true;
+                    ajouteAttr(1, "UIDCPTE", cpteName, ""+cpteId);
+                } catch (Exception ex) {
+                    sErr = ex.toString();
+                    //logg.log(Level.ERROR, sErr);
+                    System.err.println(sErr);
+                    return;
+                }
+            } else {
+                cpteName = login;
+                cpteId = iD;
+            }
+        }
+        if(newIdnt||newCpte){
+            //trouve identité et fait la liaison
+            try {
+                //int iDi = dao.getIdIdnt(""+idId);
+                cpte = new Compte(cpteId, iDidnt);
+                dao.lierIdntCpte(iDidnt, cpteId);
+                //logg.log(Level.INFO, "lié compte / identite (" + iD+ "/" + iDi+")");
+                System.out.println("lié compte / identite (" + cpteId+ "/" + iDidnt+")");
+            } catch (Exception ex) {
+                sErr = ex.toString();
+                //logg.log(Level.ERROR, sErr);
+                System.err.println(sErr);
+                return;
+            }
+        }
+    }
+    /**
      * associe un compte et une identité
      * @param idnt
      * @param cpte
@@ -583,6 +726,69 @@ public class ETLlike {
      */
     public void ajouteCpteHblt(String c, String h){
         dao.ajouteCpteHblt(c, h);
+    }
+    /**
+     * ajoute la liaison entre un compte et un habilitant définit par sa valeur et son type
+     * @param c
+     * @param h
+     * @param i
+     */
+    public void ajouteCpteHblt2(String c, String h, int i){
+        dao.ajouteCpteHblt2(c, h, i);
+    }
+    /**
+     * trouve une nouvelle identité ou utilise le cache
+     * @param nomComplet
+     */
+    public void trouveIdntOnHash(String nomComplet){
+        String emp = new Md5(nomComplet).getEmpreinte();
+        if(emp.equals(hashKash)) return;
+        hashKash = emp;
+        iDidnt = dao.trouveIdntOnHash(emp);
+        newIdnt = true;
+        System.out.println("Info trouvé idnt="+iDidnt);
+    }
+    /**
+     * permet d'ajouter une identité si elle unique sur son nom complet, sinon rien
+     * Fait un hash du nom complet et le compare avec ceux existant
+     * @param nomComplet
+     * @param uidCpte
+     * @param fonction
+     * @param dpt
+     */
+    public void ajouteSiUnikIdnt(String nomComplet, String uidCpte, String fonction, String dpt){
+        String emp = new Md5(nomComplet).getEmpreinte();
+        if(emp.equals(hashKash)) return;
+        hashKash = emp;
+        Integer id = dao.trouveIdntOnHash(emp);
+        if(id==0){
+            if(fonction==null) fonction="fonction";
+            if(dpt==null) dpt = "dpt";
+            id = aleat();
+            try{
+                nomComplet = nomComplet.trim();
+                if(nomComplet.length()>29) nomComplet = nomComplet.substring(0, 29);
+                idnt = new Identite(id,nomComplet, fonction, dpt);
+                dao.createIdentite(idnt);
+            }catch(TechDecisionErreurs err){
+                //logg.log(Level.ERROR, "Erreur sur ajout identite de " + nom  +" " + err.toString());
+                System.err.println("Erreur sur ajout identite de " + nomComplet  +" " + err.toString());
+            }
+            dao.ajouteAttr(2, "HASHIDNT", emp, id);
+            dao.ajouteAttr(2, "NOMCOMPLE", nomComplet, id);
+
+        }
+    }
+    public void cleanComptes(){
+        dao.truncateTable(1);
+        dao.truncateTable(2);
+        dao.truncateTable(3);
+        dao.truncateTable(4);
+        dao.truncateTable(5);
+        dao.truncateTable(6);
+        dao.truncateTable(7);
+        dao.truncateTable(8);
+        dao.truncateTable(9);
     }
      /**
      *
