@@ -1,5 +1,5 @@
 /*
-Copyright Stéphane Georges Popoff, (avril - juin 2009)
+Copyright Stéphane Georges Popoff, (avril 2000 - mars 2010)
 
 spopoff@rocketmail.com
 
@@ -50,10 +50,12 @@ import java.util.Collection;
 import java.util.Iterator;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
+import javax.persistence.NonUniqueResultException;
+import javax.persistence.NoResultException;
 /**
  *
  * @author spopoff@rocketmail.com
- * @version 0.4
+ * @version 0.5
  */
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class HabilitantJpaController {
@@ -144,7 +146,7 @@ public class HabilitantJpaController {
     }
 
     public void destroy(Integer id) throws IllegalOrphanException, NonexistentEntityException, RollbackFailureException, Exception {
-        EntityManager em = null;
+        //EntityManager em = null;
         try {
             Habilitant habilitant;
             try {
@@ -204,7 +206,11 @@ public class HabilitantJpaController {
         } finally {
         }
     }
-
+    /**
+     * retourne le dernier habilitant égale à la valeur passée en paramètre
+     * @param sVal
+     * @return
+     */
     public Habilitant findHabilitant(String sVal) {
         Habilitant ret = null;
         try {
@@ -223,10 +229,99 @@ public class HabilitantJpaController {
         }
         return ret;
     }
+    /**
+     * retourne le dernier habilitant qui correspond à la valeur et au type
+     * @param sVal
+     * @param iType
+     * @return
+     */
+    public Habilitant findHabilitant(String sVal, int iType) {
+        Habilitant ret = null;
+        try {
+            Query qHbltVal = em.createNamedQuery("Habilitant.findByVal");
+            qHbltVal.setParameter("val", sVal);
+            Collection results = qHbltVal.getResultList();
+            System.out.println("trouvé val="+sVal+" nb="+results.size());
+            Iterator stIterator=results.iterator();
+            while(stIterator.hasNext()){
+                ret = (Habilitant) stIterator.next();
+                System.out.println("cherche un seul type="+iType+" pour type="+ret.getType());
+                if(ret.getType()==iType){
+                    System.out.println("trouvé un seul val="+sVal+" type="+iType+" id="+ret.getPkhblt());
+                    return ret;
+                }
+            }
+        } catch(NoResultException err) {
+            String s = err.toString();
+            System.err.println("rien trouvé sVal="+sVal+" type="+iType + " " +s);
+        } catch(Exception err) {
+            String s = err.toString();
+            System.err.println("sVal="+sVal+" type="+iType + " " +s);
+        }
+        return ret;
+    }
+    /**
+     * permet de savoir si un habilitant caractéisé par val et type existe
+     * @param sVal
+     * @param iType
+     * @return
+     */
+    public Boolean existHabilitant(String sVal, int iType) {
+        Habilitant ret = null;
+        try {
+            Query qHbltVal = em.createNamedQuery("Habilitant.findByVal");
+            qHbltVal.setParameter("val", sVal);
+            Collection results = qHbltVal.getResultList();
+            System.out.println("trouvé val="+sVal+" nb="+results.size());
+            Iterator stIterator=results.iterator();
+            while(stIterator.hasNext()){
+                ret = (Habilitant) stIterator.next();
+                System.out.println("cherche un seul type="+iType+" pour type="+ret.getType());
+                if(ret.getType()==iType){
+                    System.out.println("trouvé un seul val="+sVal+" type="+iType+" id="+ret.getPkhblt());
+                    return true;
+                }
+            }
+        } catch(NoResultException err) {
+            String s = err.toString();
+            System.err.println("rien trouvé sVal="+sVal+" type="+iType + " " +s);
+        } catch(Exception err) {
+            String s = err.toString();
+            System.err.println("sVal="+sVal+" type="+iType + " " +s);
+        }
+        return false;
+    }
+    public Habilitant findHabilitant2(String sVal, int iType) {
+        Habilitant ret = null;
+        try {
+            String qq = "SELECT * FROM HABILITANT WHERE VAL='"+sVal+"' AND TYPE="+iType;
+            System.out.println("query="+qq);
+            Query q = em.createNativeQuery(qq);
+            ret = (Habilitant) q.getSingleResult();
+        } catch(NonUniqueResultException e){
+            ret = new Habilitant(0,"erreur",0);
+        } catch(ClassCastException err) {
+            String s = err.toString();
+            System.err.println("trouvé mais pas castable sVal="+sVal+" type="+iType + " " +s);
+            ret = new Habilitant(0,"erreur",0);
+        } catch(Exception err) {
+            String s = err.toString();
+            System.err.println("sVal="+sVal+" type="+iType + " " +s);
+        }
+        return ret;
+    }
     public Long getHabilitantCount() {
         try {
             return ((Long) em.createQuery("select count(o) from Habilitant as o").getSingleResult()).longValue();
         } finally {
+        }
+    }
+    public void truncate(){
+        try {
+            Query q = em.createNativeQuery("truncate HABILITANT");
+            Habilitant o = (Habilitant) q.getSingleResult();
+        } catch (Exception e) {
+            System.err.println("On s'en fout de l'erreur truncate HABILITANT");
         }
     }
 

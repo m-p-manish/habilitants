@@ -151,5 +151,13 @@ public class CpteHbltJpaController {
         } finally {
         }
     }
+    public void truncate(){
+        try {
+            Query q = em.createNativeQuery("truncate CPTE_HBLT");
+            CpteHblt o = (CpteHblt) q.getSingleResult();
+        } catch (Exception e) {
+            System.err.println("On s'en fout de l'erreur truncate CPTE_HBLT");
+        }
+    }
 
 }

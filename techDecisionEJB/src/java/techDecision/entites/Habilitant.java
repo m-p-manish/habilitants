@@ -56,7 +56,8 @@ import javax.persistence.Table;
 @NamedQueries({
     @NamedQuery(name = "Habilitant.findAll", query = "SELECT h FROM Habilitant h"),
     @NamedQuery(name = "Habilitant.findByPkhblt", query = "SELECT h FROM Habilitant h WHERE h.pkhblt = :pkhblt"),
-    @NamedQuery(name = "Habilitant.findByVal", query = "SELECT h FROM Habilitant h WHERE h.val = :val")})
+    @NamedQuery(name = "Habilitant.findByVal", query = "SELECT h FROM Habilitant h WHERE h.val = :val"),
+    @NamedQuery(name = "Habilitant.findByValAndType", query = "SELECT h FROM Habilitant h WHERE h.val = :val and h.type = :type")})
 public class Habilitant implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
@@ -67,7 +68,7 @@ public class Habilitant implements Serializable {
     @Column(name = "VAL", nullable = false, length = 100)
     private String val;
     @Basic(optional = false)
-    @Column(name = "TYPE", nullable = true)
+    @Column(name = "TYPE", nullable = false)
     private int type;
     @OneToMany(targetEntity=techDecision.entites.ObjsHblt.class, cascade = CascadeType.ALL, mappedBy = "fkhblt")
     private Collection<ObjsHblt> objsHbltCollection;

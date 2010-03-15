@@ -1,5 +1,5 @@
 /*
-Copyright Stéphane Georges Popoff, (février - juillet 2009)
+Copyright Stéphane Georges Popoff, (février 2009 - mars 2010)
 
 spopoff@rocketmail.com
 
@@ -51,7 +51,7 @@ import javax.ejb.TransactionAttributeType;
 /**
  *
  * @author spopoff@rocketmail.com
- * @version 0.3
+ * @version 0.4
  */
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class ObjsAttrsJpaController {
@@ -204,5 +204,13 @@ public class ObjsAttrsJpaController {
             return null;
         }
         return o.getFkobjs().getPkobjs();
+    }
+    public void truncate(){
+        try {
+            Query q = em.createNativeQuery("truncate OBJS_ATTRS");
+            ObjsAttrs o = (ObjsAttrs) q.getSingleResult();
+        } catch (Exception e) {
+            System.err.println("On s'en fout de l'erreur truncate OBJS_ATTRS");
+        }
     }
 }

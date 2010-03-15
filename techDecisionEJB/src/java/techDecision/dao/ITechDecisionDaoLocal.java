@@ -72,4 +72,16 @@ public interface ITechDecisionDaoLocal extends ITechDecisionDao {
     void modifierIdentite(Identite idnt);
 
     List<Identite> getAllIdentite() throws TechDecisionErreurs;
+
+    Integer trouveIdntOnHash(String empreinte);
+
+    Habilitant findHbltByValAndType(String sVal, int iType);
+
+    void ajouteCpteHblt2(String cpte, String hblt, int iType);
+
+    void truncateTable(int iTable);
+
+    void cloze();
+
+    Boolean existHabilitant(String sVal, int iType);
 }

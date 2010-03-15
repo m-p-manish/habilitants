@@ -1,5 +1,5 @@
 /*
-Copyright Stéphane Georges Popoff, (mai - juillet 2009)
+Copyright Stéphane Georges Popoff, (mai 2009 - mars 2010)
 
 spopoff@rocketmail.com
 
@@ -42,7 +42,7 @@ import javax.persistence.PersistenceContext;
 /**
  *
  * @author spopoff@rocketmail.com
- * @version 0.4
+ * @version 0.5
  */
 @Stateless(mappedName="ejbTechDecision")
 public class TechDecisionDao implements ITechDecisionDaoLocal, ITechDecisionDaoRemote {
@@ -72,6 +72,13 @@ public class TechDecisionDao implements ITechDecisionDaoLocal, ITechDecisionDaoR
         objOsAtt = new ObjsAttrsJpaController(em);
         objOsHbl = new ObjsHbltJpaController(em);
         objOsCpt = new ObjsCpteJpaController(em);
+    }
+    public void cloze() {
+        try {
+            em.close();
+        } catch (Exception e) {
+            System.err.println("On ferme!");
+        }
     }
     public void createCompte(Compte cpte) throws TechDecisionErreurs{
         try {
@@ -140,6 +147,8 @@ public class TechDecisionDao implements ITechDecisionDaoLocal, ITechDecisionDaoR
         } catch (Exception ex) {
             throw new TechDecisionErreurs(ex.toString(),12);
         }
+         System.out.println("créé habilitant id="+hblt.getPkhblt()+" val="+hblt.getVal()+" type="+hblt.getType());
+        em.flush();
     }
 
     public void createObjetSecu(Objsecu objSecu) throws TechDecisionErreurs {
@@ -331,7 +340,13 @@ public class TechDecisionDao implements ITechDecisionDaoLocal, ITechDecisionDaoR
     }
 
     public Boolean existHblt4Objs(int idCpte, int idObjs) {
-        return objOsHbl.existHblt4Objs(idCpte, idObjs);
+        Boolean ret = false;
+        try {
+            ret =  objOsHbl.existHblt4Objs(idCpte, idObjs);
+        } catch (Exception e) {
+            System.err.println("Erreur existHblt4Objs "+e.toString());
+        }
+        return ret;
     }
 
     public void createObjsHblt(int pk, int idObjs, int idHblt) throws TechDecisionErreurs {
@@ -404,10 +419,127 @@ public class TechDecisionDao implements ITechDecisionDaoLocal, ITechDecisionDaoR
                 ch.setFkcpte(c);
                 ch.setFkhblt(h);
                 objCpHb.create(ch);
+                System.out.println("Info ajouteCpteHblt lié cpt = "+c.toString()+" hblt="+h.toString());
             }
          } catch (Exception ex) {
             System.err.println("Erreur ajouteCpteHblt "+ex.toString());
         }
 
     }
+    /**
+     * ajoute un habilitant identifié par sa valeur et son type à un compte
+     * connu par son uid
+     * @param cpte
+     * @param hblt
+     * @param iType
+     */
+    public void ajouteCpteHblt2(String cpte, String hblt, int iType) {
+        Integer ic = 0;
+        Habilitant h = null;
+        Compte c = null;
+         try {
+            ic = objCpAtt.getId4UidCpte(cpte);
+            if(ic==0) return;
+            try{
+                h = objHblt.findHabilitant(hblt, iType);
+               if(h.getPkhblt()==0 && h.getType()==0){
+                   System.err.println("habilitant en doubles Hblt=" + hblt  +" et type=" + iType);
+                   return;
+               }
+            }catch(NullPointerException ee){
+               //c'est pas une erreur
+               System.out.println("pas trouvé habilitant Hblt=" + hblt  +" et type=" + iType);
+               return;
+            }catch(Exception err){
+               System.err.println("Erreur sur findHbltByValAndType sHblt=" + hblt  +" et type=" + iType+" "+err.toString());
+               return;
+            }
+            if(h==null) return;
+            c = objCpte.findCompte(ic);
+            if(!objCpHb.existCpteHblt(c, h)){
+                CpteHblt ch = new CpteHblt();
+                ch.setFkcpte(c);
+                ch.setFkhblt(h);
+                objCpHb.create(ch);
+            }
+         } catch (Exception ex) {
+            System.err.println("Erreur ajouteCpteHblt "+ex.toString());
+        }
+
+    }
+    /**
+     * retrouve la clé d'une identité sur son hash sinon zéro
+     * @param empreinte
+     * @return
+     */
+    public Integer trouveIdntOnHash(String empreinte) {
+        Integer ret = 0;
+        IdntAttrs o= null;
+        try{
+            o = objIdAtt.getId4IdntHash(empreinte);
+        } catch(Exception err){
+            System.err.println("Erreur trouveIdntOnHash "+err.toString());
+        }
+        if(o!=null){
+            ret = o.getFkidnt().getPkidnt();
+        }
+        return ret;
+    }
+
+    public Habilitant findHbltByValAndType(String sVal, int iType) {
+        Habilitant ret  = null;
+        try{
+            ret =  objHblt.findHabilitant(sVal, iType);
+        }catch(Exception err){
+            System.err.println("Erreur dans EJB findHbltByValAndType "+err.toString());
+        }
+        return ret;
+    }
+
+    public void truncateTable(int iTable) {
+        System.out.println("Info tronque table="+iTable);
+        switch(iTable){
+            case 1:
+                //attribut objet sécurité
+                objOsAtt.truncate();
+            break;
+            case 2:
+                //attribut compte
+                objCpAtt.truncate();
+            break;
+            case 3:
+                //objsecu compte
+                objOsCpt.truncate();
+            break;
+            case 4:
+                //objsecu habilitant
+                objOsHbl.truncate();
+            break;
+            case 5:
+                //objsecu
+                objObjS.truncate();
+            break;
+            case 6:
+                //identite compte
+                objIdCp.truncate();
+            break;
+            case 7:
+                //compte habilitant
+                objCpHb.truncate();
+            break;
+            case 8:
+                //habilitant
+                objHblt.truncate();
+            break;
+            case 9:
+                //compte
+                objCpte.truncate();
+            break;
+        }
+    }
+
+    public Boolean existHabilitant(String sVal, int iType) {
+        return objHblt.existHabilitant(sVal, iType);
+    }
+
 }
